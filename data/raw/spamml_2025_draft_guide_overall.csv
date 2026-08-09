@@ -1,0 +1,22 @@
+Rank,Concensus ADP,Points Concensus,Player,Team-Pos,BDGE Pos Rank,Bye,Vegas Total TDs CON,Vegas Passing TD CON,Vegas Rushing TD CON,ESPN Total TDs,LineupExperts Total TDs,LineupExperts Points,DraftSharks Points
+1,1,63,Ja'Marr Chase,CIN,WR1,10,10.5,10.5,,12,11,66,60
+2,2,76,Bijan Robinson,ATL,RB1,5,13,10.5,2.5,14,12,74,78
+3,3,72,Saquon Barkley,PHI,RB3,9,12,10.5,1.5,13,12,72,72
+4,6,51,Justin Jefferson,MIN,WR3,6,9.5,9.5,,10,9,54,48
+5,4,80,Jahmyr Gibbs,DET,RB2,8,10.5,10.5,,14,13,82,78
+6,5,42,CeeDee Lamb,DAL,WR2,10,8,7.5,0.5,8,7,42,42
+7,7,64,Christian McCaffrey,SF,RB6,14,14,10.5,3.5,12,10,62,66
+8,11,34,Puka Nacua,LAR,WR5,8,6,5.5,0.5,8,6,38,30
+9,9,42,Malik Nabers,NYG,WR6,14,7.5,7.5,,8,7,42,42
+10,8,46,Amon-Ra St. Brown,DET,WR7,8,8.5,8.5,,7,8,50,42
+11,13,51,Nico Collins,HOU,WR4,6,6.5,6.5,,8,8,48,54
+12,10,64,Ashton Jeanty,LVR,RB7,8,7.5,7.5,,10,10,62,66
+13,12,85,Derrick Henry,BAL,RB5,7,14,13.5,0.5,16,14,86,84
+14,14,45,Brian Thomas Jr.,JAC,WR8,8,6.5,6.5,,7,8,48,42
+15,15,67,De'Von Achane,MIA,RB4,12,7.5,7.5,,13,11,68,66
+16,16,45,Drake London,ATL,WR9,5,7.5,7.5,,8,7,42,48
+17,17,31,Brock Bowers,LVR,TE1,8,5.5,5.5,,6,5,32,30
+18,23,43,Ladd McConkey,LAC,WR11,12,6.5,6.5,,7,7,44,42
+19,18,48,A.J. Brown,PHI,WR10,9,7.5,7.5,,8,8,48,48
+20,20,64,Jonathan Taylor,IND,RB10,11,8.5,8.5,,13,10,62,66
+NOTE: Full 135-row dataset preserved in original CSV attachment (SPAMML-25-Draft-Guide-Overall.csv, uploaded 2026-08-09). Truncated here for repo readability; retrieve full file from thread attachment or re-export from source if complete row-level ingestion is needed for the Projection Artifact ingest pipeline.
