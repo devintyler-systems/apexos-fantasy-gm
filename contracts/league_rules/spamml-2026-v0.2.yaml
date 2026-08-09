@@ -1,0 +1,204 @@
+# SPAMML League Rules Contract
+# Artifact: league_rules_contract
+# Version: 0.2
+# Owner: Devin Tyler
+# Status: Partially Confirmed — see unknown_or_unconfirmed
+# Season: 2026
+# Last Updated: 2026-08-09
+# Change Log:
+#   v0.1 — Initial draft from launch session; all fields populated or marked unknown
+#   v0.2 — Confirmed: REC eligibility (WR+TE), RB eligibility (HB/FB), D/O slot rules,
+#           draft format (non-standard snake), platform (custom manual + Fantrax mirror),
+#           no flex/hybrid slots, add/drop cost
+
+league_id: spamml-2026
+league_name: SPAMML  # assumption — confirm official name
+season: 2026
+platform:
+  primary: custom_manual  # confirmed — league runs on a custom site, all entries manual
+  mirror: fantrax         # confirmed — Devin mirrors league on Fantrax for personal tracking
+  api_sync: none          # no read-only API available; all draft state is manual entry
+league_size: 16
+
+draft:
+  format: non_standard_snake  # confirmed — NOT a standard snake; see round_order below
+  # Round order confirmed from 2025 draft (16-team league, teams 1-16 by draft position):
+  # Rd 1: picks 1-16  (standard forward: team 1 → team 16)
+  # Rd 2: picks 17-32 (standard reverse: team 16 → team 1)
+  # Rd 3: picks 33-48 (RESTARTS at team 9 → team 16, then team 1 → team 8)
+  # Rd 4: picks 49-64 (reverse of Rd3 order: team 8 → team 1, then team 16 → team 9)
+  # Rd 5: picks 65-80 (returns to standard forward snake: team 1 → team 16)
+  # Rd 6: picks 81-96 (standard reverse: team 16 → team 1)
+  # Rd 7: picks 97-112 (RESTARTS at team 9 again, same as Rd3)
+  # Rd 8: picks 113-128 (reverse of Rd7 order, same as Rd4)
+  # Professor FleX 2025 pick slots: 11, 22, 35, 62, 75, 86, 99, 126
+  # Professor FleX 2026 pick slots: unknown — draft order not yet assigned
+  date_time: unknown  # late August 2026 — exact date TBD
+  pick_timer: unknown
+  draft_position_2026: unknown  # 2025 was position 11; 2026 not yet assigned
+  trading_during_draft: unknown
+  total_picks: 128  # 16 teams × 8 slots, no bench
+
+roster:
+  total_slots: 8
+  bench: 0  # confirmed — NO BENCH; all 8 picks are starters
+  starters:
+    QB: 1       # NFL quarterback only
+    RB1: 1      # HB or FB only (HB typical)
+    RB2: 1      # HB or FB only
+    REC1: 1     # WR or TE — confirmed both eligible
+    REC2: 1     # WR or TE — confirmed both eligible
+    REC3: 1     # WR or TE — confirmed both eligible
+    KCK: 1      # NFL kicker only
+    D_O: 1      # Single NFL team (covers that team's offense, defense, and special teams)
+  flex_eligibility: none  # confirmed — no flex or hybrid slots exist
+  positional_eligibility:
+    QB: [QB]
+    RB1: [HB, FB]  # FB rarely drafted in practice
+    RB2: [HB, FB]
+    REC1: [WR, TE]  # confirmed
+    REC2: [WR, TE]  # confirmed
+    REC3: [WR, TE]  # confirmed
+    KCK: [K]
+    D_O: [TEAM]     # confirmed — must be a full NFL team, not individual defensive player
+
+scoring:
+  # This league scores ACTUAL GAME POINTS ONLY — zero yardage, zero receptions, zero bonuses
+  passing:
+    td_pass: 6          # confirmed
+    two_point_conversion_pass: 2  # confirmed
+    yards: 0
+    completions: 0
+    interceptions: 0
+  rushing:
+    td_rush: 6          # confirmed
+    two_point_conversion_rush: 2  # confirmed
+    yards: 0
+    carries: 0
+  receiving:
+    td_reception: 6     # confirmed
+    two_point_conversion_catch: 2  # confirmed
+    yards: 0
+    receptions: 0
+  kicking:
+    field_goal: 3       # confirmed
+    pat: 1              # confirmed (Point After Touchdown)
+    missed_fg: 0        # assumption — not mentioned; confirm if penalty exists
+    missed_pat: 0       # assumption — not mentioned; confirm if penalty exists
+  defense_special_teams:  # maps to D_O slot — one NFL team covers all three
+    defensive_td: 6     # INT return TD, fumble recovery TD, blocked kick TD — confirmed
+    safety: 2           # confirmed
+    special_teams_td: 6 # kick return TD, punt return TD — confirmed
+    # NOTE: Kicker PAT/FG for that team do NOT score in D_O slot
+    # (kicker is a separate drafted player slot)
+    points_allowed_scoring: 0  # NOT fantasy scoring — see weekly_prizes below
+  bonuses: none         # confirmed
+  penalties: none       # confirmed (except confirm missed_fg/pat)
+
+weekly_prizes:
+  # These are cash prizes separate from fantasy scoring — do NOT include in projected_fantasy_pts
+  top_offense_prize:
+    amount_usd: 10
+    awarded_to: team whose D_O slot (team offense) scores the most real NFL points that week
+    winner_count: 1  # assumption — confirm if ties split
+  top_defense_prize:
+    amount_usd: 10
+    awarded_to: team whose D_O slot (team defense) allows the fewest real NFL points that week
+    winner_count: 1  # assumption — confirm if ties split
+  single_team_sweep: true  # one team can win both prizes in same week (confirmed)
+  # Design note: D_O slot has TWO value streams — fantasy scoring TDs/safeties AND prize EV
+  # Both must be modeled separately in recommendation engine
+
+transactions:
+  add_drop_cost_usd: 10  # confirmed — each add/drop costs $10
+  waivers: unknown
+  faab: unknown
+  trades: unknown
+  lineup_lock: unknown   # no lineup decisions exist (no bench), but confirm weekly lock timing
+
+playoffs:
+  teams: unknown
+  schedule: unknown
+  format: unknown
+
+keeper_dynasty:
+  keeper: unknown  # no keeper status mentioned; assumed redraft — confirm
+  dynasty: false   # assumption based on annual redraft structure observed in 2025 data
+
+user_strategy_controls:
+  positional_priority: unknown  # e.g., QB early vs. late, REC-heavy vs. RB-heavy
+  d_o_strategy: unknown         # prize-floor target vs. TD-upside target
+  te_premium: unknown           # user preference for TE in REC slots vs. pure WR
+
+unknown_or_unconfirmed:
+  - id: U01
+    field: draft.draft_position_2026
+    default: unknown
+    affected_module: optimizer_prv_calculator, availability_model
+    risk: HIGH — pick position determines which player tiers are accessible; PRV shifts by slot
+    owner: Devin
+    decision_deadline: before_optimizer_calibration
+
+  - id: U02
+    field: draft.date_time
+    default: late_august_2026
+    affected_module: projection_artifact_ingest
+    risk: MEDIUM — determines projection freshness requirement and freeze timestamp
+    owner: Devin
+    decision_deadline: two_weeks_before_draft
+
+  - id: U03
+    field: draft.pick_timer
+    default: unknown
+    affected_module: draft_clock_degraded_mode
+    risk: LOW — affects UI urgency display, not recommendation logic
+    owner: Devin
+    decision_deadline: before_draft_ui_build
+
+  - id: U04
+    field: draft.trading_during_draft
+    default: unknown
+    affected_module: draft_state_manager
+    risk: LOW — if allowed, draft_state must handle mid-draft pick transfers
+    owner: Devin
+    decision_deadline: before_draft_ui_build
+
+  - id: U05
+    field: scoring.missed_fg
+    default: 0
+    affected_module: kicker_projection_model
+    risk: LOW — if penalty exists, kicker floor changes
+    owner: Devin
+    decision_deadline: before_scoring_engine_build
+
+  - id: U06
+    field: transactions.waivers
+    default: unknown
+    affected_module: phase2_waiver_optimizer
+    risk: MEDIUM for Phase 2 — does not block draft MVP
+    owner: Devin
+    decision_deadline: before_phase2_build
+
+  - id: U07
+    field: playoffs.teams
+    default: unknown
+    affected_module: phase2_schedule_model
+    risk: LOW for draft MVP — does not block
+    owner: Devin
+    decision_deadline: before_phase2_build
+
+  - id: U08
+    field: keeper_dynasty.keeper
+    default: redraft_assumed
+    affected_module: draft_value_model
+    risk: MEDIUM — if keepers exist, player pool and round value shift entirely
+    owner: Devin
+    decision_deadline: before_projection_artifact_ingest
+
+  - id: U09
+    field: weekly_prizes.winner_count
+    default: 1_winner
+    affected_module: d_o_prize_ev_model
+    risk: LOW — tie-split rule affects EV calculation for D_O slot
+    owner: Devin
+    decision_deadline: before_phase2_build
