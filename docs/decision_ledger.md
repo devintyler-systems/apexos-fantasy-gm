@@ -2,17 +2,24 @@
 
 ## Version History
 
-### Version 1.5 — 2026-08-10
-**Change:** Produced MVP Acceptance Gates v1.0 — the consolidated pass/fail test suite spanning all 7 prior artifacts (League Rules, Draft Round Order Map, Projection Artifact, Scoring Engine, PRV Calculator, Draft Recommendation Engine, Live-Draft Degraded Mode Runbook). 28 gates across 7 categories (Scoring Correctness, Roster/Eligibility, Projection Integrity, Scarcity/Replacement Value, Operational Readiness, Draft Round Order, New Capabilities). Every gate is BLOCK-severity by default — no informal waivers. Defines the explicit go/no-go procedure and fallback (raw frozen projections, no optimizer) if any gate fails.
+### Version 2.0 — 2026-08-10
+**Change:** Produced Builder/Operator Implementation Backlog v1.0 (17 ordered tickets, B-01 through B-17, dependency-mapped across 5 phases) and a ready-to-paste Builder Kickoff Prompt (`docs/builder-kickoff-prompt.md`). This completes the full pre-implementation artifact chain -- every remaining task in this repository is implementation work against an already-approved contract, not new architectural design.
 
-**Type:** Structural (last specification document; completes the pre-implementation contract chain)
+**Type:** Structural (terminal architecture artifact)
 
 **Impact on build sequence:**
-- This is the terminal specification artifact. Every subsequent step is Builder implementation work, not Architect design work
-- Section 5 explicitly separates "blocks gate testing" (nothing) from "affects live draft-day accuracy" (U01, U02) -- Builder can proceed with full implementation and testing without waiting on those two unknowns, but Devin still needs U01/U02 resolved before the actual live draft
-- Per project doctrine's required build sequence (item 8 of 9: MVP Acceptance Gates), only the Builder/Operator implementation backlog (item 9) remains as a distinct architectural artifact
+- Critical path identified: B-01 -> B-02 -> B-03 -> B-06 -> B-07 -> B-08 -> B-09 -> B-10 -> B-11 -> B-12 -> B-13 -> B-16, with B-04 and B-05 buildable in parallel with zero data dependency
+- Builder can start immediately on B-04 (Draft Round Order Map) and B-05 (Draft State Manager) for early momentum while projection pipeline work (B-06 through B-09) proceeds in parallel
+- Kickoff prompt encodes the 6 non-negotiable rules (no hardcoded constants, no live sync, no autonomous actions, full provenance, frozen-artifact immutability, REC merged-pool logic) directly so a new Builder session needs zero re-explanation
+- Snooze capability isolation (DR10, DR13) flagged in the kickoff prompt as the single highest integration risk in the system
 
-**Highest-leverage next artifact:** Builder/Operator Implementation Backlog -- an ordered, dependency-mapped task list translating all 8 completed specification artifacts into actual build tickets (Python modules, SQLite schema, Streamlit UI screens) ready for Builder to execute against.
+**Highest-leverage next artifact:** None at the architecture layer -- the specification chain is complete. Next work is Builder execution against the backlog, or Devin resolving U01/U02 (draft position/date) before the live draft. Architect role resumes only if Builder surfaces a genuine contract gap, a structural failure requiring rebuild, or Devin introduces new league information (e.g., resolving U04-U09).
+
+---
+
+### Version 1.5 — 2026-08-10
+**Change:** Produced MVP Acceptance Gates v1.0.
+**Type:** Structural
 
 ---
 
