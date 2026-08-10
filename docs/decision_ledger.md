@@ -2,18 +2,23 @@
 
 ## Version History
 
-### Version 1.0 — 2026-08-09
-**Change:** Produced Draft Recommendation Engine Contract v1.0 — the last decision-logic artifact needed for a complete draft-day tool. Combines PRV Calculator output with roster-fit filtering, availability pressure (via Draft Round Order Map's get_picks_between), and positional run detection into a ranked recommendation with a closed-set reason-code vocabulary. Defines a hard, tested boundary preventing the LLM explanation layer from ever re-ranking or inventing content.
+### Version 1.1 — 2026-08-10
+**Change:** Resolved DR_R03 via Draft Recommendation Engine Contract v1.1 addendum. Devin's stated strategy (BPA, or scarcity value when it justifies deviation) maps directly onto the existing dynamic_prv_score definition -- no new weighting logic required. Confirmed as design decision: te_premium=none, positional_priority=none, d_o_strategy=value_based_no_floor, override_philosophy=trust_the_model (post-calibration). One open sub-question remains (KCK/D_O early-round guardrail flavor) but does not block Builder -- defaults to no-guardrail behavior.
 
-**Type:** Structural (completes the core decision-engine contract chain)
+**Type:** Calibration (confirms existing engine behavior is correct; no structural change)
 
 **Impact on build sequence:**
-- All 6 core contracts now exist: League Rules v0.2, Draft Round Order Map v1.0, Projection Artifact v1.0+addendum, Scoring Engine v1.0, PRV Calculator v1.0, Draft Recommendation Engine v1.0
-- DR_R03 flags an open gap: user_strategy_controls (positional_priority, d_o_strategy, te_premium) remain entirely unconfirmed -- the engine runs correctly without them but cannot yet reflect any of Devin's personal draft-strategy preferences
-- Remaining pre-implementation artifacts are process/documentation only: Live-Draft Degraded Mode Runbook, MVP Acceptance Gates test suite
-- my_draft_position (U01) remains the single open HIGH-risk item blocking a live test with real numbers, though the contract itself requires no changes once it's assigned
+- Draft Recommendation Engine Contract v1.0 now has zero unconfirmed strategy inputs
+- DR_R03a flags a real dependency: "trust the model" is only as good as the calibration/backtest work still pending across the Projection Artifact and PRV Calculator contracts -- this should be revisited if backtest work isn't complete before the late-August draft date
+- All 6 core decision contracts (League Rules, Draft Round Order Map, Projection Artifact, Scoring Engine, PRV Calculator, Draft Recommendation Engine) are now fully resolved with no blocking unknowns
 
-**Highest-leverage next artifact:** Live-Draft Degraded Mode Runbook -- the last artifact before Builder can begin implementation work end-to-end. Documents manual pick entry procedure, stale-data banner behavior, and draft-clock degraded mode using the now-complete contract chain.
+**Highest-leverage next artifact:** Live-Draft Degraded Mode Runbook -- last artifact before Builder can begin end-to-end implementation.
+
+---
+
+### Version 1.0 — 2026-08-09
+**Change:** Produced Draft Recommendation Engine Contract v1.0.
+**Type:** Structural
 
 ---
 
