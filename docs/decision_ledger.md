@@ -2,22 +2,28 @@
 
 ## Version History
 
-### Version 1.2 — 2026-08-10
-**Change:** Produced Draft Recommendation Engine Contract v1.2 addendum. Resolved the KCK/D_O guardrail sub-question as a soft, informational flag (unconventional_early_kicker before round 4, unconventional_early_do before round 7) that never alters ranking math. Added a new "Snooze-for-1-round" capability: a user-initiated, pick-scoped candidate filter that excludes a player from the CURRENT pick's recommendation only, with zero effect on that player's or any other player's PRV/scarcity math. 5 new acceptance tests (DR09-DR13), all blocking, with DR13 specifically testing for zero cross-player side effects from a snooze action.
+### Version 1.3 — 2026-08-10
+**Change:** Produced Live-Draft Degraded Mode Runbook v1.0. Documents that manual entry IS the permanent operating mode for SPAMML (no API exists), not a rare-failure fallback. Defines 6 procedures: standard pick entry, identity conflict resolution, stale-data handling, draft-clock pre-computation, wrong-entry correction, and session interruption/resume.
 
-**Type:** Structural (adds a new user-facing capability, not just a parameter resolution)
+**Type:** Structural (last specification document before implementation)
 
 **Impact on build sequence:**
-- Draft Recommendation Engine Contract now has zero remaining blocking unknowns
-- Snooze is flagged as the primary integration risk for Builder -- it must be implemented as a pure display/candidacy filter, never a data mutation, verified by DR10 and DR13's isolation tests
-- Streamlit Draft UI build item now has a concrete interaction requirement (Section 3d): a "Snooze 1 round" button on every recommended candidate
+- Every core decision-logic contract now has a corresponding operational procedure
+- RB03 flags that draft-clock pre-computation performance can't be fully validated until U03 (pick timer) is confirmed -- Builder should load-test regardless of the unknown value
+- Section 9 acceptance criteria feed directly into the next artifact (MVP Acceptance Gates)
 
-**Highest-leverage next artifact:** Live-Draft Degraded Mode Runbook -- last artifact before Builder can begin end-to-end implementation. All 6 core decision contracts (League Rules, Draft Round Order Map, Projection Artifact, Scoring Engine, PRV Calculator, Draft Recommendation Engine) are now fully resolved with no blocking unknowns.
+**Highest-leverage next artifact:** MVP Acceptance Gates -- the formal, consolidated pass/fail test suite pulling together acceptance criteria from every contract produced so far (League Rules, Draft Round Order Map, Projection Artifact, Scoring Engine, PRV Calculator, Draft Recommendation Engine, and this Runbook). This is the last specification artifact before Builder/Operator begins actual implementation.
+
+---
+
+### Version 1.2 — 2026-08-10
+**Change:** Added soft KCK/D_O guardrail and snooze-for-1-round capability.
+**Type:** Structural
 
 ---
 
 ### Version 1.1 — 2026-08-10
-**Change:** Resolved DR_R03 via Draft Recommendation Engine Contract v1.1 addendum.
+**Change:** Resolved DR_R03 (user strategy controls).
 **Type:** Calibration
 
 ---
