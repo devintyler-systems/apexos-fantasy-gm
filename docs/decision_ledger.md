@@ -2,22 +2,28 @@
 
 ## Version History
 
-### Version 0.8 — 2026-08-09
-**Change:** Resolved D07 via Projection Artifact Contract v1.1 addendum. Established precedence rule: Sharp Football projected PPG is the primary team-environment driver; VegasInsider win total is a secondary divergence flag only, never blended into the raw TD-count baseline. Analysis of actual 2026 snapshot data confirmed r=0.91 correlation between sources with two real outliers (Cowboys, Commanders) flagged `pass_funnel_risk`.
+### Version 0.9 — 2026-08-09
+**Change:** Produced PRV Calculator Contract v1.0. Defines SPAMML-specific replacement levels (16/32/48/16/16 across QB/RB/REC/KCK/D_O), the REC combined WR+TE merged-pool rule, static vs. dynamic replacement value, and scarcity_ratio as the explicit 16-team scarcity signal. 7 acceptance tests, all blocking, including a full 128-pick simulated draft reproducibility test.
 
-**Type:** Calibration (resolves an open unknown; no structural change)
+**Type:** Structural (first artifact where real draft-day decision math is defined)
 
 **Impact on build sequence:**
-- All blocking gaps in the Projection Artifact Contract are now closed
-- Four prerequisite contracts for the PRV Calculator are complete: League Rules v0.2, Draft Round Order Map v1.0, Projection Artifact v1.0+addendum, Scoring Engine v1.0
-- game_script_flag is qualitative-only at this version (P06) — acceptable for MVP since it informs Devin's manual_environment_override judgment, not an automated formula
+- All 5 prerequisite contracts for the Draft Recommendation Engine are now complete: League Rules v0.2, Draft Round Order Map v1.0, Projection Artifact v1.0+addendum, Scoring Engine v1.0, PRV Calculator v1.0
+- Kicker and D_O scarcity are explicitly modeled as real signals (Section 6), correcting the common generic-tool mistake of treating them as afterthoughts
+- PRV_R02 flags that dynamic recalculation must fire on every pick, not per-round -- a performance shortcut here would silently reintroduce staleness
 
-**Highest-leverage next artifact:** PRV Calculator Contract — fully unblocked. First artifact where real draft-day replacement-value math and 16-team positional scarcity logic get built.
+**Highest-leverage next artifact:** Draft Recommendation Engine Contract -- the final contract before a working draft-day tool exists end-to-end. Combines PRV output with roster-fit filtering and the availability-pressure model (using the Draft Round Order Map's get_picks_between function) to produce the actual recommendation payload.
+
+---
+
+### Version 0.8 — 2026-08-09
+**Change:** Resolved D07 via Projection Artifact Contract v1.1 addendum.
+**Type:** Calibration
 
 ---
 
 ### Version 0.7 — 2026-08-09
-**Change:** Ingested 2026 team-environment projections and 2025 calibration statistics; registered Sharp Football Analysis and VegasInsider as approved sources.
+**Change:** Ingested 2026 team-environment projections and 2025 calibration statistics.
 **Type:** Calibration
 
 ---
