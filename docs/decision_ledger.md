@@ -2,17 +2,24 @@
 
 ## Version History
 
+### Version 0.5 — 2026-08-09
+**Change:** Produced Projection Artifact Contract v1.0. Adapted TouchdownOS blueprint's scoring-neutral kicker and D/ST contracts to SPAMML's exact confirmed scoring rules (no points-allowed, no standalone sack/INT/fumble scoring). Defined xTD derivation method sourced from nflverse play-by-play (replacing framework doc's fixed 0.55/0.38 constants). Added Data Source Register v1.1 noting nflreadr/nflfastR as intentionally not added (redundant with nfl_data_py).
+
+**Type:** Structural (unlocks Scoring Engine and PRV Calculator)
+
+**Impact on build sequence:**
+- Framework doc's 45/25/20/10 modeling weights adopted as starting hypothesis only, not production truth — flagged for backtest validation (P01)
+- D_O weekly prize EV isolated from fantasy scoring per PA08 — two separate value streams preserved
+- Kicker treated as first-class position with zero penalty assumption pending U05 resolution
+- 9 acceptance tests defined (8 blocking, 1 advisory)
+
+**Highest-leverage next artifact:** Scoring Engine Contract — converts this projection artifact's raw scoring-event expectations into SPAMML fantasy points using the confirmed scoring map from League Rules Contract v0.2. This is the shortest remaining artifact before the PRV Calculator can be built.
+
+---
+
 ### Version 0.4 — 2026-08-09
-**Change:** Locked Data Source and Connector Register v1.0. Approved nflverse/nfl_data_py (historical play-by-play, free, no auth, MIT-licensed) and manual Vegas implied-totals ingest for MVP. Deferred PFF (cost + unresolved ToS/scraping risk). Confirmed SPAMML custom platform has no API — manual entry is permanent mode, not a gap to close. Flagged Fantrax as the most promising Phase 2 read-only sync candidate pending its own register entry.
-
-**Type:** Structural (unlocks Projection Artifact Contract source fields)
-
-**Impact on next artifact:**
-- Projection Artifact Contract may now cite `nflverse:nfl_data_py` and `vegas_manual` as real, approved sources instead of placeholders
-- xTD constants (e.g., "0.55 xTD for a 1-yard carry" from the framework doc) must be recomputed from nflverse play-by-play, not imported as fixed values
-- No live platform sync work is authorized — SPAMML has no API; this is permanent, not temporary
-
-**Highest-leverage next artifact:** Projection Artifact Contract — now unblocked. Defines the TD-only scoring ingest schema, xTD derivation method (using nflverse as source), kicker and D/O model contracts (adapted from TouchdownOS blueprint), and the frozen artifact format consumed by the scoring engine and optimizer.
+**Change:** Locked Data Source and Connector Register v1.0/v1.1.
+**Type:** Structural
 
 ---
 
