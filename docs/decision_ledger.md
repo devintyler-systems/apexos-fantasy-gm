@@ -2,17 +2,23 @@
 
 ## Version History
 
-### Version 1.1 — 2026-08-10
-**Change:** Resolved DR_R03 via Draft Recommendation Engine Contract v1.1 addendum. Devin's stated strategy (BPA, or scarcity value when it justifies deviation) maps directly onto the existing dynamic_prv_score definition -- no new weighting logic required. Confirmed as design decision: te_premium=none, positional_priority=none, d_o_strategy=value_based_no_floor, override_philosophy=trust_the_model (post-calibration). One open sub-question remains (KCK/D_O early-round guardrail flavor) but does not block Builder -- defaults to no-guardrail behavior.
+### Version 1.2 — 2026-08-10
+**Change:** Produced Draft Recommendation Engine Contract v1.2 addendum. Resolved the KCK/D_O guardrail sub-question as a soft, informational flag (unconventional_early_kicker before round 4, unconventional_early_do before round 7) that never alters ranking math. Added a new "Snooze-for-1-round" capability: a user-initiated, pick-scoped candidate filter that excludes a player from the CURRENT pick's recommendation only, with zero effect on that player's or any other player's PRV/scarcity math. 5 new acceptance tests (DR09-DR13), all blocking, with DR13 specifically testing for zero cross-player side effects from a snooze action.
 
-**Type:** Calibration (confirms existing engine behavior is correct; no structural change)
+**Type:** Structural (adds a new user-facing capability, not just a parameter resolution)
 
 **Impact on build sequence:**
-- Draft Recommendation Engine Contract v1.0 now has zero unconfirmed strategy inputs
-- DR_R03a flags a real dependency: "trust the model" is only as good as the calibration/backtest work still pending across the Projection Artifact and PRV Calculator contracts -- this should be revisited if backtest work isn't complete before the late-August draft date
-- All 6 core decision contracts (League Rules, Draft Round Order Map, Projection Artifact, Scoring Engine, PRV Calculator, Draft Recommendation Engine) are now fully resolved with no blocking unknowns
+- Draft Recommendation Engine Contract now has zero remaining blocking unknowns
+- Snooze is flagged as the primary integration risk for Builder -- it must be implemented as a pure display/candidacy filter, never a data mutation, verified by DR10 and DR13's isolation tests
+- Streamlit Draft UI build item now has a concrete interaction requirement (Section 3d): a "Snooze 1 round" button on every recommended candidate
 
-**Highest-leverage next artifact:** Live-Draft Degraded Mode Runbook -- last artifact before Builder can begin end-to-end implementation.
+**Highest-leverage next artifact:** Live-Draft Degraded Mode Runbook -- last artifact before Builder can begin end-to-end implementation. All 6 core decision contracts (League Rules, Draft Round Order Map, Projection Artifact, Scoring Engine, PRV Calculator, Draft Recommendation Engine) are now fully resolved with no blocking unknowns.
+
+---
+
+### Version 1.1 — 2026-08-10
+**Change:** Resolved DR_R03 via Draft Recommendation Engine Contract v1.1 addendum.
+**Type:** Calibration
 
 ---
 
