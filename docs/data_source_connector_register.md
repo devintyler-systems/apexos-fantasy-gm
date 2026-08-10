@@ -1,13 +1,13 @@
 # Data Source and Connector Register
 
 **Artifact:** `data_source_connector_register`
-**Version:** 1.1
+**Version:** 1.2
 **Owner:** Devin Tyler (Architect)
 **Status:** APPROVED sources marked; all others BLOCKED pending review
 **Depends On:** League Rules Contract v0.2
-**Unlocks:** Projection Artifact Contract v1.0 (source fields)
+**Unlocks:** Projection Artifact Contract v1.0 (source fields), PRV Calculator
 **Created:** 2026-08-09
-**Last Updated:** 2026-08-09 (v1.1 — added nflreadr/nflfastR redundancy note)
+**Last Updated:** 2026-08-09 (v1.2 — added Sharp Football Analysis and VegasInsider as approved 2026 team-environment sources; added 2025 TeamRankings/PlayerRankings data as approved calibration sources)
 
 ---
 
@@ -21,76 +21,84 @@ No data source or connector is used in any ApexOS module until it is recorded he
 
 ### 2.1 nflverse / nfl_data_py — **APPROVED (read-only, historical + reference)**
 
-| Field | Value |
-|---|---|
-| Purpose | Historical play-by-play, weekly player stats, rosters, snap counts, NGS stats, schedules, scoring lines, draft picks — primary source for xTD constant derivation and role/opportunity features |
-| Access method | Python package `nfl_data_py` (pip install), pulls from `nflverse/nflverse-data`, `nflverse/nfldata`, `dynastyprocess/data` GitHub repos | `confirmed evidence` |
-| Auth | None required — public GitHub-hosted data, no API key | `confirmed evidence` |
-| Rate limits | None documented — data is static files (Parquet/CSV) hosted on GitHub, not a live API | `confirmed evidence` |
-| Terms of use | R/Python code is MIT licensed (open source). Underlying NFL data belongs to respective owners; personal/analytical use is the established community norm. | `confirmed evidence` / `assumption` on commercial-use boundary |
-| Freshness | Automated via GitHub Actions; play-by-play and weekly stats updated within ~24-48h of games during season; historical data back to 1999 (pbp) | `confirmed evidence` |
-| Historical depth | Play-by-play: 1999–present. Weekly/seasonal stats, rosters, combine, draft picks, scoring lines also available | `confirmed evidence` |
-| Fallback if unavailable | Cached local Parquet snapshot from last successful pull; system flags `data_freshness_status: stale` and continues | `design decision` |
-| Read/write | Read-only | `confirmed evidence` |
-| Role in ApexOS | Primary source for: field-position xTD rate derivation, role/opportunity features, 3-year historical decay baseline | `design decision` |
-
-**Approval condition met:** Free, no auth, no rate limit, MIT-licensed code, established use for exactly this purpose.
-
----
+Historical play-by-play, weekly stats, rosters, snap counts, NGS, schedules — primary source for xTD constant derivation. Free, no auth, no rate limit, MIT-licensed, 1999-present. `confirmed evidence`
 
 ### 2.1a nflfastR / nflreadr (R packages) — **NOT ADDED — REDUNDANT WITH 2.1**
 
-**Decision: Do not add as a separate connector.** `design decision`
+Same underlying data as nfl_data_py; adding would require a second language runtime with zero data-completeness benefit. See prior register version for full rationale and scoped-exception steps.
 
-`nflfastR` and `nflreadr` are the R-native clients for the exact same underlying data repositories (`nflverse/nflverse-data`, `nflverse/nfldata`) that `nfl_data_py` already exposes in Python. All three tools read from identical source-of-truth files — there is no additional data, freshness, or coverage gained by adding the R packages alongside the already-approved Python client.
+### 2.2 Vegas Team Implied Totals / Odds Consensus (generic manual ingest) — **APPROVED (manual ingest only)**
 
-**Adding them would require:** a second language runtime (R) in an otherwise Python-primary stack, with zero data-completeness benefit under current MVP scope.
-
-**When to revisit:** Only if Builder encounters a specific field or dataset during ingestion that exists in nflreadr's data dictionary but is not yet exposed by `nfl_data_py`'s function set (this has historically been rare — `nfl_data_py` maintains close parity). If that happens, treat it as a scoped one-time R script to export the missing table to CSV/Parquet for Python ingestion — not a standing dual-runtime connector.
-
-**If you want to proceed anyway despite the above** (e.g., for direct access to a nflreadr-only convenience function), steps would be:
-1. Install R (if not already present) and the `nflreadr` package: `install.packages("nflreadr")`
-2. Identify the specific missing dataset/field via the [nflreadr data dictionary](https://nflreadr.nflverse.com/)
-3. Pull only that dataset, export to Parquet/CSV
-4. Ingest the exported file through the same Python ingestion pipeline used for nfl_data_py — do not build a parallel R-based ingest path
-5. Log the addition here as a scoped exception, not a standing register entry
-
----
-
-### 2.2 Vegas Team Implied Totals / Odds Consensus — **APPROVED (manual ingest only)**
-
-| Field | Value |
-|---|---|
-| Purpose | Team implied point totals, win/loss over-unders — Offensive Scheme Quality layer |
-| Access method | Manual CSV export from a consensus odds aggregator | `design decision` |
-| Terms of use | Manual reference of publicly displayed consensus lines for personal, non-commercial use. Any live odds API is BLOCKED until reviewed here. | `assumption` |
-| Freshness | As of manual entry timestamp only | `design decision` |
-| Fallback | Null if unavailable, never silently defaulted | `design decision` |
-| Role in ApexOS | Feeds `team_expected_offensive_tds` driver | `design decision` |
-
----
+Manual CSV export of consensus lines. No live odds API contracted. Superseded in practice by the specific approved sources in 2.7 and 2.8 below, which now provide this data concretely for 2026.
 
 ### 2.3 SPAMML 2025 Draft Guide CSV — **APPROVED (calibration reference only)**
 
-Backtest / calibration baseline only — not a 2026 input. `design decision`
-
----
+Backtest / calibration baseline only — not a 2026 input.
 
 ### 2.4 Pro Football Focus (PFF) — **DEFERRED, NOT APPROVED**
 
-Cost + unresolved scraping/ToS risk not justified for single-user MVP. `design decision`
-
----
+Cost + unresolved scraping/ToS risk not justified for single-user MVP.
 
 ### 2.5 SPAMML Custom League Platform — **NOT APPROVED, NO CONNECTOR EXISTS**
 
-No API exists. Manual entry is the permanent mode. `confirmed evidence`
-
----
+No API exists. Manual entry is the permanent mode.
 
 ### 2.6 Fantrax — **DEFERRED, PHASE 2 CANDIDATE**
 
-Requires its own register entry before any build work. `design decision`
+Requires its own register entry before any build work.
+
+### 2.7 Sharp Football Analysis (team projected PPG) — **APPROVED (manual ingest, 2026 season)**
+
+| Field | Value |
+|---|---|
+| Purpose | 2026 preseason team projected points-per-game — direct input to Offensive Scheme Quality layer (25% weight) in Projection Artifact Contract |
+| Access method | Manual CSV export/entry from publicly published Sharp Football Analysis projections; user-supplied, uploaded 2026-08-09 | `design decision` |
+| Auth | None — manual entry of publicly available projection figures | — |
+| Rate limits | N/A — no live API | — |
+| Terms of use | Publicly published analyst projections referenced for personal, non-commercial league use. No redistribution beyond private repo. | `assumption` |
+| Freshness | Point-in-time snapshot as of 2026-08-09; preseason projections may shift with roster/injury news through camp — must be re-pulled closer to draft date if materially stale | `design decision` |
+| Fallback | If stale (>2 weeks before draft), flag `data_freshness_status: stale` and prompt Devin for a refreshed pull before freezing the Projection Artifact | `design decision` |
+| Read/write | Read-only, manual | — |
+| Role in ApexOS | Primary 2026 team offensive environment signal — replaces the generic "Vegas implied totals" placeholder in 2.2 with a concrete, dated data point | `design decision` |
+
+**Approval condition met:** Free, publicly available, directly fills the confirmed data gap (2026 team environment) flagged in Decision Ledger v0.6.
+
+### 2.8 VegasInsider (team projected win totals) — **APPROVED (manual ingest, 2026 season)**
+
+| Field | Value |
+|---|---|
+| Purpose | 2026 preseason team win-total over/unders — secondary Offensive Scheme Quality signal (correlates with expected competitiveness/game script, which affects pass/run ratio and garbage-time TD risk) |
+| Access method | Manual CSV export/entry from publicly published VegasInsider win-total odds; user-supplied, uploaded 2026-08-09 | `design decision` |
+| Auth | None — manual entry of publicly displayed odds | — |
+| Rate limits | N/A | — |
+| Terms of use | Publicly displayed sportsbook-consensus win totals referenced for personal, non-commercial use. No redistribution beyond private repo. Any LIVE odds API integration remains BLOCKED per 2.2 until separately reviewed. | `assumption` |
+| Freshness | Point-in-time snapshot as of 2026-08-09; win totals can move with news through the offseason — re-pull if >2-3 weeks stale before draft freeze | `design decision` |
+| Fallback | If stale, flag `data_freshness_status: stale`; win total is a slower-moving number than weekly odds so staleness risk is lower than in-season market data | `design decision` |
+| Read/write | Read-only, manual | — |
+| Role in ApexOS | Secondary team-environment driver; used alongside 2.7 to form `team_expected_offensive_tds` baseline before player-level role allocation | `design decision` |
+
+**Approval condition met:** Free, publicly available, no live API needed for a single preseason freeze value.
+
+### 2.9 TeamRankings.com (2025 team stats) — **APPROVED (calibration reference only, NOT a 2026 input)**
+
+| Field | Value |
+|---|---|
+| Purpose | 2025 actual team PPG, opponent PPG, FG attempts/game, kicking PPG, red zone attempts/scores/percentage — backtest and calibration reference for validating the xTD model and kicker/D_O models against known 2025 outcomes |
+| Access method | Manual CSV export; user-supplied, uploaded 2026-08-09 | `design decision` |
+| Terms of use | Publicly published team statistics referenced for personal analytical use | `assumption` |
+| Freshness | Static — final 2025 season figures, will not change | `confirmed evidence` |
+| Role in ApexOS | Backtest baseline per TouchdownOS Section 5.4 doctrine ("full model must outperform relevant baselines out of sample"). The `teamrankings_2025_kicking_ppg.csv` file is especially valuable — it reports actual 2025 kicker fantasy points at 3pt-FG/1pt-PAT scoring, which is IDENTICAL to SPAMML's kicker scoring rule, making it a near-direct validation set. | `design decision` |
+
+### 2.10 PlayerRankings 2025 Total TDs — **APPROVED (calibration reference / backtest ground truth)**
+
+| Field | Value |
+|---|---|
+| Purpose | 2025 actual player-level total TD counts — the ground-truth outcome set for backtesting whether ApexOS's role/opportunity/xTD model would have correctly ranked players | `design decision` |
+| Access method | Manual CSV export; user-supplied, uploaded 2026-08-09 (truncated in repo to ~10 rows for readability; full ~90+ row file retained in thread attachment) | `design decision` |
+| Terms of use | Publicly published player statistics for personal analytical use | `assumption` |
+| Freshness | Static — final 2025 season | `confirmed evidence` |
+| Role in ApexOS | Backtest ground truth per TouchdownOS Gate 2 ("Evaluation and calibration" — prove whether the model is useful before trusting it) | `design decision` |
+| Note | Full dataset should be re-exported at ingestion time since only a truncated sample is committed to the repo | `design decision` |
 
 ---
 
@@ -101,6 +109,7 @@ Requires its own register entry before any build work. `design decision`
 - No source is treated as live/current without a passing freshness check.
 - No commercial odds API integrated without a dedicated ToS/cost review entry here.
 - No dual-runtime (R + Python) data path unless a specific field gap is documented per Section 2.1a.
+- 2025 actuals (2.9, 2.10) must NEVER be blended into a 2026 projection as if they were current-season data — they are backtest inputs only.
 
 ---
 
@@ -108,10 +117,13 @@ Requires its own register entry before any build work. `design decision`
 
 | Source | Status | MVP Role |
 |---|---|---|
-| nflverse / nfl_data_py | **APPROVED** | Historical xTD derivation, role/opportunity features, decay baseline |
-| Vegas implied totals (manual) | **APPROVED** | Team environment layer |
+| nflverse / nfl_data_py | **APPROVED** | Historical xTD derivation, role/opportunity features |
+| Sharp Football Analysis (2026 projected PPG) | **APPROVED** | 2026 team offensive environment — primary |
+| VegasInsider (2026 win totals) | **APPROVED** | 2026 team environment — secondary |
 | SPAMML 2025 draft guide CSV | **APPROVED (calibration only)** | Backtest baseline |
-| nflreadr / nflfastR (R) | **NOT ADDED (redundant)** | N/A — see 2.1a for scoped exception path |
+| TeamRankings 2025 team stats | **APPROVED (calibration only)** | Backtest baseline, esp. kicker validation |
+| PlayerRankings 2025 total TDs | **APPROVED (calibration only)** | Backtest ground truth |
+| nflreadr / nflfastR (R) | **NOT ADDED (redundant)** | N/A |
 | PFF | DEFERRED | Not used in MVP |
 | SPAMML custom platform | NOT AVAILABLE | Manual entry is permanent mode |
 | Fantrax | DEFERRED (Phase 2) | Pending its own register entry |
@@ -122,16 +134,18 @@ Requires its own register entry before any build work. `design decision`
 
 | ID | Item | Label | Risk |
 |---|---|---|---|
-| D01 | nflverse commercial-use boundary not explicitly cleared, only community-normed | `assumption` | LOW for personal use |
-| D02 | No live odds API; manual entry introduces latency/human-error risk | `design decision` | LOW for draft MVP; MEDIUM for Phase 2 weekly cadence |
-| D03 | PFF deferral means TPRR/scheme-grade features unavailable at MVP | `design decision` | LOW — nflverse route/target-share is a reasonable substitute |
+| D01 | nflverse commercial-use boundary not explicitly cleared | `assumption` | LOW for personal use |
+| D02 | No live odds API; manual entry introduces latency/human-error risk | `design decision` | LOW for draft MVP |
+| D03 | PFF deferral means TPRR/scheme-grade features unavailable at MVP | `design decision` | LOW |
 | D04 | Fantrax API scope/terms unreviewed | `unknown` | Blocks Phase 2 Fantrax connector |
-| D05 | nflreadr/nflfastR intentionally not added as a separate connector | `design decision` | None — fully redundant with 2.1 under current scope |
+| D05 | nflreadr/nflfastR intentionally not added | `design decision` | None |
+| D06 | Sharp Football Analysis and VegasInsider projections are single-point-in-time snapshots (Aug 9, 2026) with no defined re-pull cadence yet | `assumption` | MEDIUM — must re-pull closer to draft date since camp battles/injuries can shift both by late August |
+| D07 | Two 2026 team-environment sources (2.7 PPG-based, 2.8 win-total-based) may disagree on a given team's environment quality; no reconciliation method defined yet | `unknown` | Flagged for Projection Artifact Contract update — needs a defined blend or precedence rule |
 
 ---
 
 ## 6. Builder Handoff
 
-**Done definition:** Register exists with nflverse and Vegas manual approved. Projection Artifact Contract cites only sources listed here.
+**Done definition:** Register exists with nflverse, Sharp Football Analysis, and VegasInsider approved for 2026 team environment. TeamRankings and PlayerRankings 2025 data approved for calibration. Projection Artifact Contract cites only sources listed here.
 
-**What this unlocks:** Projection Artifact Contract v1.0 (built same day) cites `nflverse:nfl_data_py:v{version}` and `vegas_manual:{ingest_date}` as real source values.
+**What this unlocks:** The Projection Artifact Contract's `team_expected_offensive_tds` and `source_citations` fields can now reference real, dated 2026 data (`sharpfootball:2026-08-09`, `vegasinsider:2026-08-09`) instead of a generic "vegas_manual" placeholder. Backtesting against 2025 TeamRankings/PlayerRankings data can begin once the xTD lookup table (Projection Artifact Contract Section 5) is built.

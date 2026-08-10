@@ -1,0 +1,12 @@
+Rank,Player,Team,Position,2025 TDs
+1,Matthew Stafford,Los Angeles Rams,QB,52
+2,Josh Allen,Buffalo Bills,QB,45
+3,Drake Maye,New England Patriots,QB,42
+4,Trevor Lawrence,Jacksonville Jaguars,QB,41
+5,Caleb Williams,Chicago Bears,QB,35
+6,Jared Goff,Detroit Lions,QB,34
+6,Jalen Hurts,Philadelphia Eagles,QB,34
+8,Bo Nix,Denver Broncos,QB,33
+9,Dak Prescott,Dallas Cowboys,QB,32
+10,Sam Darnold,Seattle Seahawks,QB,30
+NOTE: Full 90+ row dataset preserved in original CSV attachment (playerrankings_2025_total_TDs.csv, uploaded 2026-08-09). Truncated here for repo readability; retrieve full file from thread attachment if complete row-level data is needed for backtesting.
