@@ -59,3 +59,45 @@ resubmission per Architect ruling on the B-04 BLOCKED verdict (2026-08-10).
 Active. Owner: Architect. Depends on: Builder/Operator Implementation
 Backlog v1.0, Live-Draft Degraded Mode Runbook v1.0 (peer runbook, no
 dependency conflict).
+
+---
+
+## Addendum v1.1 — Connector Body-Fetch Fallback (2026-08-10)
+
+**Trigger:** Confirmed during B-04 remediation. GitHub connector's file-content tools
+(`get_file_contents`, raw-URL fetch) intermittently return only SHA/status metadata
+with no body for larger files -- affecting all three ApexOS spaces (Architect,
+Builder/Operator, Reviewer) equally. This is a known tool limitation, not a repo
+or content problem, and it can recur on any ticket touching test scaffolds, data
+artifacts, or larger contract files.
+
+**Standing rule:**
+
+1. On a body-fetch failure, retry once.
+2. On a second failure, do not attempt to reconstruct, retype, or approximate the
+   file's content from memory, prior context, or pattern-matching -- regardless of
+   how confident the model is. This is the same discipline as the T09 fabricated-
+   value failure mode: plausible-looking content that was never actually verified
+   against the source is not evidence.
+3. Fall back to Devin's local git checkout as the source of truth:
+   ```
+   git show <branch>:<path>
+   ```
+   or for a conflict resolution specifically:
+   ```
+   git checkout --theirs <path>   # or --ours, depending on merge direction
+   ```
+4. If a byte-exact diff is needed (e.g., confirming a conflict resolution changed
+   only an import line), request the diff output directly rather than the full
+   file body:
+   ```
+   git diff main -- <path>
+   ```
+5. Exploring lower-level connector routes (GitHub Blobs API for base64 payloads,
+   authenticated raw-URL fetch) is a legitimate future fix, but is Builder/Operator
+   tooling work, not an Architect task, and is not required to unblock any current
+   ticket -- local git already provides exact bytes with no size ceiling.
+
+**Scope:** Applies whenever any of the three spaces hits a truncated or bodiless
+connector read on this repository. Does not change any contract, schema, or
+acceptance criteria. Owner: Architect. Status: Active.
