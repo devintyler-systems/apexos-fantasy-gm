@@ -2,18 +2,23 @@
 
 ## Version History
 
-### Version 0.5 — 2026-08-09
-**Change:** Produced Projection Artifact Contract v1.0. Adapted TouchdownOS blueprint's scoring-neutral kicker and D/ST contracts to SPAMML's exact confirmed scoring rules (no points-allowed, no standalone sack/INT/fumble scoring). Defined xTD derivation method sourced from nflverse play-by-play (replacing framework doc's fixed 0.55/0.38 constants). Added Data Source Register v1.1 noting nflreadr/nflfastR as intentionally not added (redundant with nfl_data_py).
+### Version 0.6 — 2026-08-09
+**Change:** Produced Scoring Engine Contract v1.0. Pure, deterministic conversion of Projection Artifact scoring-event expectations into SPAMML fantasy points. Zero hardcoded constants — all scoring values read from League Rules Contract v0.2 at runtime. Mandatory `calculation_breakdown` field makes every point total self-explaining without LLM involvement.
 
-**Type:** Structural (unlocks Scoring Engine and PRV Calculator)
+**Type:** Calibration (mechanical conversion layer; no new modeling decisions)
 
 **Impact on build sequence:**
-- Framework doc's 45/25/20/10 modeling weights adopted as starting hypothesis only, not production truth — flagged for backtest validation (P01)
-- D_O weekly prize EV isolated from fantasy scoring per PA08 — two separate value streams preserved
-- Kicker treated as first-class position with zero penalty assumption pending U05 resolution
-- 9 acceptance tests defined (8 blocking, 1 advisory)
+- All three prerequisite contracts for the PRV Calculator are now complete: League Rules Contract v0.2, Draft Round Order Map Contract v1.0, Projection Artifact Contract v1.0, Scoring Engine Contract v1.0
+- SE04 (version propagation test) means resolving U05 (missed FG/PAT penalty) later will NOT require rebuilding the scoring engine — only a league rules version bump
+- Data gap flagged: 2026 team implied totals and Vegas TD consensus have not yet been sourced (nflverse historical data covers 2016-2025 seasons only; 2026 season projections require fresh preseason data)
 
-**Highest-leverage next artifact:** Scoring Engine Contract — converts this projection artifact's raw scoring-event expectations into SPAMML fantasy points using the confirmed scoring map from League Rules Contract v0.2. This is the shortest remaining artifact before the PRV Calculator can be built.
+**Highest-leverage next artifact:** PRV Calculator Contract — the first artifact where actual draft-day decision logic (replacement value, positional scarcity) gets built. All inputs it needs (scoring engine output, draft round order map) now exist as approved contracts.
+
+---
+
+### Version 0.5 — 2026-08-09
+**Change:** Produced Projection Artifact Contract v1.0.
+**Type:** Structural
 
 ---
 
