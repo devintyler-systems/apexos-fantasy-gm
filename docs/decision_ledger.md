@@ -2,6 +2,21 @@
 
 ## Version History
 
+### Version 2.5 — 2026-08-10
+**Change:** B-04 (Draft Round Order Map) CLOSED. Reviewer issued final PASS verdict: the GitHub Actions check run (`.github/workflows/b04-draft-round-order-map.yml`, head SHA b2c5c15, conclusion: success, 21:04:28 UTC) provided machine-executed evidence running the exact reviewer-specified command (`python -m pytest tests/acceptance/test_draft_round_order_map.py -q`), closing the P1 gap from the prior BLOCKED verdict (unverifiable pasted transcript). Reviewer additionally independently recomputed the full 128-pick map and confirmed it matches the committed `data/processed/` JSON/CSV exactly. All four remediation items from v2.4 are now satisfied: branch synced with main, artifacts committed, test evidence repo-native (CI, not sandbox), contract-version alignment explicit (v1.2-correction).
+
+**Type:** Structural (first ticket to complete the full Architect-Builder-Reviewer-CI cycle; establishes the CI-check-as-evidence pattern for all remaining tickets)
+
+**Impact on build sequence:**
+- `data/processed/draft_round_order_map_spamml_2026.csv` and `draft_position_pick_map_spamml_2026.json` are now frozen, approved artifacts and the formal dependency input for B-05
+- `.github/workflows/b04-draft-round-order-map.yml` becomes the template pattern for B-05 through B-17: scoped paths, `contents: read`, pytest against the ticket's acceptance file
+- Builder proceeding to B-05 with these artifacts as approved input
+- Devin enabling branch protection on `main` (PR-required, status-checks-required, up-to-date-required, no force-push/delete) -- directly closes the branch-desync failure mode that caused the original BLOCKED verdict
+
+**Highest-leverage next artifact:** None at the architecture layer pending B-05 kickoff. U01 (2026 draft position) remains open and HIGH risk; still TBD per Devin.
+
+---
+
 ### Version 2.4 — 2026-08-10
 **Change:** Ruled on Reviewer's BLOCKED: INSUFFICIENT EVIDENCE verdict on B-04. Verdict confirmed justified via direct repo inspection: (1) contract-version gap real -- `draft-round-order-map-contract-v1.2-correction.md` exists on `main` but was absent from `builder/b-04-draft-round-order-map`, branch was cut before v1.2 landed and never resynced; (2) required artifacts absent real -- `data/processed/` does not exist at all on the B-04 branch; only `engine/draft/round_order_map.py` and `__init__.py` were committed, no data artifacts or test scaffold; (3) no repo-native test evidence real -- the cited 18-pass result came from a sandbox reconstruction, not the actual branch checkout. Ruled v1.2-correction.md remains the canonical current contract (no new contract needed, not in dispute). Published Reviewer Gate Reconciliation Note v1.0 (docs/runbooks/) codifying a standing pre-PR check -- branch synced with main, all artifacts present in diff, test evidence repo-native only, contract-version alignment explicit in PR description -- applying to B-05 through B-17 and retroactively to B-04. This supersedes the "PR open, pending Reviewer" status noted in v2.3 -- B-04 is BLOCKED, not pending.
 
@@ -26,7 +41,7 @@
 - New idea surfaced, NOT yet adopted: games-with-TDs / pct-of-games-with-TDs as a weekly-consistency signal, potentially valuable for a no-bench league where a single blank week can't be covered by a bench swap. Flagged as a candidate for the Individual Efficiency layer (Projection Artifact Contract Section 4) -- requires the full promotion process (definition, source, validation, baseline comparison, acceptance test) before any formula adopts it. Correctly NOT hardcoded into anything yet.
 - Devin confirmed adding TeamRankings' two page URLs as prioritized Links in all three Spaces (Architect, Builder/Operator, Reviewer) -- reinforces search grounding toward already-approved sources per Data Source Register doctrine
 
-**Highest-leverage next artifact:** None at the architecture layer. This calibration data becomes relevant once B-17 backtesting starts. (Superseded by v2.4: B-04 status corrected to BLOCKED.)
+**Highest-leverage next artifact:** None at the architecture layer. This calibration data becomes relevant once B-17 backtesting starts. (Superseded by v2.5: B-04 closed.)
 
 ---
 
