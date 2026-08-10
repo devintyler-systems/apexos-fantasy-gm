@@ -101,3 +101,32 @@ artifacts, or larger contract files.
 **Scope:** Applies whenever any of the three spaces hits a truncated or bodiless
 connector read on this repository. Does not change any contract, schema, or
 acceptance criteria. Owner: Architect. Status: Active.
+
+---
+
+## Addendum v1.2 — Merge Verification Is a Separate Fact (2026-08-10)
+
+**Trigger:** B-04 was logged CLOSED in Decision Ledger v2.5 based on Reviewer's
+PASS verdict and a green GitHub Actions check run. Both were genuine and valid.
+But the underlying implementation PR (#2) had not actually been merged to `main`
+-- it sat open for roughly two hours after "closure" was logged. The gap was only
+caught when a later, unrelated PR (#3, a docs-only ledger update) couldn't
+satisfy its required status check because the workflow file the check depends on
+did not yet exist on `main`.
+
+**Standing rule:** these are three independently verifiable facts, and a ticket
+is not CLOSED in the Decision Ledger until all three are true:
+
+1. Reviewer has issued a PASS verdict.
+2. A CI check has run and reported success against the PR's actual head SHA.
+3. **The PR is merged to `main`.** Verify this by checking the PR's `merged`
+   field directly (`pull_request_read` or the PR page showing "Pull request
+   successfully merged and closed"), not by inferring it from (1) and (2).
+
+None of these facts implies another. A PASS verdict can be issued and a check
+can pass while a PR sits open indefinitely -- merging is a distinct, separate
+action that requires its own confirmation.
+
+**Scope:** Applies to every ticket closure entry in the Decision Ledger going
+forward, and to the B-04 entry retroactively (corrected in v2.7). Owner:
+Architect. Status: Active.
