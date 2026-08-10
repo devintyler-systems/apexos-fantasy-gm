@@ -2,18 +2,23 @@
 
 ## Version History
 
-### Version 2.0 — 2026-08-10
-**Change:** Produced Builder/Operator Implementation Backlog v1.0 (17 ordered tickets, B-01 through B-17, dependency-mapped across 5 phases) and a ready-to-paste Builder Kickoff Prompt (`docs/builder-kickoff-prompt.md`). This completes the full pre-implementation artifact chain -- every remaining task in this repository is implementation work against an already-approved contract, not new architectural design.
+### Version 2.1 — 2026-08-10
+**Change:** Resolved a Builder-surfaced version-binding ambiguity in the Draft Round Order Map Contract. The contract's example JSON cited `league_rules_version: spamml-2026-v0.2` (current at contract-authoring time); League Rules Contract has since advanced to v0.3. Established a general rule applying to ALL contracts in this repo: any version-reference field in an example block is illustrative, not pinned, unless a contract explicitly states otherwise (none currently do). Generated artifacts always cite the CURRENT league rules version at generation time, read dynamically from config — never hardcoded as a literal string in implementation code. Added acceptance test T11 enforcing this.
 
-**Type:** Structural (terminal architecture artifact)
+**Type:** Calibration (clarifies an ambiguity; no change to B-04's actual scope, algorithm, or output schema)
 
 **Impact on build sequence:**
-- Critical path identified: B-01 -> B-02 -> B-03 -> B-06 -> B-07 -> B-08 -> B-09 -> B-10 -> B-11 -> B-12 -> B-13 -> B-16, with B-04 and B-05 buildable in parallel with zero data dependency
-- Builder can start immediately on B-04 (Draft Round Order Map) and B-05 (Draft State Manager) for early momentum while projection pipeline work (B-06 through B-09) proceeds in parallel
-- Kickoff prompt encodes the 6 non-negotiable rules (no hardcoded constants, no live sync, no autonomous actions, full provenance, frozen-artifact immutability, REC merged-pool logic) directly so a new Builder session needs zero re-explanation
-- Snooze capability isolation (DR10, DR13) flagged in the kickoff prompt as the single highest integration risk in the system
+- B-04 unblocked: Builder proceeds using `spamml-2026-v0.3`, sourced dynamically
+- This same class of question will recur on B-08 (Projection Artifact) and B-10 (Scoring Engine), both of which also reference `league_rules_version` in their example schemas — Section 3's general rule preempts needing a separate clarification for each
+- Positive signal: Builder correctly identified a real ambiguity and escalated rather than guessing silently, exactly as instructed in the kickoff prompt ("if you hit a genuine ambiguity the contracts don't resolve, stop and ask Devin directly rather than guessing")
 
-**Highest-leverage next artifact:** None at the architecture layer -- the specification chain is complete. Next work is Builder execution against the backlog, or Devin resolving U01/U02 (draft position/date) before the live draft. Architect role resumes only if Builder surfaces a genuine contract gap, a structural failure requiring rebuild, or Devin introduces new league information (e.g., resolving U04-U09).
+**Highest-leverage next artifact:** None at the architecture layer. Builder proceeds with B-04 implementation.
+
+---
+
+### Version 2.0 — 2026-08-10
+**Change:** Produced Builder/Operator Implementation Backlog v1.0 and Builder Kickoff Prompt.
+**Type:** Structural
 
 ---
 
