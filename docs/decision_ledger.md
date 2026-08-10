@@ -2,17 +2,24 @@
 
 ## Version History
 
-### Version 2.1 — 2026-08-10
-**Change:** Resolved a Builder-surfaced version-binding ambiguity in the Draft Round Order Map Contract. The contract's example JSON cited `league_rules_version: spamml-2026-v0.2` (current at contract-authoring time); League Rules Contract has since advanced to v0.3. Established a general rule applying to ALL contracts in this repo: any version-reference field in an example block is illustrative, not pinned, unless a contract explicitly states otherwise (none currently do). Generated artifacts always cite the CURRENT league rules version at generation time, read dynamically from config — never hardcoded as a literal string in implementation code. Added acceptance test T11 enforcing this.
+### Version 2.2 — 2026-08-10
+**Change:** Corrected a genuine Architect authoring error Builder caught during B-04 implementation. The original Draft Round Order Map Contract's T09 test and Section 4b JSON example contained fabricated placeholder pick numbers for positions 1, 2, and 16 that were never actually run through the Section 5 algorithm -- they contradicted the algorithm even though the algorithm itself was correct (already validated against 2025 ground truth for position 11). Corrected values independently verified via: (1) direct algorithm computation, (2) ground-truth cross-check (position 11 unchanged, still matches real 2025 data), (3) internal invariant sum checks (R1+R2=33, R3+R4=97, R5+R6=161, R7+R8=225 for every position), (4) full 128-pick uniqueness across all 16 positions. Added new test T12 (invariant sum check) specifically to catch this class of error faster in the future. Updated the test scaffold file directly.
 
-**Type:** Calibration (clarifies an ambiguity; no change to B-04's actual scope, algorithm, or output schema)
+**Type:** Calibration (fixes a test/documentation error; the algorithm and all previously-passing tests, including T01 ground truth, required zero changes)
 
 **Impact on build sequence:**
-- B-04 unblocked: Builder proceeds using `spamml-2026-v0.3`, sourced dynamically
-- This same class of question will recur on B-08 (Projection Artifact) and B-10 (Scoring Engine), both of which also reference `league_rules_version` in their example schemas — Section 3's general rule preempts needing a separate clarification for each
-- Positive signal: Builder correctly identified a real ambiguity and escalated rather than guessing silently, exactly as instructed in the kickoff prompt ("if you hit a genuine ambiguity the contracts don't resolve, stop and ask Devin directly rather than guessing")
+- B-04 unblocked: Builder's implementation of Section 5 was correct all along; only the test file needed correction
+- Section 7 process correction applied: all future contract numeric examples must be independently computed before being written, not estimated by pattern-matching
+- Positive signal, second time in two exchanges: Builder correctly refused to force a passing test by weakening T05/T09 or hardcoding an exception -- this is exactly the discipline the Architect-Builder-Reviewer gate exists to enforce
+- Reviewer's future audit scope should explicitly include re-deriving embedded numeric examples in contracts, not just confirming tests exist
 
-**Highest-leverage next artifact:** None at the architecture layer. Builder proceeds with B-04 implementation.
+**Highest-leverage next artifact:** None at the architecture layer. Builder proceeds with B-04: commit `engine/draft/round_order_map.py`, the two `data/processed/` artifacts (using `league_rules_version: spamml-2026-v0.3` per the prior v1.1 clarification), and the corrected test scaffold, then open the PR for Reviewer.
+
+---
+
+### Version 2.1 — 2026-08-10
+**Change:** Resolved a Builder-surfaced version-binding ambiguity (league_rules_version).
+**Type:** Calibration
 
 ---
 
