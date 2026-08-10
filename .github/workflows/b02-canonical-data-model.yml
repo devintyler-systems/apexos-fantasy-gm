@@ -1,1 +1,28 @@
-WORKFLOW_YML_PLACEHOLDER
+name: B-02 acceptance tests
+
+on:
+  pull_request:
+    paths:
+      - "engine/canonical/**"
+      - "tests/acceptance/test_canonical_data_model.py"
+      - "contracts/league_rules/**"
+      - ".github/workflows/b02-canonical-data-model.yml"
+  push:
+    branches: [main]
+    paths:
+      - "engine/canonical/**"
+      - "tests/acceptance/test_canonical_data_model.py"
+      - "contracts/league_rules/**"
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install pytest pyyaml
+      - name: Run B-02 acceptance tests
+        run: python -m pytest tests/acceptance/test_canonical_data_model.py -q
