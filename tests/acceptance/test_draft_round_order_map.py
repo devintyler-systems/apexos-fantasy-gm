@@ -1,5 +1,10 @@
-import pytest
+# Acceptance test scaffold for Draft Round Order Map
+# Artifact: draft_round_order_map v1.2 (T09 corrected per v1.2-correction.md)
+# Status: SCAFFOLD -- Builder fills in imports and any helper assertions
+# All T01-T09, T12 are BLOCKING; T10 is advisory
 
+import pytest
+# Builder: update import path if module location changes
 from engine.draft.round_order_map import (
     build_full_map,
     get_draft_position,
@@ -9,81 +14,148 @@ from engine.draft.round_order_map import (
 
 
 class TestGroundTruth:
+    """T01 -- Must pass before any other work proceeds."""
+
     def test_position_11_picks_match_2025_actuals(self):
-        assert get_pick_numbers(11) == [11, 22, 35, 62, 75, 86, 99, 126]
+        result = get_pick_numbers(11)
+        assert result == [11, 22, 35, 62, 75, 86, 99, 126], (
+            f"Ground truth failure: Professor FleX 2025 actuals are [11,22,35,62,75,86,99,126], got {result}"
+        )
 
 
 class TestMapIntegrity:
+    """T02-T04 -- Full map structural validation."""
+
     def test_total_pick_count(self):
-        picks = build_full_map()["pick_to_position_map"]
+        full_map = build_full_map()
+        picks = list(full_map["pick_to_position_map"].keys())
         assert len(picks) == 128
-        assert sorted(map(int, picks)) == list(range(1, 129))
+        assert sorted([int(p) for p in picks]) == list(range(1, 129))
 
     def test_every_position_appears_exactly_8_times(self):
-        position_pick_map = build_full_map()["position_pick_map"]
-        assert all(len(position_pick_map[str(pos)]) == 8 for pos in range(1, 17))
+        full_map = build_full_map()
+        from collections import Counter
+        counts = Counter(full_map["pick_to_position_map"].values())
+        for pos in range(1, 17):
+            assert counts[pos] == 8, f"Position {pos} appears {counts[pos]} times, expected 8"
 
     def test_every_round_has_16_picks(self):
-        picks = build_full_map()["pick_to_position_map"]
-        for round_number in range(1, 9):
-            first_pick = (round_number - 1) * 16 + 1
-            assert all(str(pick) in picks for pick in range(first_pick, first_pick + 16))
+        for r in range(1, 9):
+            base = (r - 1) * 16
+            full_map = build_full_map()
+            for pick in range(base + 1, base + 17):
+                assert str(pick) in full_map["pick_to_position_map"], f"Pick {pick} missing from map"
 
 
 class TestPivotRounds:
-    pivot = [9, 10, 11, 12, 13, 14, 15, 16, 1, 2, 3, 4, 5, 6, 7, 8]
-    reverse_pivot = [8, 7, 6, 5, 4, 3, 2, 1, 16, 15, 14, 13, 12, 11, 10, 9]
+    """T05-T06 -- Pivot and reverse-pivot round correctness."""
 
-    @pytest.mark.parametrize("start_pick", [33, 97])
-    def test_pivot_rounds(self, start_pick):
-        picks = build_full_map()["pick_to_position_map"]
-        assert [picks[str(pick)] for pick in range(start_pick, start_pick + 16)] == self.pivot
+    PIVOT_SEQUENCE    = [9,10,11,12,13,14,15,16, 1, 2, 3, 4, 5, 6, 7, 8]
+    REV_PIVOT_SEQ     = [8, 7, 6, 5, 4, 3, 2, 1,16,15,14,13,12,11,10, 9]
 
-    @pytest.mark.parametrize("start_pick", [49, 113])
-    def test_reverse_pivot_rounds(self, start_pick):
-        picks = build_full_map()["pick_to_position_map"]
-        assert [picks[str(pick)] for pick in range(start_pick, start_pick + 16)] == self.reverse_pivot
+    def test_round_3_pivot(self):
+        full_map = build_full_map()
+        for slot, expected_pos in enumerate(self.PIVOT_SEQUENCE, start=1):
+            pick = 32 + slot
+            actual = full_map["pick_to_position_map"][str(pick)]
+            assert actual == expected_pos, f"Round 3 slot {slot} (pick {pick}): expected pos {expected_pos}, got {actual}"
+
+    def test_round_7_pivot(self):
+        full_map = build_full_map()
+        for slot, expected_pos in enumerate(self.PIVOT_SEQUENCE, start=1):
+            pick = 96 + slot
+            actual = full_map["pick_to_position_map"][str(pick)]
+            assert actual == expected_pos, f"Round 7 slot {slot} (pick {pick}): expected pos {expected_pos}, got {actual}"
+
+    def test_round_4_reverse_pivot(self):
+        full_map = build_full_map()
+        for slot, expected_pos in enumerate(self.REV_PIVOT_SEQ, start=1):
+            pick = 48 + slot
+            actual = full_map["pick_to_position_map"][str(pick)]
+            assert actual == expected_pos, f"Round 4 slot {slot} (pick {pick}): expected pos {expected_pos}, got {actual}"
+
+    def test_round_8_reverse_pivot(self):
+        full_map = build_full_map()
+        for slot, expected_pos in enumerate(self.REV_PIVOT_SEQ, start=1):
+            pick = 112 + slot
+            actual = full_map["pick_to_position_map"][str(pick)]
+            assert actual == expected_pos, f"Round 8 slot {slot} (pick {pick}): expected pos {expected_pos}, got {actual}"
 
 
 class TestInverseMap:
+    """T07 -- Forward and inverse map consistency."""
+
     def test_inverse_map_consistency(self):
-        for pick, position in build_full_map()["pick_to_position_map"].items():
-            assert get_draft_position(int(pick)) == position
-            assert int(pick) in get_pick_numbers(position)
+        full_map = build_full_map()
+        for pick_str, pos in full_map["pick_to_position_map"].items():
+            pick = int(pick_str)
+            assert get_draft_position(pick) == pos
+            assert pick in get_pick_numbers(pos)
 
 
 class TestPicksBetween:
-    def test_picks_between(self):
-        assert get_picks_between(11, 11) == list(range(12, 22))
-        assert get_picks_between(22, 11) == list(range(23, 35))
-        assert get_picks_between(126, 11) == []
+    """T08 -- get_picks_between helper for availability model."""
+
+    def test_picks_between_round_1_to_2(self):
+        result = get_picks_between(11, 11)
+        assert result == list(range(12, 22)), f"Expected picks 12-21, got {result}"
+
+    def test_picks_between_round_2_to_3(self):
+        result = get_picks_between(22, 11)
+        assert result == list(range(23, 35)), f"Expected picks 23-34, got {result}"
+
+    def test_picks_between_last_pick_returns_empty(self):
+        result = get_picks_between(126, 11)
+        assert result == [], f"Expected empty list after last pick, got {result}"
 
 
 class TestEdgePositions:
-    @pytest.mark.parametrize(("position", "expected"), [
-        (1, [1, 32, 41, 56, 65, 96, 105, 120]),
-        (2, [2, 31, 42, 55, 66, 95, 106, 119]),
-        (16, [16, 17, 40, 57, 80, 81, 104, 121]),
-    ])
-    def test_position_picks(self, position, expected):
-        assert get_pick_numbers(position) == expected
+    """T09 -- Validate most extreme draft positions.
+    CORRECTED per draft-round-order-map-contract-v1.2-correction.md.
+    Original v1.0 values were fabricated placeholders, never verified against
+    the Section 5 algorithm. These values ARE independently computed and
+    verified via ground-truth match, invariant sums, and full-map uniqueness.
+    """
+
+    def test_position_1_picks(self):
+        assert get_pick_numbers(1) == [1, 32, 41, 56, 65, 96, 105, 120]
+
+    def test_position_2_picks(self):
+        assert get_pick_numbers(2) == [2, 31, 42, 55, 66, 95, 106, 119]
+
+    def test_position_16_picks(self):
+        assert get_pick_numbers(16) == [16, 17, 40, 57, 80, 81, 104, 121]
 
 
 class TestInvariantSums:
-    def test_each_symmetric_round_pair_has_expected_sum(self):
-        expected_sums = [33, 97, 161, 225]
-        for position in range(1, 17):
-            picks = get_pick_numbers(position)
-            assert [picks[index] + picks[index + 1] for index in range(0, 8, 2)] == expected_sums
+    """T12 -- NEW. Structural sanity check catching the exact class of error
+    found in the original T09 (plausible-looking but unverified pick numbers).
+    """
+
+    @pytest.mark.parametrize("position", range(1, 17))
+    def test_round_pair_sums(self, position):
+        picks = get_pick_numbers(position)
+        assert picks[0] + picks[1] == 33, f"Position {position}: R1+R2 should sum to 33"
+        assert picks[2] + picks[3] == 97, f"Position {position}: R3+R4 should sum to 97"
+        assert picks[4] + picks[5] == 161, f"Position {position}: R5+R6 should sum to 161"
+        assert picks[6] + picks[7] == 225, f"Position {position}: R7+R8 should sum to 225"
 
 
 class TestInputValidation:
-    @pytest.mark.parametrize("position", [0, 17])
-    def test_get_pick_numbers_rejects_out_of_range_position(self, position):
-        with pytest.raises(ValueError):
-            get_pick_numbers(position)
+    """T10 -- Advisory: out-of-range input handling."""
 
-    @pytest.mark.parametrize("pick", [0, 129])
-    def test_get_draft_position_rejects_out_of_range_pick(self, pick):
+    def test_get_pick_numbers_rejects_zero(self):
         with pytest.raises(ValueError):
-            get_draft_position(pick)
+            get_pick_numbers(0)
+
+    def test_get_pick_numbers_rejects_17(self):
+        with pytest.raises(ValueError):
+            get_pick_numbers(17)
+
+    def test_get_draft_position_rejects_zero(self):
+        with pytest.raises(ValueError):
+            get_draft_position(0)
+
+    def test_get_draft_position_rejects_129(self):
+        with pytest.raises(ValueError):
+            get_draft_position(129)
