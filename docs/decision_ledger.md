@@ -2,17 +2,24 @@
 
 ## Version History
 
-### Version 0.9 — 2026-08-09
-**Change:** Produced PRV Calculator Contract v1.0. Defines SPAMML-specific replacement levels (16/32/48/16/16 across QB/RB/REC/KCK/D_O), the REC combined WR+TE merged-pool rule, static vs. dynamic replacement value, and scarcity_ratio as the explicit 16-team scarcity signal. 7 acceptance tests, all blocking, including a full 128-pick simulated draft reproducibility test.
+### Version 1.0 — 2026-08-09
+**Change:** Produced Draft Recommendation Engine Contract v1.0 — the last decision-logic artifact needed for a complete draft-day tool. Combines PRV Calculator output with roster-fit filtering, availability pressure (via Draft Round Order Map's get_picks_between), and positional run detection into a ranked recommendation with a closed-set reason-code vocabulary. Defines a hard, tested boundary preventing the LLM explanation layer from ever re-ranking or inventing content.
 
-**Type:** Structural (first artifact where real draft-day decision math is defined)
+**Type:** Structural (completes the core decision-engine contract chain)
 
 **Impact on build sequence:**
-- All 5 prerequisite contracts for the Draft Recommendation Engine are now complete: League Rules v0.2, Draft Round Order Map v1.0, Projection Artifact v1.0+addendum, Scoring Engine v1.0, PRV Calculator v1.0
-- Kicker and D_O scarcity are explicitly modeled as real signals (Section 6), correcting the common generic-tool mistake of treating them as afterthoughts
-- PRV_R02 flags that dynamic recalculation must fire on every pick, not per-round -- a performance shortcut here would silently reintroduce staleness
+- All 6 core contracts now exist: League Rules v0.2, Draft Round Order Map v1.0, Projection Artifact v1.0+addendum, Scoring Engine v1.0, PRV Calculator v1.0, Draft Recommendation Engine v1.0
+- DR_R03 flags an open gap: user_strategy_controls (positional_priority, d_o_strategy, te_premium) remain entirely unconfirmed -- the engine runs correctly without them but cannot yet reflect any of Devin's personal draft-strategy preferences
+- Remaining pre-implementation artifacts are process/documentation only: Live-Draft Degraded Mode Runbook, MVP Acceptance Gates test suite
+- my_draft_position (U01) remains the single open HIGH-risk item blocking a live test with real numbers, though the contract itself requires no changes once it's assigned
 
-**Highest-leverage next artifact:** Draft Recommendation Engine Contract -- the final contract before a working draft-day tool exists end-to-end. Combines PRV output with roster-fit filtering and the availability-pressure model (using the Draft Round Order Map's get_picks_between function) to produce the actual recommendation payload.
+**Highest-leverage next artifact:** Live-Draft Degraded Mode Runbook -- the last artifact before Builder can begin implementation work end-to-end. Documents manual pick entry procedure, stale-data banner behavior, and draft-clock degraded mode using the now-complete contract chain.
+
+---
+
+### Version 0.9 — 2026-08-09
+**Change:** Produced PRV Calculator Contract v1.0.
+**Type:** Structural
 
 ---
 
