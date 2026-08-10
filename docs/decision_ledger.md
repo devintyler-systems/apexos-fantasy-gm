@@ -2,17 +2,23 @@
 
 ## Version History
 
-### Version 1.4 — 2026-08-10
-**Change:** Resolved U03 (pick timer) via League Rules Contract v0.3. SPAMML 2026 is confirmed as an untimed live draft. Added a reusable `draft_clock_config` schema (none/30s/60s/90s/120s) to the League Rules Contract structure so future ApexOS leagues with real pick clocks can configure timing without a contract redesign. Live-Draft Degraded Mode Runbook's RB03 risk item downgraded from MEDIUM to LOW for this specific league, though pre-computation behavior remains implemented as built (zero cost, future-proofs the platform).
+### Version 1.5 — 2026-08-10
+**Change:** Produced MVP Acceptance Gates v1.0 — the consolidated pass/fail test suite spanning all 7 prior artifacts (League Rules, Draft Round Order Map, Projection Artifact, Scoring Engine, PRV Calculator, Draft Recommendation Engine, Live-Draft Degraded Mode Runbook). 28 gates across 7 categories (Scoring Correctness, Roster/Eligibility, Projection Integrity, Scarcity/Replacement Value, Operational Readiness, Draft Round Order, New Capabilities). Every gate is BLOCK-severity by default — no informal waivers. Defines the explicit go/no-go procedure and fallback (raw frozen projections, no optimizer) if any gate fails.
 
-**Type:** Calibration (resolves an open unknown; adds reusable config schema for future leagues, no change to SPAMML 2026 build requirements)
+**Type:** Structural (last specification document; completes the pre-implementation contract chain)
 
 **Impact on build sequence:**
-- League Rules Contract now has 7 remaining unknowns (down from 8): U01, U02, U04, U05, U06, U07, U08, U09 remain; U03 is closed
-- Draft Recommendation Engine and Live-Draft Runbook require no changes — pre-computation behavior was already spec'd as always-on regardless of timer status
-- This is the first artifact explicitly designed for multi-league reuse (draft_clock_config), signaling the platform is starting to generalize beyond SPAMML-only assumptions where doing so costs nothing extra
+- This is the terminal specification artifact. Every subsequent step is Builder implementation work, not Architect design work
+- Section 5 explicitly separates "blocks gate testing" (nothing) from "affects live draft-day accuracy" (U01, U02) -- Builder can proceed with full implementation and testing without waiting on those two unknowns, but Devin still needs U01/U02 resolved before the actual live draft
+- Per project doctrine's required build sequence (item 8 of 9: MVP Acceptance Gates), only the Builder/Operator implementation backlog (item 9) remains as a distinct architectural artifact
 
-**Highest-leverage next artifact:** MVP Acceptance Gates — the consolidated pass/fail test suite pulling together acceptance criteria from all 7 prior artifacts. Last specification document before Builder/Operator begins implementation.
+**Highest-leverage next artifact:** Builder/Operator Implementation Backlog -- an ordered, dependency-mapped task list translating all 8 completed specification artifacts into actual build tickets (Python modules, SQLite schema, Streamlit UI screens) ready for Builder to execute against.
+
+---
+
+### Version 1.4 — 2026-08-10
+**Change:** Resolved U03 (pick timer) via League Rules Contract v0.3.
+**Type:** Calibration
 
 ---
 
