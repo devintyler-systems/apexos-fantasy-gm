@@ -2,6 +2,20 @@
 
 ## Version History
 
+### Version 2.4 — 2026-08-10
+**Change:** Ruled on Reviewer's BLOCKED: INSUFFICIENT EVIDENCE verdict on B-04. Verdict confirmed justified via direct repo inspection: (1) contract-version gap real -- `draft-round-order-map-contract-v1.2-correction.md` exists on `main` but was absent from `builder/b-04-draft-round-order-map`, branch was cut before v1.2 landed and never resynced; (2) required artifacts absent real -- `data/processed/` does not exist at all on the B-04 branch; only `engine/draft/round_order_map.py` and `__init__.py` were committed, no data artifacts or test scaffold; (3) no repo-native test evidence real -- the cited 18-pass result came from a sandbox reconstruction, not the actual branch checkout. Ruled v1.2-correction.md remains the canonical current contract (no new contract needed, not in dispute). Published Reviewer Gate Reconciliation Note v1.0 (docs/runbooks/) codifying a standing pre-PR check -- branch synced with main, all artifacts present in diff, test evidence repo-native only, contract-version alignment explicit in PR description -- applying to B-05 through B-17 and retroactively to B-04. This supersedes the "PR open, pending Reviewer" status noted in v2.3 -- B-04 is BLOCKED, not pending.
+
+**Type:** Calibration (process/discipline correction; no contract, schema, or algorithm changed)
+
+**Impact on build sequence:**
+- B-04 remains BLOCKED until Builder: syncs branch with main, commits the two `data/processed/` artifacts using T12-corrected values, commits the test scaffold, runs tests against the actual branch checkout, and resubmits PR with repo-native evidence
+- Reviewer's audit scope now formally includes branch-vs-main sync and artifact-presence as a first-pass gate, ahead of deeper correctness review
+- Does not weaken the escalate-don't-guess pattern; closes the distinct gap where implementation intent was conflated with release evidence
+
+**Highest-leverage next artifact:** None at the architecture layer until Builder resubmits B-04 with repo-native evidence. U01 (2026 draft position) remains open and HIGH risk pending live draft; Devin has not yet selected positions.
+
+---
+
 ### Version 2.3 — 2026-08-10
 **Change:** Replaced the truncated `playerrankings_2025_total_TDs.csv` (previously ~10 of ~90 rows) with the full dataset. Added two new calibration files: `playerrankings_2025_games_with_TDs.csv` and `playerrankings_2025_pct_games_with_TDs.csv`. Formally registered TeamRankings' team-stats and player-stats page paths as approved source domains in Data Source Register v1.3, and confirmed they should be added as search-priority Links across all three ApexOS spaces (Architect, Builder/Operator, Reviewer).
 
@@ -12,7 +26,7 @@
 - New idea surfaced, NOT yet adopted: games-with-TDs / pct-of-games-with-TDs as a weekly-consistency signal, potentially valuable for a no-bench league where a single blank week can't be covered by a bench swap. Flagged as a candidate for the Individual Efficiency layer (Projection Artifact Contract Section 4) -- requires the full promotion process (definition, source, validation, baseline comparison, acceptance test) before any formula adopts it. Correctly NOT hardcoded into anything yet.
 - Devin confirmed adding TeamRankings' two page URLs as prioritized Links in all three Spaces (Architect, Builder/Operator, Reviewer) -- reinforces search grounding toward already-approved sources per Data Source Register doctrine
 
-**Highest-leverage next artifact:** None at the architecture layer. Builder proceeds with B-04 close-out (PR open, pending Reviewer). This calibration data becomes relevant once B-17 backtesting starts.
+**Highest-leverage next artifact:** None at the architecture layer. This calibration data becomes relevant once B-17 backtesting starts. (Superseded by v2.4: B-04 status corrected to BLOCKED.)
 
 ---
 
