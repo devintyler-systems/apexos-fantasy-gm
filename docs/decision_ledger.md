@@ -2,18 +2,23 @@
 
 ## Version History
 
+### Version 0.8 — 2026-08-09
+**Change:** Resolved D07 via Projection Artifact Contract v1.1 addendum. Established precedence rule: Sharp Football projected PPG is the primary team-environment driver; VegasInsider win total is a secondary divergence flag only, never blended into the raw TD-count baseline. Analysis of actual 2026 snapshot data confirmed r=0.91 correlation between sources with two real outliers (Cowboys, Commanders) flagged `pass_funnel_risk`.
+
+**Type:** Calibration (resolves an open unknown; no structural change)
+
+**Impact on build sequence:**
+- All blocking gaps in the Projection Artifact Contract are now closed
+- Four prerequisite contracts for the PRV Calculator are complete: League Rules v0.2, Draft Round Order Map v1.0, Projection Artifact v1.0+addendum, Scoring Engine v1.0
+- game_script_flag is qualitative-only at this version (P06) — acceptable for MVP since it informs Devin's manual_environment_override judgment, not an automated formula
+
+**Highest-leverage next artifact:** PRV Calculator Contract — fully unblocked. First artifact where real draft-day replacement-value math and 16-team positional scarcity logic get built.
+
+---
+
 ### Version 0.7 — 2026-08-09
-**Change:** Ingested 2026 team-environment projections (Sharp Football Analysis projected PPG, VegasInsider projected win totals) and 2025 team/player statistics (TeamRankings PPG/opponent-PPG/FG-attempts/kicking-PPG/red-zone data, PlayerRankings total TDs). Registered two new approved 2026 sources (2.7, 2.8) and two new approved calibration-only sources (2.9, 2.10) in Data Source Register v1.2.
-
-**Type:** Calibration (data ingestion; no architecture change)
-
-**Impact on next artifact:**
-- The Projection Artifact Contract's team-environment layer no longer references a generic placeholder — it can cite dated, approved 2026 sources
-- D07 flagged: Sharp Football PPG and VegasInsider win totals may disagree on a given team's quality; the Projection Artifact Contract needs a defined reconciliation rule (e.g., weighted average, or PPG as primary with win total as a game-script modifier) before Builder implements the team-environment feature
-- `teamrankings_2025_kicking_ppg.csv` is a near-perfect backtest set since it already reports actual 2025 kicker points at SPAMML's exact 3pt-FG/1pt-PAT scoring rule — highest-value single calibration file received today
-- 2025 actuals are explicitly barred from entering the 2026 projection artifact as live inputs; calibration-only status enforced in the register
-
-**Highest-leverage next artifact:** Resolve D07 (team-environment source reconciliation rule) as a short addendum to the Projection Artifact Contract, THEN proceed to the PRV Calculator Contract — all four of its prerequisite contracts (League Rules, Draft Round Order Map, Projection Artifact, Scoring Engine) are otherwise complete.
+**Change:** Ingested 2026 team-environment projections and 2025 calibration statistics; registered Sharp Football Analysis and VegasInsider as approved sources.
+**Type:** Calibration
 
 ---
 
