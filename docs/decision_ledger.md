@@ -2,17 +2,23 @@
 
 ## Version History
 
-### Version 1.3 — 2026-08-10
-**Change:** Produced Live-Draft Degraded Mode Runbook v1.0. Documents that manual entry IS the permanent operating mode for SPAMML (no API exists), not a rare-failure fallback. Defines 6 procedures: standard pick entry, identity conflict resolution, stale-data handling, draft-clock pre-computation, wrong-entry correction, and session interruption/resume.
+### Version 1.4 — 2026-08-10
+**Change:** Resolved U03 (pick timer) via League Rules Contract v0.3. SPAMML 2026 is confirmed as an untimed live draft. Added a reusable `draft_clock_config` schema (none/30s/60s/90s/120s) to the League Rules Contract structure so future ApexOS leagues with real pick clocks can configure timing without a contract redesign. Live-Draft Degraded Mode Runbook's RB03 risk item downgraded from MEDIUM to LOW for this specific league, though pre-computation behavior remains implemented as built (zero cost, future-proofs the platform).
 
-**Type:** Structural (last specification document before implementation)
+**Type:** Calibration (resolves an open unknown; adds reusable config schema for future leagues, no change to SPAMML 2026 build requirements)
 
 **Impact on build sequence:**
-- Every core decision-logic contract now has a corresponding operational procedure
-- RB03 flags that draft-clock pre-computation performance can't be fully validated until U03 (pick timer) is confirmed -- Builder should load-test regardless of the unknown value
-- Section 9 acceptance criteria feed directly into the next artifact (MVP Acceptance Gates)
+- League Rules Contract now has 7 remaining unknowns (down from 8): U01, U02, U04, U05, U06, U07, U08, U09 remain; U03 is closed
+- Draft Recommendation Engine and Live-Draft Runbook require no changes — pre-computation behavior was already spec'd as always-on regardless of timer status
+- This is the first artifact explicitly designed for multi-league reuse (draft_clock_config), signaling the platform is starting to generalize beyond SPAMML-only assumptions where doing so costs nothing extra
 
-**Highest-leverage next artifact:** MVP Acceptance Gates -- the formal, consolidated pass/fail test suite pulling together acceptance criteria from every contract produced so far (League Rules, Draft Round Order Map, Projection Artifact, Scoring Engine, PRV Calculator, Draft Recommendation Engine, and this Runbook). This is the last specification artifact before Builder/Operator begins actual implementation.
+**Highest-leverage next artifact:** MVP Acceptance Gates — the consolidated pass/fail test suite pulling together acceptance criteria from all 7 prior artifacts. Last specification document before Builder/Operator begins implementation.
+
+---
+
+### Version 1.3 — 2026-08-10
+**Change:** Produced Live-Draft Degraded Mode Runbook v1.0.
+**Type:** Structural
 
 ---
 
