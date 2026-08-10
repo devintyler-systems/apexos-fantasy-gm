@@ -2,23 +2,28 @@
 
 ## Version History
 
-### Version 2.2 — 2026-08-10
-**Change:** Corrected a genuine Architect authoring error Builder caught during B-04 implementation. The original Draft Round Order Map Contract's T09 test and Section 4b JSON example contained fabricated placeholder pick numbers for positions 1, 2, and 16 that were never actually run through the Section 5 algorithm -- they contradicted the algorithm even though the algorithm itself was correct (already validated against 2025 ground truth for position 11). Corrected values independently verified via: (1) direct algorithm computation, (2) ground-truth cross-check (position 11 unchanged, still matches real 2025 data), (3) internal invariant sum checks (R1+R2=33, R3+R4=97, R5+R6=161, R7+R8=225 for every position), (4) full 128-pick uniqueness across all 16 positions. Added new test T12 (invariant sum check) specifically to catch this class of error faster in the future. Updated the test scaffold file directly.
+### Version 2.3 — 2026-08-10
+**Change:** Replaced the truncated `playerrankings_2025_total_TDs.csv` (previously ~10 of ~90 rows) with the full dataset. Added two new calibration files: `playerrankings_2025_games_with_TDs.csv` and `playerrankings_2025_pct_games_with_TDs.csv`. Formally registered TeamRankings' team-stats and player-stats page paths as approved source domains in Data Source Register v1.3, and confirmed they should be added as search-priority Links across all three ApexOS spaces (Architect, Builder/Operator, Reviewer).
 
-**Type:** Calibration (fixes a test/documentation error; the algorithm and all previously-passing tests, including T01 ground truth, required zero changes)
+**Type:** Calibration (data completeness improvement; no change to any live projection formula)
 
 **Impact on build sequence:**
-- B-04 unblocked: Builder's implementation of Section 5 was correct all along; only the test file needed correction
-- Section 7 process correction applied: all future contract numeric examples must be independently computed before being written, not estimated by pattern-matching
-- Positive signal, second time in two exchanges: Builder correctly refused to force a passing test by weakening T05/T09 or hardcoding an exception -- this is exactly the discipline the Architect-Builder-Reviewer gate exists to enforce
-- Reviewer's future audit scope should explicitly include re-deriving embedded numeric examples in contracts, not just confirming tests exist
+- B-17 (backtest xTD/kicker model against 2025 data) now has a complete, non-truncated ground-truth dataset to validate against
+- New idea surfaced, NOT yet adopted: games-with-TDs / pct-of-games-with-TDs as a weekly-consistency signal, potentially valuable for a no-bench league where a single blank week can't be covered by a bench swap. Flagged as a candidate for the Individual Efficiency layer (Projection Artifact Contract Section 4) -- requires the full promotion process (definition, source, validation, baseline comparison, acceptance test) before any formula adopts it. Correctly NOT hardcoded into anything yet.
+- Devin confirmed adding TeamRankings' two page URLs as prioritized Links in all three Spaces (Architect, Builder/Operator, Reviewer) -- reinforces search grounding toward already-approved sources per Data Source Register doctrine
 
-**Highest-leverage next artifact:** None at the architecture layer. Builder proceeds with B-04: commit `engine/draft/round_order_map.py`, the two `data/processed/` artifacts (using `league_rules_version: spamml-2026-v0.3` per the prior v1.1 clarification), and the corrected test scaffold, then open the PR for Reviewer.
+**Highest-leverage next artifact:** None at the architecture layer. Builder proceeds with B-04 close-out (PR open, pending Reviewer). This calibration data becomes relevant once B-17 backtesting starts.
+
+---
+
+### Version 2.2 — 2026-08-10
+**Change:** Corrected fabricated T09 edge-position values.
+**Type:** Calibration
 
 ---
 
 ### Version 2.1 — 2026-08-10
-**Change:** Resolved a Builder-surfaced version-binding ambiguity (league_rules_version).
+**Change:** Resolved a Builder-surfaced version-binding ambiguity.
 **Type:** Calibration
 
 ---
@@ -72,7 +77,7 @@
 ---
 
 ### Version 0.8 — 2026-08-09
-**Change:** Resolved D07 via Projection Artifact Contract v1.1 addendum.
+**Change:** Resolved D07.
 **Type:** Calibration
 
 ---
@@ -96,7 +101,7 @@
 ---
 
 ### Version 0.4 — 2026-08-09
-**Change:** Locked Data Source and Connector Register v1.0/v1.1/v1.2.
+**Change:** Locked Data Source and Connector Register.
 **Type:** Structural
 
 ---

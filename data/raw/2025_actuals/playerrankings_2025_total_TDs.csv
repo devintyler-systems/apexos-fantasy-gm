@@ -1,4 +1,4 @@
-Rank,Player,Team,Position,2025 TDs
+rank,player,team,position,total_tds_2025
 1,Matthew Stafford,Los Angeles Rams,QB,52
 2,Josh Allen,Buffalo Bills,QB,45
 3,Drake Maye,New England Patriots,QB,42
@@ -9,4 +9,93 @@ Rank,Player,Team,Position,2025 TDs
 8,Bo Nix,Denver Broncos,QB,33
 9,Dak Prescott,Dallas Cowboys,QB,32
 10,Sam Darnold,Seattle Seahawks,QB,30
-NOTE: Full 90+ row dataset preserved in original CSV attachment (playerrankings_2025_total_TDs.csv, uploaded 2026-08-09). Truncated here for repo readability; retrieve full file from thread attachment if complete row-level data is needed for backtesting.
+11,Justin Herbert,Los Angeles Chargers,QB,28
+12,Jordan Love,Green Bay Packers,QB,27
+12,Bryce Young,Carolina Panthers,QB,27
+12,Baker Mayfield,Tampa Bay Buccaneers,QB,27
+12,Patrick Mahomes,Kansas City Chiefs,QB,27
+16,Aaron Rodgers,Pittsburgh Steelers,QB,25
+16,Brock Purdy,San Francisco 49ers,QB,25
+18,Jacoby Brissett,Arizona Cardinals,QB,24
+18,Jaxson Dart,New York Giants,QB,24
+18,Daniel Jones,Indianapolis Colts,QB,24
+21,Lamar Jackson,Baltimore Ravens,QB,23
+22,C.J. Stroud,Houston Texans,QB,22
+23,Tua Tagovailoa,Miami Dolphins,QB,20
+23,Jonathan Taylor,Indianapolis Colts,RB,20
+25,Geno Smith,Las Vegas Raiders,QB,19
+25,Christian McCaffrey,San Francisco 49ers,RB,19
+27,Jahmyr Gibbs,Detroit Lions,RB,18
+28,Joe Burrow,Cincinnati Bengals,QB,17
+28,Cam Ward,Tennessee Titans,QB,17
+28,Kyren Williams,Los Angeles Rams,RB,17
+31,Derrick Henry,Baltimore Ravens,RB,16
+31,Joe Flacco,Cincinnati Bengals,QB,16
+33,J.J. McCarthy,Minnesota Vikings,QB,15
+33,Davante Adams,Los Angeles Rams,WR,15
+35,Travis Etienne Jr.,Jacksonville Jaguars,RB,14
+35,Puka Nacua,Los Angeles Rams,WR,14
+35,James Cook,Buffalo Bills,RB,14
+35,Josh Jacobs,Green Bay Packers,RB,14
+39,Mac Jones,San Francisco 49ers,QB,13
+39,Dallas Goedert,Philadelphia Eagles,TE,13
+39,Javonte Williams,Dallas Cowboys,RB,13
+39,Tyler Shough,New Orleans Saints,QB,13
+43,Zach Charbonnet,Seattle Seahawks,RB,12
+43,Jaxon Smith-Njigba,Seattle Seahawks,WR,12
+43,De'Von Achane,Miami Dolphins,RB,12
+43,RJ Harvey,Denver Broncos,RB,12
+47,Amon-Ra St. Brown,Detroit Lions,WR,11
+47,Trey McBride,Arizona Cardinals,TE,11
+47,Justin Fields,New York Jets,QB,11
+47,Kirk Cousins,Atlanta Falcons,QB,11
+47,Tee Higgins,Cincinnati Bengals,WR,11
+47,D'Andre Swift,Chicago Bears,RB,11
+47,Chase Brown,Cincinnati Bengals,HB,11
+47,Bijan Robinson,Atlanta Falcons,RB,11
+47,Marcus Mariota,Washington Commanders,QB,11
+56,Ashton Jeanty,Las Vegas Raiders,RB,10
+56,Jauan Jennings,San Francisco 49ers,WR,10
+56,Michael Penix Jr.,Atlanta Falcons,QB,10
+56,Jayden Daniels,Washington Commanders,QB,10
+56,DJ Moore,Chicago Bears,WR,10
+56,Rhamondre Stevenson,New England Patriots,RB,10
+56,TreVeyon Henderson,New England Patriots,RB,10
+63,Saquon Barkley,Philadelphia Eagles,RB,9
+63,George Pickens,Dallas Cowboys,WR,9
+63,Chris Olave,New Orleans Saints,WR,9
+63,Kareem Hunt,Kansas City Chiefs,RB,9
+63,Colby Parkinson,Los Angeles Rams,TE,9
+63,Kenneth Walker III,Seattle Seahawks,RB,9
+63,David Montgomery,Detroit Lions,RB,9
+70,Quentin Johnston,Los Angeles Chargers,WR,8
+70,Jaylen Warren,Pittsburgh Steelers,RB,8
+70,AJ Barner,Seattle Seahawks,TE,8
+70,Parker Washington,Jacksonville Jaguars,WR,8
+70,Ja'Marr Chase,Cincinnati Bengals,WR,8
+70,Jake Ferguson,Dallas Cowboys,TE,8
+70,Kenneth Gainwell,Pittsburgh Steelers,RB,8
+70,Spencer Rattler,New Orleans Saints,QB,8
+70,Sean Tucker,Tampa Bay Buccaneers,RB,8
+70,Courtland Sutton,Denver Broncos,WR,8
+70,Jacory Croskey-Merritt,Washington Commanders,RB,8
+70,Hunter Henry,New England Patriots,TE,8
+70,Tyler Allgeier,Atlanta Falcons,RB,8
+70,Shedeur Sanders,Cleveland Browns,QB,8
+84,Nico Collins,Houston Texans,WR,7
+84,Woody Marks,Houston Texans,RB,7
+84,Christian Watson,Green Bay Packers,WR,7
+84,George Kittle,San Francisco 49ers,TE,7
+84,DK Metcalf,Pittsburgh Steelers,WR,7
+84,Tetairoa McMillan,Carolina Panthers,WR,7
+84,Rico Dowdle,Carolina Panthers,RB,7
+84,Brock Bowers,Las Vegas Raiders,TE,7
+84,Jake Browning,Cincinnati Bengals,QB,7
+84,Kyler Murray,Arizona Cardinals,QB,7
+84,Michael Pittman Jr.,Indianapolis Colts,WR,7
+84,Dillon Gabriel,Cleveland Browns,QB,7
+84,Kayshon Boutte,New England Patriots,WR,7
+84,Bhayshul Tuten,Jacksonville Jaguars,RB,7
+84,Drake London,Atlanta Falcons,WR,7
+84,Michael Wilson,Arizona Cardinals,WR,7
+84,Harold Fannin Jr.,Cleveland Browns,TE,7
