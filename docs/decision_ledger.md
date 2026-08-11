@@ -2,6 +2,53 @@
 
 ## Version History
 
+### Version 2.9 — 2026-08-11
+**Change:** Resolved the B-06 v0.2 proposal's structural blocker: the repository's Data Source
+Register, B-01/B-06 backlog lines, and Projection Artifact Contract v1.0 all named `nfl_data_py`
+as the approved nflverse access method, while the B-06 v0.2 proposal correctly identified this
+package as archived/read-only and prohibited it in favor of direct nflverse-data GitHub release-
+asset access. Before approving, independently verified the proposal's technical premises against
+the live `nflverse/nflverse-data` `pbp` release (release ID 58152862) rather than trusting its
+citations: confirmed `play_by_play_{season}.parquet` assets exist and are `state: "uploaded"` for
+2016 through 2025 inclusive; confirmed no `play_by_play_2026.*` asset exists; confirmed the 2025
+asset (asset ID 354718810, 20,343,981 bytes) carries digest
+`sha256:3730c4db2ab99d2dfc4017de975b7610c46c35301b9280b65c03de1b1c74265a`, an exact match to the
+proposal's manifest example; confirmed pre-2019 season assets (e.g., 2016, asset ID 250647177)
+report no provider digest, validating the nullable-digest design requirement. A repository-wide
+`nfl_data_py` audit via code search also surfaced a fifth reference not listed in the original
+proposal's "Contracts affected" section: `docs/architect-continuation-prompt.md`. Approved the
+five B-06 resolutions (U-B06-01 through U-B06-05) as design and authorized the following
+document amendments: `docs/data_source_connector_register.md` (v1.3 -> v1.4, `nfl_data_py`
+PROHIBITED, direct release-asset access APPROVED under 2.1), `docs/builder-operator-
+implementation-backlog-v1.0.md` (B-01, B-06 lines updated), `docs/architect-continuation-
+prompt.md` (nfl_data_py reference corrected), and a new `projection-artifact-contract-v1.2-
+addendum.md` (source_citations format migrated off `nfl_data_py`; also corrected a pre-existing
+internal inconsistency where v1.0 Section 10 cited a 2023-2025 window against Section 5's
+2016-2025 window). Published the new `contracts/ingestion/nflverse-play-by-play-ingestion-
+contract-v0.2.md` as the approved (not merely proposed) B-06 source-access contract.
+
+**Type:** Structural (changes the approved data-access method and canonical source-of-truth
+documents; not a weight, threshold, or calibration adjustment)
+
+**Impact on build sequence:**
+- B-06 remains without an open branch -- this version approves the *design and documentation*
+  only; implementation (adapter code, tests, ingestion run) is a separate, still-gated Builder
+  ticket against the new ingestion contract
+- B-01's dependency line now specifies `httpx`+`pyarrow` instead of `nfl_data_py`; any future
+  `pip install -e .` must resolve without `nfl_data_py` present
+- Projection Artifact Contract v1.0's body is left byte-identical; the v1.2 addendum pattern
+  (matching the existing v1.1 addendum) preserves the original document rather than editing a
+  contract in place
+- `docs/decision-ledger.md` (hyphenated, template-only file) is unaffected -- `docs/
+  decision_ledger.md` (underscore) remains the single source of truth per the architect-
+  continuation-prompt's own instruction
+
+**Highest-leverage next artifact:** Builder opens a `builder/b-06-nflverse-ingestion` branch
+against the approved v0.2 ingestion contract. U01 (2026 draft position) remains open and HIGH
+risk; still TBD per Devin.
+
+---
+
 ### Version 2.8 — 2026-08-10
 **Change:** Corrected a premature readiness claim in v2.7 ("Ready for B-05 kickoff under fully-verified main"). On attempting B-05 kickoff, direct repo inspection (`engine/` directory listing, Decision Ledger search for "B-02") showed B-02 (canonical data model: `dim_player`, `dim_team`, `dim_game`, `player_alias_map`) had never been implemented -- only B-04 artifacts existed on `main`. B-05's own dependency line (Backlog Section 3: "Depends On: B-02, League Rules Contract") was not satisfied, so B-05 branch creation was withheld. Separately resolved a scope discrepancy surfaced while pulling B-02's contract dependencies: the TouchdownOS reference blueprint lists two additional canonical tables (`player_team_history`, `coaching_history`) not present in the approved Backlog's B-02 line. Per doctrine Rule 6 (reference documents are hypothesis inputs, not approved contracts), ruled these two tables out of scope for B-02 -- no defined draft-day access pattern, acceptance test, or baseline comparison exists for either. Opened branch `builder/b-02-canonical-data-model` from `main` and tracking Issue #5 with the confirmed 4-table scope, done-when criteria, and Reviewer checks.
 
