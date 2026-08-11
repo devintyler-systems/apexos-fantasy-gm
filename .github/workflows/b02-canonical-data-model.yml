@@ -1,4 +1,4 @@
-name: B-04 acceptance tests
+name: B-02 acceptance tests
 
 on:
   pull_request:
@@ -32,7 +32,7 @@ jobs:
           fi
           echo "Changed files:"
           echo "$FILES"
-          if echo "$FILES" | grep -E '^(engine/draft/round_order_map\.py$|tests/acceptance/test_draft_round_order_map\.py$|data/processed/draft_round_order_map_spamml_2026\.csv$|data/processed/draft_position_pick_map_spamml_2026\.json$|contracts/draft/)'; then
+          if echo "$FILES" | grep -E '^(engine/canonical/|tests/acceptance/test_canonical_data_model\.py$|contracts/league_rules/)'; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
           else
             echo "relevant=false" >> "$GITHUB_OUTPUT"
@@ -45,12 +45,12 @@ jobs:
 
       - name: Install dependencies
         if: steps.changed.outputs.relevant == 'true'
-        run: pip install pytest
+        run: pip install pytest pyyaml
 
-      - name: Run B-04 acceptance tests
+      - name: Run B-02 acceptance tests
         if: steps.changed.outputs.relevant == 'true'
-        run: python -m pytest tests/acceptance/test_draft_round_order_map.py -q
+        run: python -m pytest tests/acceptance/test_canonical_data_model.py -q
 
-      - name: No B-04-relevant changes
+      - name: No B-02-relevant changes
         if: steps.changed.outputs.relevant != 'true'
-        run: echo "No B-04-relevant files changed on this ref; ticket-acceptance-tests passes trivially for B-04's portion."
+        run: echo "No B-02-relevant files changed on this ref; ticket-acceptance-tests passes trivially for B-02's portion."
