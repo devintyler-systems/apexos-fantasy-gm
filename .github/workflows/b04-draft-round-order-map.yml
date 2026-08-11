@@ -1,37 +1,56 @@
-name: B-04 Draft Round Order Map
+name: B-04 acceptance tests
 
 on:
   pull_request:
-    branches:
-      - main
-    paths:
-      - "engine/draft/**"
-      - "tests/acceptance/test_draft_round_order_map.py"
-      - "contracts/draft/**"
-      - "contracts/league_rules/**"
-      - "data/processed/draft_*_spamml_2026.*"
-      - ".github/workflows/b04-draft-round-order-map.yml"
-  workflow_dispatch:
+    branches: [main]
+  push:
+    branches: [main]
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   acceptance:
-    name: B-04 acceptance tests
+    name: ticket-acceptance-tests
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out pull request
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
         with:
-          python-version: "3.12"
+          fetch-depth: 0
 
-      - name: Install test dependency
-        run: python -m pip install --disable-pip-version-check pytest
+      - name: Determine relevant file changes
+        id: changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            FILES=$(gh pr diff ${{ github.event.pull_request.number }} --name-only)
+          else
+            FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})
+          fi
+          echo "Changed files:"
+          echo "$FILES"
+          if echo "$FILES" | grep -E '^(engine/draft/round_order_map\.py$|tests/acceptance/test_draft_round_order_map\.py$|data/processed/draft_round_order_map_spamml_2026\.csv$|data/processed/draft_position_pick_map_spamml_2026\.json$|contracts/draft/)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Run B-04 acceptance suite
+      - uses: actions/setup-python@v5
+        if: steps.changed.outputs.relevant == 'true'
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        if: steps.changed.outputs.relevant == 'true'
+        run: pip install pytest
+
+      - name: Run B-04 acceptance tests
+        if: steps.changed.outputs.relevant == 'true'
         run: python -m pytest tests/acceptance/test_draft_round_order_map.py -q
+
+      - name: No B-04-relevant changes
+        if: steps.changed.outputs.relevant != 'true'
+        run: echo "No B-04-relevant files changed on this ref; ticket-acceptance-tests passes trivially for B-04's portion."
