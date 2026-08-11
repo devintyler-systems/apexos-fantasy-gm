@@ -1,0 +1,75 @@
+name: B-01 acceptance tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  acceptance:
+    name: ticket-acceptance-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine relevant file changes
+        id: changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            FILES=$(gh pr diff ${{ github.event.pull_request.number }} --name-only)
+          else
+            FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})
+          fi
+          echo "Changed files:"
+          echo "$FILES"
+          if echo "$FILES" | grep -E '^(pyproject\.toml$|\.gitignore$|docs/development/bootstrap\.md$|\.github/workflows/b01-project-bootstrap\.yml$)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: B-01 relevant changes detected
+        if: steps.changed.outputs.relevant == 'true'
+        run: echo "B-01-relevant files changed; running ticket-acceptance-tests."
+
+      - uses: actions/setup-python@v5
+        if: steps.changed.outputs.relevant == 'true'
+        with:
+          python-version: "3.12"
+
+      - name: Upgrade pip
+        if: steps.changed.outputs.relevant == 'true'
+        run: python -m pip install --upgrade pip
+
+      - name: Install editable project with test extra
+        if: steps.changed.outputs.relevant == 'true'
+        run: python -m pip install -e ".[dev]"
+
+      - name: Prove editable package discovery outside checkout
+        if: steps.changed.outputs.relevant == 'true'
+        run: |
+          set -euo pipefail
+          outside=$(mktemp -d)
+          echo "Running import proof from $outside"
+          cd "$outside"
+          python -c "from engine.draft_state.manager import DraftStateManager; print('import-ok')"
+          cd "$GITHUB_WORKSPACE"
+          rm -rf "$outside"
+
+      - name: Run B-01 acceptance tests
+        if: steps.changed.outputs.relevant == 'true'
+        run: python -m pytest tests/acceptance/ -q
+
+      - name: No B-01-relevant changes
+        if: steps.changed.outputs.relevant != 'true'
+        run: echo "No B-01-relevant files changed on this ref; ticket-acceptance-tests passes trivially for B-01's portion."
