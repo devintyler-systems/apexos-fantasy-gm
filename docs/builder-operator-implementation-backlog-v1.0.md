@@ -6,6 +6,9 @@
 **Owner:** Devin Tyler (Architect)
 **Depends On:** All 8 prior specification artifacts (complete)
 **Created:** 2026-08-10
+**Amended:** 2026-08-11 -- B-01 and B-06 updated to remove `nfl_data_py` and point to
+direct nflverse-data GitHub release-asset ingestion per Data Source Register v1.4 and
+the B-06 v0.2 ingestion contract. Structural change; see Decision Ledger v2.9.
 
 ---
 
@@ -27,9 +30,12 @@ apexos-fantasy-gm/
 │   │   └── CHANGELOG.md
 │   ├── draft/
 │   │   └── draft-round-order-map-contract-v1.0.md
+│   ├── ingestion/
+│   │   └── nflverse-play-by-play-ingestion-contract-v0.2.md   <- B-06 source-access contract
 │   ├── projections/
 │   │   ├── projection-artifact-contract-v1.0.md
-│   │   └── projection-artifact-contract-v1.1-addendum.md
+│   │   ├── projection-artifact-contract-v1.1-addendum.md
+│   │   └── projection-artifact-contract-v1.2-addendum.md      <- source_citations format update
 │   ├── scoring/
 │   │   └── scoring-engine-contract-v1.0.md
 │   ├── optimizer/
@@ -39,7 +45,7 @@ apexos-fantasy-gm/
 │       ├── draft-recommendation-engine-contract-v1.1-addendum.md
 │       └── draft-recommendation-engine-contract-v1.2-addendum.md
 ├── docs/
-│   ├── data_source_connector_register.md            <- v1.2, current
+│   ├── data_source_connector_register.md            <- v1.4, current
 │   ├── decision_ledger.md                            <- single source of truth for version history
 │   ├── assumptions_register.md
 │   ├── mvp-acceptance-gates-v1.0.md                  <- final go/no-go checklist
@@ -48,6 +54,7 @@ apexos-fantasy-gm/
 │   └── reference/                                     <- hypothesis/reference only, not contracts
 ├── data/
 │   ├── raw/
+│   │   ├── nflverse/pbp/season={season}/revisions/sha256={sha256}/   <- B-06 immutable evidence
 │   │   ├── 2026_projections/    (Sharp Football PPG, VegasInsider win totals)
 │   │   └── 2025_actuals/        (TeamRankings, PlayerRankings -- calibration only)
 │   └── processed/            <- Builder creates: xTD lookup tables, frozen projection artifacts
@@ -64,7 +71,7 @@ apexos-fantasy-gm/
 
 | Ticket | Description | Depends On | Done When | Unlocks |
 |---|---|---|---|---|
-| B-01 | Set up Python project structure (`pyproject.toml`, virtualenv, `nfl_data_py` + `pandas`/`polars` + `pytest` deps) | Data Source Register v1.2 | `pip install -e .` succeeds; `pytest` runs (even with 0 tests passing yet) | Everything below |
+| B-01 | Set up Python project structure (`pyproject.toml`, virtualenv, `httpx>=0.27,<0.29` + `pyarrow>=19,<25` (B-06 ingestion) + `pandas`/`polars` + `pytest` deps). `nfl_data_py` MUST be absent from all dependency groups, lockfile, and source tree per Data Source Register v1.4 | Data Source Register v1.4 | `pip install -e .` succeeds; `pytest` runs (even with 0 tests passing yet); dependency scan confirms no `nfl_data_py` reference | Everything below |
 | B-02 | Implement canonical data model (SQLite schema): `dim_player`, `dim_team`, `dim_game`, `player_alias_map` | League Rules Contract v0.3, TouchdownOS reference doc | Schema created; test inserts for all 5 SPAMML position types succeed | B-03, B-04 |
 | B-03 | Implement League Rules Contract loader (reads `spamml-2026-v0.3.yaml` into a typed config object) | B-01 | Loader returns correct scoring map, roster slots, `draft_clock_config` | Scoring Engine, PRV, Recommendation Engine |
 
@@ -79,9 +86,9 @@ apexos-fantasy-gm/
 
 | Ticket | Description | Depends On | Done When | Unlocks |
 |---|---|---|---|---|
-| B-06 | Implement nflverse ingestion via `nfl_data_py` (2016-2025 seasons minimum) | B-01, Data Source Register 2.1 | Raw play-by-play pulled and cached locally as Parquet | B-07 |
-| B-07 | Build xTD lookup table per Projection Artifact Contract Section 5 (field-position buckets, sample-size tracking) | B-06 | `xtd_lookup_table_v1.parquet` exists with `sample_size` column populated; low-confidence buckets flagged | B-08 |
-| B-08 | Implement offensive player projection (Section 6a: QB/RB/WR/TE), kicker projection (6b), and D_O projection (6c), including the v1.1 addendum's PPG-primary/win-total-divergence rule | B-07, `data/raw/2026_projections/*` | PA01-PA10 all pass | B-09 |
+| B-06 | Implement nflverse play-by-play ingestion via direct GitHub release assets (release tag `pbp`, `httpx`+`pyarrow`, NO `nfl_data_py`), 2016-2025 seasons minimum, per `nflverse-play-by-play-ingestion-contract-v0.2.md`. Immutable, content-addressed revisions; regular-season completeness validation; postseason rows retained but not sampled | B-01, Data Source Register 2.1 (v1.4) | Raw play-by-play pulled and cached locally as immutable Parquet revisions under `data/raw/nflverse/pbp/season={season}/revisions/sha256={sha256}/`, each with a companion manifest | B-07 |
+| B-07 | Build xTD lookup table per Projection Artifact Contract Section 5 (field-position buckets, sample-size tracking); explicitly selects regular-only or regular-plus-postseason sample window from B-06's `game_counts_by_season_type` | B-06 | `xtd_lookup_table_v1.parquet` exists with `sample_size` column populated; low-confidence buckets flagged | B-08 |
+| B-08 | Implement offensive player projection (Section 6a: QB/RB/WR/TE), kicker projection (6b), and D_O projection (6c), including the v1.1 addendum's PPG-primary/win-total-divergence rule and the v1.2 addendum's `source_citations` format | B-07, `data/raw/2026_projections/*` | PA01-PA10 all pass | B-09 |
 | B-09 | Implement frozen artifact writer with immutability enforcement | B-08 | PA04 passes; attempting to modify a frozen artifact raises an error | B-12 |
 
 ### Phase 3: Scoring and Value Engines
@@ -139,9 +146,14 @@ For each ticket marked "Done," Reviewer independently verifies (does not just ac
 - No hardcoded values appear where a contract specifies "read from config at runtime" (especially B-10/Scoring Engine)
 - Frozen artifacts are genuinely immutable (attempt a manual overwrite and confirm it fails)
 - The full 128-pick simulated draft (B-11, B-12, B-13) produces reproducible output on a second identical run
+- B-06 specifically: repository scan confirms zero `nfl_data_py` references in dependencies, lockfile, or imports (per Data Source Register v1.4)
 
 ---
 
 ## 7. Decision Ledger Entry
 
 This is the terminal architecture artifact. All future work in this repository, until a structural failure or major scope change occurs, should be implementation commits against these tickets — not new Architect-level design documents.
+
+**2026-08-11 amendment:** B-01 and B-06 updated to remove `nfl_data_py` and reference direct
+nflverse-data GitHub release-asset ingestion, per Data Source Register v1.4 and the B-06 v0.2
+ingestion contract. See `docs/decision_ledger.md` Version 2.9 for full rationale.
