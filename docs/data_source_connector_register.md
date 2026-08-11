@@ -1,15 +1,16 @@
 # Data Source and Connector Register
 
 **Artifact:** `data_source_connector_register`
-**Version:** 1.3
+**Version:** 1.4
 **Owner:** Devin Tyler (Architect)
 **Status:** APPROVED sources marked; all others BLOCKED pending review
 **Depends On:** League Rules Contract v0.3
 **Unlocks:** Projection Artifact Contract, PRV Calculator, backtest work (B-17)
 **Created:** 2026-08-09
-**Last Updated:** 2026-08-10 (v1.3 -- replaced truncated player-TD file with full dataset;
-added games-with-TDs and pct-of-games-with-TDs calibration files; formally registered
-TeamRankings player-stats pages as an approved source domain, not just the team-stats pages)
+**Last Updated:** 2026-08-11 (v1.4 -- structural correction: replaced `nfl_data_py`
+approval with direct nflverse-data GitHub release-asset access per B-06 v0.2 ingestion
+contract. `nfl_data_py` is now explicitly PROHIBITED across this repository. See
+Decision Ledger for full rationale and verification evidence.)
 
 ---
 
@@ -22,7 +23,20 @@ purpose, fields, auth, rate limits, terms, freshness, fallback, and read/write p
 
 ## 2. Source Register (condensed -- see prior versions in git history for full detail on 2.1-2.6)
 
-### 2.1 nflverse / nfl_data_py -- APPROVED
+### 2.1 nflverse / nflverse-data (direct GitHub release assets) -- APPROVED (v1.4, supersedes nfl_data_py wrapper)
+
+| Field | Value |
+|---|---|
+| Purpose | Historical play-by-play data (2016-2025 window minimum) for xTD derivation per Projection Artifact Contract Section 5 | `confirmed evidence` |
+| Access method | Direct HTTP GET against GitHub Releases API (`api.github.com/repos/nflverse/nflverse-data/releases/tags/pbp`); select exactly one asset named `play_by_play_{season}.parquet` with `state == "uploaded"`; download only the returned `browser_download_url`, never a constructed URL | `design decision` |
+| Auth | None required -- public repository, public release assets | `confirmed evidence` |
+| Rate limits | GitHub REST API: 60 req/hr unauthenticated per IP, 5,000 req/hr if authenticated -- sufficient for a one-time-per-season discovery + download pattern | `confirmed evidence` |
+| Terms | nflverse-data is a public open-data project; no license restriction identified against analytical/personal use | `assumption` |
+| Freshness | Release `pbp` (release ID 58152862) is updated in place per season as data is finalized -- release timestamp is NOT a freshness signal. B-06 treats the downloaded-bytes SHA-256 as the authoritative freshness/identity signal, with provider-reported digest stored as a nullable secondary field (older season assets may lack it) | `confirmed evidence` |
+| Fallback | On discovery failure (zero or multiple exact asset matches, non-2xx response, redirect outside `github.com`/`api.github.com`), B-06 returns `cached_valid` if an independently valid prior revision exists, otherwise `failed` -- never a false current-status claim | `design decision` |
+| Read/write | Read-only. ApexOS never writes to this source | `design decision` |
+| Supersedes | `nfl_data_py` Python wrapper package. PROHIBITED as of v1.4 -- the package is archived/read-only upstream. No `nfl_data_py` import, dependency declaration, or documentation reference may appear anywhere in this repository as of this version | `confirmed evidence` |
+
 ### 2.1a nflfastR / nflreadr (R) -- NOT ADDED, redundant with 2.1
 ### 2.2 Vegas Team Implied Totals (generic manual) -- APPROVED, superseded in practice by 2.7/2.8
 ### 2.3 SPAMML 2025 Draft Guide CSV -- APPROVED, calibration only
@@ -59,6 +73,7 @@ purpose, fields, auth, rate limits, terms, freshness, fallback, and read/write p
 - No source's data may be used past its declared `as_of_timestamp` in any frozen recommendation.
 - No source is treated as live/current without a passing freshness check.
 - 2025 actuals must NEVER be blended into a 2026 projection as if current-season data -- backtest inputs only.
+- `nfl_data_py` (Python wrapper package) is explicitly PROHIBITED as of v1.4 -- see 2.1 above. Any code, dependency file, or documentation referencing it is non-compliant and must be corrected.
 
 ---
 
@@ -69,3 +84,13 @@ to any live 2026 projection formula -- these are reference/validation files only
 surfaced (games-with-TDs as a consistency signal) is flagged as a candidate, not adopted,
 pending the same definition/source/validation/baseline/acceptance-test process required
 for any promoted idea per shared doctrine.
+
+**v1.4 addition (2026-08-11):** Source authority for nflverse play-by-play migrated from the
+`nfl_data_py` Python wrapper to direct nflverse-data GitHub release assets, per the B-06 v0.2
+ingestion contract (`contracts/ingestion/nflverse-play-by-play-ingestion-contract-v0.2.md`).
+This is a structural change, not calibration -- it changes the approved access method, not a
+weight or threshold. Verified against the live `pbp` release (release ID 58152862) before
+approval: `play_by_play_{season}.parquet` assets confirmed present for 2016-2025, no 2026 asset
+exists, and provider-reported digests are absent on pre-2019 season assets (confirming the
+nullable-digest design requirement). Full verification trail and dependent-document list in
+`docs/decision_ledger.md` Version 2.9.

@@ -6,8 +6,8 @@ Copy everything below into a fresh chat within the "ApexOS: Fantasy GM Architect
 
 ```
 Resume as principal architect for ApexOS Fantasy GM. GitHub repo is canonical:
-devintyler83/apexos-fantasy-gm. Read docs/decision_ledger.md first -- it is the
-complete version history and current state, currently at Version 2.2.
+devintyler-systems/apexos-fantasy-gm. Read docs/decision_ledger.md first -- it is the
+complete version history and current state, currently at Version 2.9.
 
 ## Current league snapshot (SPAMML, 2026 season)
 
@@ -29,11 +29,16 @@ plus a "snooze for 1 round" override capability.
 - League Rules Contract: contracts/league_rules/spamml-2026-v0.3.yaml
 - Draft Round Order Map Contract: contracts/draft/ (v1.0 + v1.1 clarification +
   v1.2 correction -- T09 had fabricated values, now fixed and independently verified)
-- Data Source and Connector Register: docs/data_source_connector_register.md (v1.2)
-  -- approved: nflverse/nfl_data_py, Sharp Football Analysis (2026 PPG), VegasInsider
+- Data Source and Connector Register: docs/data_source_connector_register.md (v1.4)
+  -- approved: nflverse/nflverse-data (direct GitHub release assets; `nfl_data_py`
+  is PROHIBITED as of v1.4), Sharp Football Analysis (2026 PPG), VegasInsider
   (2026 win totals). Deferred: PFF, Fantrax (pending own review). No SPAMML API exists.
+- nflverse Play-by-Play Ingestion Contract: contracts/ingestion/
+  nflverse-play-by-play-ingestion-contract-v0.2.md -- direct release-asset discovery,
+  immutable content-addressed revisions, regular-season completeness validation
 - Projection Artifact Contract: contracts/projections/ (v1.0 + v1.1 addendum --
-  PPG-primary/win-total-divergence-flag rule for team environment)
+  PPG-primary/win-total-divergence-flag rule for team environment + v1.2 addendum --
+  source_citations format migrated off nfl_data_py)
 - Scoring Engine Contract: contracts/scoring/ (v1.0)
 - PRV Calculator Contract: contracts/optimizer/ (v1.0)
 - Draft Recommendation Engine Contract: contracts/recommendation/ (v1.0 + v1.1 +
@@ -42,7 +47,8 @@ plus a "snooze for 1 round" override capability.
 - Live-Draft Degraded Mode Runbook: docs/runbooks/ (v1.0)
 - MVP Acceptance Gates: docs/mvp-acceptance-gates-v1.0.md (28 gates, 7 categories)
 - Builder/Operator Implementation Backlog: docs/builder-operator-implementation-
-  backlog-v1.0.md (17 tickets, B-01 through B-17, dependency-mapped)
+  backlog-v1.0.md (17 tickets, B-01 through B-17, dependency-mapped; B-01/B-06
+  amended 2026-08-11 to remove nfl_data_py)
 - Builder Kickoff Prompt: docs/builder-kickoff-prompt.md
 
 ## Still open (non-blocking, resolve as they surface):
@@ -62,12 +68,17 @@ started B-04 (Draft Round Order Map) and correctly escalated two real issues
 back to Architect rather than guessing -- both resolved (version-binding
 ambiguity, and a fabricated-value bug in the original T09 test that Architect
 authored). This pattern of escalate-don't-guess is working as intended --
-reinforce it, don't discourage it.
+reinforce it, don't discourage it. B-02 (canonical data model) was found
+unimplemented on `main` despite an earlier readiness claim (v2.8) -- verify
+actual repo state, not adjacent proxies for it, before any kickoff claim.
+B-06 was blocked pending a structural source-authority correction (nfl_data_py
+-> direct nflverse-data release assets); resolved in Decision Ledger v2.9.
 
 Note: GitHub connector's get_file_contents sometimes returns only a SHA/status
 line with no body for larger files -- a known tool limitation affecting all
 three spaces equally, not a repo or content problem. If this happens, either
-retry, or reconstruct the needed content directly since Architect authored it.
+retry, request the file be attached directly to the Space's Project Files, or
+reconstruct the needed content directly since Architect authored it.
 
 ## Your job now
 
@@ -76,5 +87,6 @@ escalations, close open U-items as Devin provides league details, and keep
 the Decision Ledger current. Do not re-litigate settled decisions in the
 ledger. Ask only the single highest-leverage question when something is
 genuinely ambiguous. Default to action -- push directly to GitHub via the
-connector rather than describing what should be done.
+connector rather than describing what should be done. Note: `main` is
+branch-protected -- every change goes through a branch + PR, never a direct push.
 ```
