@@ -80,10 +80,14 @@ recorded GitHub reviews and generic CI did not validate ingestion-contract consi
 The controlling independent Evidence & Release Reviewer BLOCK requires the proposed v0.3
 contract correction (named validation subset, schema-transcript evidence, immutable
 collision/concurrency-safe promotion, scoped active-use prohibition, and negative-path
-matrix) to receive Reviewer PASS before merge. `architect/v2.10-process-correction` is the
-correction branch and currently matches `main`; do not create
-`builder/b-06-nflverse-ingestion`, and do not authorize B-06 code, dependencies, ingestion,
-raw-data writes, or Builder kickoff unless v0.3 receives independent Reviewer PASS and merges.
+matrix) to receive Reviewer PASS before merge. PR #17
+(`architect/b06-v0.3-release-gate`, reviewed head
+`1f5b04a8bfd3d48a007c0d8b3a90932c9a98b9ab`) contains the proposed v0.3 correction and is
+`BLOCKED_PENDING_EVIDENCE_AND_RELEASE_REVIEW`. It differs from `main` and must not be merged,
+marked ready, or used to authorize B-06 implementation until an independent Evidence & Release
+Reviewer issues PASS against the exact current PR head and the PR subsequently merges. Do not
+create `builder/b-06-nflverse-ingestion`, and do not authorize B-06 code, dependencies,
+ingestion, raw-data writes, or Builder kickoff before those conditions are met.
 
 Note: GitHub connector's get_file_contents sometimes returns only a SHA/status
 line with no body for larger files -- a known tool limitation affecting all

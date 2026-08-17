@@ -1,0 +1,14 @@
+B-06 review-only Parquet schema transcript v1
+source=asset_url=https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2025.parquet
+pyarrow_version=22.0.0
+local_sha256=c6ecedd6d678cc37ed316b23ef84ee1ec6abb69c514bb11868a7ebd5a367df29
+required_columns=season,season_type,game_id,yardline_100,touchdown,rush_attempt,pass_attempt
+columns:
+- name=season; arrow_logical_type=int32; arrow_nullable=true; parquet_logical_type=None; parquet_physical_type=INT32
+- name=season_type; arrow_logical_type=string; arrow_nullable=true; parquet_logical_type=String; parquet_physical_type=BYTE_ARRAY
+- name=game_id; arrow_logical_type=string; arrow_nullable=true; parquet_logical_type=String; parquet_physical_type=BYTE_ARRAY
+- name=yardline_100; arrow_logical_type=double; arrow_nullable=true; parquet_logical_type=None; parquet_physical_type=DOUBLE
+- name=touchdown; arrow_logical_type=double; arrow_nullable=true; parquet_logical_type=None; parquet_physical_type=DOUBLE
+- name=rush_attempt; arrow_logical_type=double; arrow_nullable=true; parquet_logical_type=None; parquet_physical_type=DOUBLE
+- name=pass_attempt; arrow_logical_type=double; arrow_nullable=true; parquet_logical_type=None; parquet_physical_type=DOUBLE
+required_columns_missing=<none>
