@@ -2,6 +2,92 @@
 
 ## Version History
 
+### Version 2.11 — 2026-08-17
+**Change:** Recorded the independent Evidence & Release Reviewer PASS verdict on the proposed
+B-06 v0.3 ingestion contract correction (PR #17) and resolved an over-broad merge-gate
+definition the Reviewer surfaced while re-validating a post-PASS head change.
+
+The Reviewer first issued PASS against PR #17 head `fba2e8959813c40fad9d176339a04cb7a486cc95`
+for contract-release criteria AC-04 (independent Parquet schema transcript naming all seven
+required columns; `touchdown`, `rush_attempt`, and `pass_attempt` observed as Arrow `double` /
+Parquet `DOUBLE`), AC-05 (2025 release asset provider digest present and matching independently
+computed local SHA-256), AC-06 (2016 release asset provider digest absent, local SHA-256 still
+computed and authoritative), and AC-16 (independent-validator isolation: a separate reviewer
+session reproduced release-asset retrieval and schema inspection outside Architect/Builder
+assertion). The scoped `nfl_data_py` active-use scan found no active-use matches; the PR
+remained contract/evidence-only with no B-06 ingestion adapter, raw/canonical-data write,
+database write, pointer publication, or external write.
+
+A subsequent docs-only commit (`14af020dc914b650cc7570e76a0fd4debd1114d6`) updated
+`docs/architect-continuation-prompt.md` to reference the current reviewed head, moving PR #17's
+head and technically un-binding the prior PASS per AC-16's exact-current-head requirement. The
+Reviewer reissued PASS against the new head after independently confirming, via blob-SHA
+comparison, that `contracts/ingestion/nflverse-play-by-play-ingestion-contract-v0.3.md`,
+`docs/decision_ledger.md`, both evidence documents, the review utility, and its test file were
+byte-identical across both heads -- the only delta was the continuation-prompt file. AC-04,
+AC-05, AC-06, and AC-16 remain PASS under the reissued verdict; AC-01–AC-03 and AC-07–AC-15
+(required-subset validation, type/domain rules, discovery/Parquet/game-count failure handling,
+concurrency-safe promotion, pointer invariance, stale labeling, and the active-use scan
+fixture) remain unaddressed by either verdict and require B-06 implementation code to execute.
+
+Separately, this review evidence reconciled a provenance discrepancy against v2.9's historical
+2025 asset record: v2.9 recorded 2025 asset ID `354718810` (20,343,981 bytes, digest
+`sha256:3730c4db2ab99d2dfc4017de975b7610c46c35301b9280b65c03de1b1c74265a`); the independent
+review-evidence retrieval instead observed 2025 asset ID `512957613` (20,337,029 bytes, digest
+`sha256:c6ecedd6d678cc37ed316b23ef84ee1ec6abb69c514bb11868a7ebd5a367df29`) for the same asset
+name at retrieval time. No mechanism for the difference is claimed; v2.9's record remains a
+historical observation, and the current evidence package is controlling only for its own
+time-bounded retrieval window.
+
+Architect further resolved an over-broad merge-gate definition: PR #17's original "Controlling
+gate" text required Reviewer validation of five items to merge, including collision-safe
+concurrency-safe promotion and the complete negative-path/acceptance-test matrix -- both of
+which require B-06 implementation code that does not exist in this PR. As written, the PR could
+never merge, including for its own contract text, because its merge condition demanded
+implementation-only evidence. Architect split the gate: this PR's merge now requires only the
+satisfied contract-release criteria (AC-04, AC-05, AC-06, AC-16); AC-01–AC-03 and AC-07–AC-15
+are reclassified as a separate, later B-06 implementation-kickoff gate, not a condition of
+merging this contract-only PR. PR #17's body was updated to reflect this split and to bind its
+Reviewer-verdict section to the current head.
+
+**Type:** Calibration (workflow/gate-definition correction and independent-review evidence
+record; does not revise source authority, canonical schema, or approved contract text).
+
+**Controlling gate:** `contracts/ingestion/nflverse-play-by-play-ingestion-contract-v0.3.md`
+has satisfied its contract-release gate (AC-04, AC-05, AC-06, AC-16) as of head
+`14af020dc914b650cc7570e76a0fd4debd1114d6` and may proceed toward merge on that basis alone.
+The separate B-06 implementation-kickoff gate (AC-01–AC-03, AC-07–AC-15) remains
+`BLOCKED_PENDING_EVIDENCE_AND_RELEASE_REVIEW`. Do not create `builder/b-06-nflverse-ingestion`;
+do not begin B-06 code, dependency installation, ingestion, raw-data write, canonical-data
+write, or Builder implementation work before that separate PASS and its own merge.
+
+**Evidence and process record:** PR #17 comments record the initial PASS (against
+`fba2e8959813c40fad9d176339a04cb7a486cc95`), the Architect delta-scope note (documenting the
+`fba2e895 → 14af020` head transition and confirming it touched only the continuation-prompt
+file), and the reissued PASS (against `14af020dc914b650cc7570e76a0fd4debd1114d6`, with
+per-path blob-SHA evidence). `docs/evidence/b06-pr17-release-review-evidence-v1.md` and its two
+schema-transcript files (`b06-pr17-release-schema-transcript-2016-v1.txt`,
+`b06-pr17-release-schema-transcript-2025-v1.txt`) remain the underlying AC-04/05/06 evidence and
+were independently confirmed byte-unchanged at the reissued head.
+
+**Impact on build sequence:**
+- PR #17 is eligible for merge as contract text only, on the strength of the AC-04/05/06/16
+  PASS; merging it does not authorize B-06 implementation
+- B-06 remains hard-blocked pending a separate, later Reviewer PASS against an actual
+  implementation PR covering AC-01–AC-03 and AC-07–AC-15
+- v0.2 remains the current committed source-access baseline until v0.3 merges; v0.3 does not
+  revise the direct `nflverse/nflverse-data` source authority established by v0.2
+- The 2025 asset provenance discrepancy (`354718810` vs. `512957613`) is logged as a historical
+  reconciliation only; it does not require a ledger correction to v2.9 and does not block this
+  gate
+
+**Highest-leverage next artifact:** Merge PR #17 (contract text only) under the satisfied
+contract-release gate, then open a separate B-06 implementation-kickoff decision requiring a
+fresh Reviewer PASS on AC-01–AC-03 and AC-07–AC-15 against real implementation code. U01 (2026
+draft position) remains open and HIGH risk; still TBD per Devin.
+
+---
+
 ### Version 2.10 — 2026-08-11
 **Change:** Corrected the B-06 release process after PR #16 merged commit
 `29c3b9451c52b90a521dd4e8deb1378ebdbc0b22` was self-merged by `devintyler83` with zero
