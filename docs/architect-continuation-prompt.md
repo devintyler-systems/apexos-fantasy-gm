@@ -77,17 +77,21 @@ unimplemented on `main` despite an earlier readiness claim (v2.8) -- verify
 actual repo state, not adjacent proxies for it, before any kickoff claim.
 PR #16 merged the substantive source-authority migration, but was self-merged with zero
 recorded GitHub reviews and generic CI did not validate ingestion-contract consistency.
-The controlling independent Evidence & Release Reviewer BLOCK requires the proposed v0.3
+The controlling independent Evidence & Release Reviewer BLOCK required the proposed v0.3
 contract correction (named validation subset, schema-transcript evidence, immutable
 collision/concurrency-safe promotion, scoped active-use prohibition, and negative-path
 matrix) to receive Reviewer PASS before merge. PR #17
-(`architect/b06-v0.3-release-gate`, reviewed head
-`1f5b04a8bfd3d48a007c0d8b3a90932c9a98b9ab`) contains the proposed v0.3 correction and is
-`BLOCKED_PENDING_EVIDENCE_AND_RELEASE_REVIEW`. It differs from `main` and must not be merged,
-marked ready, or used to authorize B-06 implementation until an independent Evidence & Release
-Reviewer issues PASS against the exact current PR head and the PR subsequently merges. Do not
-create `builder/b-06-nflverse-ingestion`, and do not authorize B-06 code, dependencies,
-ingestion, raw-data writes, or Builder kickoff before those conditions are met.
+(`architect/b06-v0.3-release-gate`, current head
+`fba2e8959813c40fad9d176339a04cb7a486cc95`) contains the proposed v0.3 correction. The
+independent Evidence & Release Reviewer issued PASS against this exact head for
+contract-release criteria AC-04, AC-05, AC-06, and AC-16 only (see PR #17 comment
+`issuecomment-5311772055`). The PR remains `BLOCKED_PENDING_EVIDENCE_AND_RELEASE_REVIEW`
+because AC-01--AC-03 and AC-07--AC-15 (implementation-release gates) are not satisfied by
+this review. It differs from `main` and must not be merged, marked ready, or used to
+authorize B-06 implementation until those remaining gates also pass against the exact
+current PR head and the PR subsequently merges. Do not create
+`builder/b-06-nflverse-ingestion`, and do not authorize B-06 code, dependencies, ingestion,
+raw-data writes, or Builder kickoff before those conditions are met.
 
 Note: GitHub connector's get_file_contents sometimes returns only a SHA/status
 line with no body for larger files -- a known tool limitation affecting all
