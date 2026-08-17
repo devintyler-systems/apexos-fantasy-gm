@@ -71,8 +71,9 @@ schema-transcript files (`b06-pr17-release-schema-transcript-2016-v1.txt`,
 were independently confirmed byte-unchanged at the reissued head.
 
 **Impact on build sequence:**
-- PR #17 is eligible for merge as contract text only, on the strength of the AC-04/05/06/16
-  PASS; merging it does not authorize B-06 implementation
+- The satisfied AC-04/05/06/16 PASS makes PR #17 eligible for merge consideration as contract
+  text only; the PASS itself does not authorize or trigger merge -- merging remains a separate,
+  explicit user decision
 - B-06 remains hard-blocked pending a separate, later Reviewer PASS against an actual
   implementation PR covering AC-01–AC-03 and AC-07–AC-15
 - v0.2 remains the current committed source-access baseline until v0.3 merges; v0.3 does not
@@ -81,10 +82,11 @@ were independently confirmed byte-unchanged at the reissued head.
   reconciliation only; it does not require a ledger correction to v2.9 and does not block this
   gate
 
-**Highest-leverage next artifact:** Merge PR #17 (contract text only) under the satisfied
-contract-release gate, then open a separate B-06 implementation-kickoff decision requiring a
-fresh Reviewer PASS on AC-01–AC-03 and AC-07–AC-15 against real implementation code. U01 (2026
-draft position) remains open and HIGH risk; still TBD per Devin.
+**Highest-leverage next artifact:** Await explicit user authorization to merge PR #17 (contract
+text only); the satisfied contract-release gate does not itself authorize that merge. Once
+merged, open a separate B-06 implementation-kickoff decision requiring a fresh Reviewer PASS on
+AC-01–AC-03 and AC-07–AC-15 against real implementation code. U01 (2026 draft position) remains
+open and HIGH risk; still TBD per Devin.
 
 ---
 
