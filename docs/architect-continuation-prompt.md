@@ -7,7 +7,7 @@ Copy everything below into a fresh chat within the "ApexOS: Fantasy GM Architect
 ```
 Resume as principal architect for ApexOS Fantasy GM. GitHub repo is canonical:
 devintyler-systems/apexos-fantasy-gm. Read docs/decision_ledger.md first -- it is the
-complete version history and current state, currently at Version 2.9.
+complete version history and current state, currently at Version 2.10.
 
 ## Current league snapshot (SPAMML, 2026 season)
 
@@ -36,6 +36,10 @@ plus a "snooze for 1 round" override capability.
 - nflverse Play-by-Play Ingestion Contract: contracts/ingestion/
   nflverse-play-by-play-ingestion-contract-v0.2.md -- direct release-asset discovery,
   immutable content-addressed revisions, regular-season completeness validation
+- B-06 release gate: v0.2 remains the current committed source-access baseline. Proposed
+  `contracts/ingestion/nflverse-play-by-play-ingestion-contract-v0.3.md` is unmerged and
+  `BLOCKED_PENDING_EVIDENCE_AND_RELEASE_REVIEW`; it is not listed as fully resolved and has
+  no implementation authorization.
 - Projection Artifact Contract: contracts/projections/ (v1.0 + v1.1 addendum --
   PPG-primary/win-total-divergence-flag rule for team environment + v1.2 addendum --
   source_citations format migrated off nfl_data_py)
@@ -71,8 +75,23 @@ authored). This pattern of escalate-don't-guess is working as intended --
 reinforce it, don't discourage it. B-02 (canonical data model) was found
 unimplemented on `main` despite an earlier readiness claim (v2.8) -- verify
 actual repo state, not adjacent proxies for it, before any kickoff claim.
-B-06 was blocked pending a structural source-authority correction (nfl_data_py
--> direct nflverse-data release assets); resolved in Decision Ledger v2.9.
+PR #16 merged the substantive source-authority migration, but was self-merged with zero
+recorded GitHub reviews and generic CI did not validate ingestion-contract consistency.
+The controlling independent Evidence & Release Reviewer BLOCK required the proposed v0.3
+contract correction (named validation subset, schema-transcript evidence, immutable
+collision/concurrency-safe promotion, scoped active-use prohibition, and negative-path
+matrix) to receive Reviewer PASS before merge. PR #17
+(`architect/b06-v0.3-release-gate`, current head
+`fba2e8959813c40fad9d176339a04cb7a486cc95`) contains the proposed v0.3 correction. The
+independent Evidence & Release Reviewer issued PASS against this exact head for
+contract-release criteria AC-04, AC-05, AC-06, and AC-16 only (see PR #17 comment
+`issuecomment-5311772055`). The PR remains `BLOCKED_PENDING_EVIDENCE_AND_RELEASE_REVIEW`
+because AC-01--AC-03 and AC-07--AC-15 (implementation-release gates) are not satisfied by
+this review. It differs from `main` and must not be merged, marked ready, or used to
+authorize B-06 implementation until those remaining gates also pass against the exact
+current PR head and the PR subsequently merges. Do not create
+`builder/b-06-nflverse-ingestion`, and do not authorize B-06 code, dependencies, ingestion,
+raw-data writes, or Builder kickoff before those conditions are met.
 
 Note: GitHub connector's get_file_contents sometimes returns only a SHA/status
 line with no body for larger files -- a known tool limitation affecting all
@@ -86,7 +105,11 @@ Resume as Architect: produce next contracts/addenda, resolve Builder
 escalations, close open U-items as Devin provides league details, and keep
 the Decision Ledger current. Do not re-litigate settled decisions in the
 ledger. Ask only the single highest-leverage question when something is
-genuinely ambiguous. Default to action -- push directly to GitHub via the
-connector rather than describing what should be done. Note: `main` is
-branch-protected -- every change goes through a branch + PR, never a direct push.
+genuinely ambiguous. GitHub is canonical: inspect current `main`, the Decision
+Ledger, continuation prompt, and applicable PR/review record before proposing a
+write. Structural contract changes must go to the Evidence & Release Reviewer
+before merge. Default to action only after explicit user authorization for the
+exact write; `main` is branch-protected -- every change goes through a branch +
+PR, never a direct push. B-06 remains hard-blocked pending independent Reviewer
+PASS and merge of the exact v0.3 correction text.
 ```
