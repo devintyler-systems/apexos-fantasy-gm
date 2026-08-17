@@ -2,6 +2,58 @@
 
 ## Version History
 
+### Version 2.10 — 2026-08-11
+**Change:** Corrected the B-06 release process after PR #16 merged commit
+`29c3b9451c52b90a521dd4e8deb1378ebdbc0b22` was self-merged by `devintyler83` with zero
+recorded GitHub reviews. Generic CI checks did not validate the v0.2 ingestion contract's
+named required validation columns, nullable/provider-versus-local-digest behavior, immutable
+promotion semantics, concurrency behavior, or active-use prohibition scope. Version 2.9's
+substantive migration remains in force: direct `nflverse/nflverse-data` release assets remain
+the approved source-access model, v0.2 remains the committed source-access baseline, and the
+Projection Artifact Contract v1.2 addendum pattern remains preserved. This entry corrects
+v2.9's false implication that its independent-review gate was satisfied and replaces its
+stale next-artifact instruction that Builder should open B-06.
+
+**Type:** Calibration (process and release-gate correction). The proposed v0.3 ingestion
+contract is the required **structural contract correction** because it repairs the first broken
+contract boundary identified by the independent Evidence & Release Reviewer: named required
+columns, collision/concurrency-safe immutable promotion, and an enforceable active-use scope
+for the `nfl_data_py` prohibition.
+
+**Controlling gate:** `contracts/ingestion/nflverse-play-by-play-ingestion-contract-v0.3.md`
+is proposed only and is not effective until an independent Evidence & Release Reviewer PASS on
+its exact PR text and subsequent merge to `main`. The correction PR status is
+`BLOCKED_PENDING_EVIDENCE_AND_RELEASE_REVIEW`. Do not create
+`builder/b-06-nflverse-ingestion`; do not begin B-06 code, dependency, ingestion, raw-data
+write, canonical-data write, or Builder implementation work before that PASS and merge.
+
+**Evidence and process record:** PR #16 comments `issuecomment-5258159298`,
+`issuecomment-5258316240`, and controlling `issuecomment-5258375598` record the self-merge,
+zero reviews, pending v2.10 correction, and independent retroactive BLOCK. The Reviewer
+confirmed the merged commit, the `pbp` release ID `58152862`, one uploaded
+`play_by_play_{season}.parquet` asset for each 2016–2025 season, no 2026 asset, 2025 asset ID
+`354718810` (20,343,981 bytes) with provider digest
+`sha256:3730c4db2ab99d2dfc4017de975b7610c46c35301b9280b65c03de1b1c74265a`, and 2016 asset ID
+`250647177` without a provider digest. This sustains nullable provider digest plus mandatory
+local SHA-256; it does not substitute for the required independent Parquet schema transcript.
+
+**Impact on build sequence:**
+- PR #16's six intended document/contract files and v2.9 direct-source migration remain
+  substantively intact; this correction does not revise source authority or authorize an
+  implementation branch
+- v0.2 remains the current committed source-access baseline while v0.3 is proposed, unmerged,
+  and blocked pending independent review
+- B-06 is hard-blocked until Reviewer PASS on the exact v0.3 text and merge; generic CI,
+  Architect assertion, PR authorship, or self-merge is not substitute evidence
+- Structural contract changes must go to the Evidence & Release Reviewer before merge; the
+  Reviewer must independently validate the release-asset schema transcript and the v0.3
+  acceptance matrix
+
+**Highest-leverage next artifact:** Evidence & Release Reviewer verdict on the exact v0.3
+correction PR. Builder branch creation is explicitly prohibited pending that verdict and merge.
+
+---
+
 ### Version 2.9 — 2026-08-11
 **Change:** Resolved the B-06 v0.2 proposal's structural blocker: the repository's Data Source
 Register, B-01/B-06 backlog lines, and Projection Artifact Contract v1.0 all named `nfl_data_py`
