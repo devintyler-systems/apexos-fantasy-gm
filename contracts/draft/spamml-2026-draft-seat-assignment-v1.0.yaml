@@ -1,0 +1,166 @@
+artifact:
+  name: spamml_2026_draft_seat_assignment
+  version: "1.0"
+  status: CONFIRMED_MANUAL_LEAGUE_STATE
+  owner: Architect
+  change_class: calibration
+  created_at_utc: "2026-08-18T02:53:00Z"
+  as_of_timestamp_utc: "2026-08-18T02:46:00Z"
+  canonical_league_rules_artifact: contracts/league_rules/spamml-2026-v0.3.yaml
+  depends_on:
+    - contracts/draft/draft-round-order-map-contract-v1.0.md
+    - contracts/draft/draft-round-order-map-contract-v1.1-clarification.md
+    - contracts/draft/draft-round-order-map-contract-v1.2-correction.md
+
+identity:
+  league_id: SPAMML
+  season: 2026
+  league_name: SPAMML
+  manager_team_name: Professor FleX
+  manager_draft_seat: 4
+
+source_provenance:
+  source_type: manual_league_manager_confirmation
+  source_provider: league_operator
+  source_reference: user-provided ordered draft-seat list
+  retrieved_at_utc: "2026-08-18T02:46:00Z"
+  effective_time_utc: null
+  parser_version: manual-entry-v1
+  canonical_identity_mapping_status: unambiguous
+  notes:
+    - "The manager team is Professor FleX at seat 4."
+    - "Spam at seat 10 is a distinct participant and is not the manager team."
+    - "Team names are displayed labels only; no platform account identity is asserted."
+
+draft_state:
+  format: snake_with_pivot_rounds
+  league_size: 16
+  draft_date_time_utc: null
+  draft_date_time_status: unknown_not_set
+  draft_clock_status: unknown
+  selection_state: not_started
+  manual_entry_mode: permanent_primary_input
+
+seat_assignments:
+  - draft_seat: 1
+    team_name: Cockney Punter
+  - draft_seat: 2
+    team_name: Step Burrow
+  - draft_seat: 3
+    team_name: Prime Tut
+  - draft_seat: 4
+    team_name: Professor FleX
+    is_manager_team: true
+  - draft_seat: 5
+    team_name: Shaq in His Prime
+  - draft_seat: 6
+    team_name: Hurricane Ditka
+  - draft_seat: 7
+    team_name: King of the North
+  - draft_seat: 8
+    team_name: Curtis My Favorite Martin
+  - draft_seat: 9
+    team_name: Cork Dork
+  - draft_seat: 10
+    team_name: Spam
+  - draft_seat: 11
+    team_name: Biggus Dickus
+  - draft_seat: 12
+    team_name: Slama Jama
+  - draft_seat: 13
+    team_name: El Borracho
+  - draft_seat: 14
+    team_name: Mr. Creosote
+  - draft_seat: 15
+    team_name: Mulligan
+  - draft_seat: 16
+    team_name: Rock Duro
+
+contract:
+  decision_statement: >-
+    This artifact binds the confirmed SPAMML 2026 participant ordering to draft seats and
+    identifies Professor FleX as the manager team at seat 4. It does not alter the reusable
+    draft-round order map, which alone derives pick order from league format and seat.
+  scope:
+    - "Persist the ordered 1..16 draft-seat assignment as league-specific state."
+    - "Resolve manager_team_name Professor FleX to manager_draft_seat 4."
+    - "Expose a null/unknown draft date-time without inferring a draft schedule."
+  explicit_non_goals:
+    - "Does not set a draft date, time, clock, platform account identity, or pick state."
+    - "Does not modify league scoring, roster rules, round-order mechanics, or draft recommendations."
+    - "Does not authorize external-platform writes, draft automation, or any B-06 implementation work."
+  consumer_contract:
+    draft_state_manager:
+      required_input: seat_assignments
+      required_resolution: manager_team_name_to_manager_draft_seat
+      failure_behavior: >-
+        Enter degraded mode and require manual correction if seats are not exactly 1..16,
+        team names are duplicated, no manager seat is marked, or marked manager identity
+        disagrees with identity.manager_team_name and identity.manager_draft_seat.
+    draft_recommendation_adapter:
+      required_input: manager_draft_seat
+      order_derivation: >-
+        Resolve future manager pick numbers only through the versioned draft-round order map;
+        do not derive round order from this artifact alone.
+      limitation: >-
+        Until draft_date_time_utc and live pick state are supplied, recommendations must show
+        schedule and state freshness as unknown and may not claim live-draft status.
+
+acceptance_criteria:
+  - id: DSA-01
+    criterion: seat_completeness
+    pass_condition: "seat_assignments contains exactly 16 entries with every integer seat 1 through 16 exactly once."
+  - id: DSA-02
+    criterion: participant_identity_uniqueness
+    pass_condition: "team_name values are non-empty and unique under exact display-name matching."
+  - id: DSA-03
+    criterion: manager_seat_resolution
+    pass_condition: "Exactly one entry has is_manager_team: true; it is Professor FleX at seat 4 and matches identity.manager_draft_seat."
+  - id: DSA-04
+    criterion: no_schedule_inference
+    pass_condition: "draft_date_time_utc remains null and draft_date_time_status remains unknown_not_set until an operator supplies a confirmed value."
+  - id: DSA-05
+    criterion: map_separation
+    pass_condition: "No pick order is hard-coded; consumer uses the versioned draft-round order map to derive round/pick sequence."
+  - id: DSA-06
+    criterion: time_integrity
+    pass_condition: "source_provenance includes source type, retrieval timestamp, effective-time nullability, parser version, and canonical identity mapping status."
+
+assumptions_register:
+  - id: U02
+    item: draft_date_time_utc
+    status: open
+    default: null
+    affected_module: live_draft_workflow
+    risk: high
+    owner: league_operator
+    decision_deadline: before live draft
+  - id: U-DRAFT-01
+    item: team_name_display_stability
+    status: assumption
+    default: "Displayed team names remain the authoritative manual labels until corrected by the league operator."
+    affected_module: draft_state_manager
+    risk: medium
+    owner: league_operator
+    decision_deadline: before first pick
+
+known_limitations:
+  - "No draft date/time or clock has been confirmed."
+  - "No platform API or canonical platform-account mapping is available."
+  - "This artifact is league-specific manual state, not a reusable round-order algorithm."
+  - "A future team-name rename requires a new versioned assignment artifact or explicit amendment; do not destructively rewrite historical state."
+
+builder_handoff:
+  ordered_work:
+    - "Validate DSA-01 through DSA-06 when a consumer first loads this artifact."
+    - "Resolve Professor FleX to seat 4 through this artifact, then query the approved round-order map for pick sequence."
+    - "Expose unknown schedule state; request manual entry rather than inferring draft timing."
+  done_definition: >-
+    A consumer can deterministically resolve manager seat 4 and derive pick sequence through the
+    versioned round-order map, while preserving unknown schedule state and degraded-mode behavior.
+  test_requirements:
+    - "Generic test: exact seats 1..16 and unique display-name validation."
+    - "Time-integrity test: null schedule cannot become a claimed timestamp."
+    - "Causality trace: manager seat derives from this artifact; pick sequence derives from the round-order map."
+    - "Reversibility test: renamed team produces a new versioned artifact rather than mutation."
+    - "Independent acceptance test: DSA-01 through DSA-06 pass against the committed YAML."
