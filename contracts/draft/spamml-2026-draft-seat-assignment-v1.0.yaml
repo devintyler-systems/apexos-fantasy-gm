@@ -33,7 +33,12 @@ source_provenance:
     - "Team names are displayed labels only; no platform account identity is asserted."
 
 draft_state:
-  format: snake_with_pivot_rounds
+  format: non_standard_snake
+    # NORMATIVE VALUE: matches contracts/league_rules/spamml-2026-v0.3.yaml `draft.format`
+    # exactly (the sole approved format vocabulary for this league). This field is
+    # informational passthrough only; the versioned Draft Round Order Map contract
+    # (v1.0 + v1.1 + v1.2) remains the sole authority for deriving round/pick sequence
+    # from seat and format. A consumer must not re-derive pick order from this string.
   league_size: 16
   draft_date_time_utc: null
   draft_date_time_status: unknown_not_set
@@ -101,7 +106,8 @@ contract:
       required_input: manager_draft_seat
       order_derivation: >-
         Resolve future manager pick numbers only through the versioned draft-round order map;
-        do not derive round order from this artifact alone.
+        do not derive round order from this artifact alone. draft_state.format is informational
+        and MUST NOT be treated as a second, competing format authority.
       limitation: >-
         Until draft_date_time_utc and live pick state are supplied, recommendations must show
         schedule and state freshness as unknown and may not claim live-draft status.
@@ -121,7 +127,7 @@ acceptance_criteria:
     pass_condition: "draft_date_time_utc remains null and draft_date_time_status remains unknown_not_set until an operator supplies a confirmed value."
   - id: DSA-05
     criterion: map_separation
-    pass_condition: "No pick order is hard-coded; consumer uses the versioned draft-round order map to derive round/pick sequence."
+    pass_condition: "No pick order is hard-coded; consumer uses the versioned draft-round order map to derive round/pick sequence; draft_state.format is informational and matches the canonical league-rules artifact's format vocabulary exactly."
   - id: DSA-06
     criterion: time_integrity
     pass_condition: "source_provenance includes source type, retrieval timestamp, effective-time nullability, parser version, and canonical identity mapping status."
