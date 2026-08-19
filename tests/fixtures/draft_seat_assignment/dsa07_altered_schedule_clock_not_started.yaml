@@ -1,0 +1,237 @@
+artifact:
+  name: spamml_2026_draft_seat_assignment
+  version: "1.1"
+  status: CONFIRMED_MANUAL_LEAGUE_STATE
+  owner: Architect
+  change_class: calibration
+  created_at_utc: "2026-08-18T21:52:00Z"
+  as_of_timestamp_utc: "2026-08-18T22:10:00Z"
+  amends: contracts/draft/spamml-2026-draft-seat-assignment-v1.0.yaml
+  amendment_note: >-
+    Non-destructive amendment. v1.0 remains on record unmodified; this version resolves
+    U02 (draft_date_time_utc) and U-DRAFT-02 (draft_clock_status) only. Seat assignments
+    and manager resolution are unchanged from v1.0.
+  canonical_league_rules_artifact: contracts/league_rules/spamml-2026-v0.4.yaml
+  depends_on:
+    - contracts/draft/draft-round-order-map-contract-v1.0.md
+    - contracts/draft/draft-round-order-map-contract-v1.1-clarification.md
+    - contracts/draft/draft-round-order-map-contract-v1.2-correction.md
+
+identity:
+  league_id: SPAMML
+  season: 2026
+  league_name: SPAMML
+  manager_team_name: Professor FleX
+  manager_draft_seat: 4
+
+source_provenance:
+  source_type: manual_league_manager_confirmation
+  source_provider: league_operator
+  source_reference: user-provided ordered draft-seat list
+  retrieved_at_utc: "2026-08-18T02:46:00Z"
+  effective_time_utc: null
+  parser_version: manual-entry-v1
+  canonical_identity_mapping_status: unambiguous
+  notes:
+    - "The manager team is Professor FleX at seat 4."
+    - "Spam at seat 10 is a distinct participant and is not the manager team."
+    - "Team names are displayed labels only; no platform account identity is asserted."
+
+draft_date_time_provenance:
+  source_type: manual_league_manager_confirmation
+  source_provider: league_operator
+  source_reference: "operator-supplied draft schedule: Monday, August 31, 2026, 6:00 PM Pacific (Chico, California)"
+  retrieved_at_utc: "2026-08-18T21:52:00Z"
+  effective_time_utc: "2026-09-01T01:00:00Z"
+  timezone: "America/Los_Angeles"
+    # NORMATIVE: IANA timezone identifier is the durable source-of-record for this instant.
+  utc_offset: "-07:00"
+    # Observed offset at this instant (DST-active). Descriptive only; the IANA zone plus the
+    # UTC instant above is what a parser must validate against, not this offset string.
+  timezone_abbreviation: "PDT"
+    # Descriptive/display-only abbreviation. Not a timezone identifier; do not parse against it.
+  parser_version: manual-entry-v1
+
+draft_state:
+  format: non_standard_snake
+    # NORMATIVE VALUE: matches contracts/league_rules/spamml-2026-v0.4.yaml `draft.format`
+    # exactly (the sole approved format vocabulary for this league). This field is
+    # informational passthrough only; the versioned Draft Round Order Map contract
+    # (v1.0 + v1.1 + v1.2) remains the sole authority for deriving round/pick sequence
+    # from seat and format. A consumer must not re-derive pick order from this string.
+  league_size: 16
+  draft_date_time_utc: "2040-01-01T00:00:00Z"
+    # Equivalent to Monday, August 31, 2026, 6:00 PM America/Los_Angeles (PDT).
+  draft_date_time_status: confirmed
+  draft_clock_status: pending_manual_confirmation
+    # NORMATIVE VALUE, aligned with contracts/league_rules/spamml-2026-v0.4.yaml's U03
+    # resolution: draft_clock_config.timer_enabled: false. This field is informational
+    # passthrough only; League Rules Contract v0.4 remains the sole clock-configuration
+    # authority. A consumer must treat "confirmed_untimed" here and "timer_enabled: false"
+    # there as one fact expressed in two artifacts, never as two independent facts that
+    # could diverge.
+  selection_state: not_started
+    # Confirming draft_date_time_utc and draft_clock_status does NOT change selection_state.
+    # See DSA-07: a real-time pick feed and an explicit state transition are required before
+    # any live-draft claim, independent of how complete the schedule/clock data is.
+  manual_entry_mode: permanent_primary_input
+
+seat_assignments:
+  - draft_seat: 1
+    team_name: Cockney Punter
+  - draft_seat: 2
+    team_name: Step Burrow
+  - draft_seat: 3
+    team_name: Prime Tut
+  - draft_seat: 4
+    team_name: Professor FleX
+    is_manager_team: true
+  - draft_seat: 5
+    team_name: Shaq in His Prime
+  - draft_seat: 6
+    team_name: Hurricane Ditka
+  - draft_seat: 7
+    team_name: King of the North
+  - draft_seat: 8
+    team_name: Curtis My Favorite Martin
+  - draft_seat: 9
+    team_name: Cork Dork
+  - draft_seat: 10
+    team_name: Spam
+  - draft_seat: 11
+    team_name: Biggus Dickus
+  - draft_seat: 12
+    team_name: Slama Jama
+  - draft_seat: 13
+    team_name: El Borracho
+  - draft_seat: 14
+    team_name: Mr. Creosote
+  - draft_seat: 15
+    team_name: Mulligan
+  - draft_seat: 16
+    team_name: Rock Duro
+
+contract:
+  decision_statement: >-
+    This artifact binds the confirmed SPAMML 2026 participant ordering to draft seats,
+    identifies Professor FleX as the manager team at seat 4, and (as of v1.1) records the
+    operator-confirmed draft date/time and the already-resolved untimed-clock state. It does
+    not alter the reusable draft-round order map, which alone derives pick order from league
+    format and seat.
+  scope:
+    - "Persist the ordered 1..16 draft-seat assignment as league-specific state."
+    - "Resolve manager_team_name Professor FleX to manager_draft_seat 4."
+    - "Record the operator-confirmed draft_date_time_utc, replacing the prior null/unknown state."
+    - "Mirror League Rules Contract v0.4's confirmed untimed-clock state (draft_clock_status: confirmed_untimed) without becoming a second authority for it."
+  explicit_non_goals:
+    - "Does not define or override draft clock/timer configuration; League Rules Contract v0.4 (draft_clock_config) is the sole authority."
+    - "Does not modify league scoring, roster rules, round-order mechanics, or draft recommendations."
+    - "Does not authorize external-platform writes, draft automation, or any B-06 implementation work."
+    - "Does not claim live-draft or in-progress status; selection_state remains not_started."
+  consumer_contract:
+    draft_state_manager:
+      required_input: seat_assignments
+      required_resolution: manager_team_name_to_manager_draft_seat
+      failure_behavior: >-
+        Enter degraded mode and require manual correction if seats are not exactly 1..16,
+        team names are duplicated, no manager seat is marked, or marked manager identity
+        disagrees with identity.manager_team_name and identity.manager_draft_seat.
+    draft_recommendation_adapter:
+      required_input: manager_draft_seat
+      order_derivation: >-
+        Resolve future manager pick numbers only through the versioned draft-round order map;
+        do not derive round order from this artifact alone. draft_state.format is informational
+        and MUST NOT be treated as a second, competing format authority.
+      limitation: >-
+        draft_date_time_utc and draft_clock_status are now confirmed, but live pick state
+        (selection_state) remains not_started. Consumers must not claim live-draft status
+        until selection_state and a real-time pick feed are separately confirmed.
+    cross_contract_consistency_check:
+      rule: >-
+        draft_state.draft_clock_status in this artifact and draft.draft_clock_config.timer_enabled
+        in contracts/league_rules/spamml-2026-v0.4.yaml must agree: confirmed_untimed here iff
+        timer_enabled: false there. A consumer or CI check MUST fail loudly, not silently pick one
+        source, if these two artifacts ever disagree.
+
+acceptance_criteria:
+  - id: DSA-01
+    criterion: seat_completeness
+    pass_condition: "seat_assignments contains exactly 16 entries with every integer seat 1 through 16 exactly once."
+  - id: DSA-02
+    criterion: participant_identity_uniqueness
+    pass_condition: "team_name values are non-empty and unique under exact display-name matching."
+  - id: DSA-03
+    criterion: manager_seat_resolution
+    pass_condition: "Exactly one entry has is_manager_team: true; it is Professor FleX at seat 4 and matches identity.manager_draft_seat."
+  - id: DSA-04
+    criterion: no_schedule_inference
+    pass_condition: "draft_date_time_utc and draft_date_time_status change only via an explicit, timestamped, provenance-carrying operator confirmation (as this v1.1 amendment demonstrates); no automated inference is permitted."
+  - id: DSA-05
+    criterion: map_separation
+    pass_condition: "No pick order is hard-coded; consumer uses the versioned draft-round order map to derive round/pick sequence; draft_state.format is informational and matches the canonical league-rules artifact's format vocabulary exactly."
+  - id: DSA-06
+    criterion: time_integrity
+    pass_condition: "source_provenance and draft_date_time_provenance each include source type, retrieval timestamp, effective-time value or nullability, parser version, and a normative IANA timezone field kept separate from any descriptive offset/abbreviation field."
+  - id: DSA-07
+    criterion: no_live_status_inference
+    pass_condition: "A confirmed draft_date_time_utc and draft_clock_status alone do not set selection_state away from not_started; live status requires a separate, explicit state transition."
+  - id: DSA-08
+    criterion: cross_contract_clock_consistency
+    pass_condition: "draft_state.draft_clock_status here and draft.draft_clock_config.timer_enabled in the canonical League Rules Contract represent the same fact and never diverge; confirmed_untimed here corresponds exactly to timer_enabled: false there."
+
+assumptions_register:
+  - id: U02
+    item: draft_date_time_utc
+    status: resolved
+    resolution: >-
+      Confirmed by league operator: Monday, August 31, 2026, 6:00 PM Pacific
+      (America/Los_Angeles, PDT) = 2026-09-01T01:00:00Z.
+    resolved_date: "2026-08-18"
+    affected_module: live_draft_workflow
+    risk: closed
+    owner: league_operator
+  - id: U-DRAFT-01
+    item: team_name_display_stability
+    status: assumption
+    default: "Displayed team names remain the authoritative manual labels until corrected by the league operator."
+    affected_module: draft_state_manager
+    risk: medium
+    owner: league_operator
+    decision_deadline: before first pick
+  - id: U-DRAFT-02
+    item: draft_clock_status
+    status: resolved
+    resolution: >-
+      Aligned with League Rules Contract v0.4's already-confirmed untimed-draft state
+      (draft_clock_config.timer_enabled: false). Set to confirmed_untimed here to eliminate
+      the prior contradictory "unknown" value; League Rules Contract v0.4 remains the sole
+      clock-configuration authority.
+    resolved_date: "2026-08-18"
+    affected_module: live_draft_workflow
+    risk: closed
+    owner: Architect
+
+known_limitations:
+  - "No platform API or canonical platform-account mapping is available."
+  - "This artifact is league-specific manual state, not a reusable round-order algorithm."
+  - "A future team-name rename requires a new versioned assignment artifact or explicit amendment; do not destructively rewrite historical state."
+  - "selection_state remains not_started; a confirmed schedule and clock state do not themselves authorize a live-draft claim."
+
+builder_handoff:
+  ordered_work:
+    - "Validate DSA-01 through DSA-08 when a consumer first loads this artifact."
+    - "Resolve Professor FleX to seat 4 through this artifact, then query the approved round-order map for pick sequence."
+    - "Surface draft_date_time_utc and draft_clock_status as confirmed schedule information only; do not derive live/in-progress state from them."
+    - "Implement the cross_contract_consistency_check as an automated CI assertion once a consumer implementation exists."
+  done_definition: >-
+    A consumer can deterministically resolve manager seat 4, the confirmed draft schedule and
+    clock state, and pick sequence through the versioned round-order map, while correctly
+    withholding any live-draft-status claim until selection_state changes, and while asserting
+    this artifact and the League Rules Contract never disagree on clock state.
+  test_requirements:
+    - "Generic test: exact seats 1..16 and unique display-name validation."
+    - "Time-integrity test: draft_date_time_utc and draft_clock_status only change via a provenance-carrying manual confirmation, never inference."
+    - "Causality trace: manager seat derives from this artifact; pick sequence derives from the round-order map; live status derives from selection_state, not from date/time or clock state alone."
+    - "Reversibility test: this v1.1 amendment does not mutate or delete v1.0; both remain on record."
+    - "Cross-contract consistency test: draft_clock_status here and draft_clock_config.timer_enabled in League Rules Contract v0.4 always agree."
+    - "Independent acceptance test: DSA-01 through DSA-08 pass against the committed YAML."
