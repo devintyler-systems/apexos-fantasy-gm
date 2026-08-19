@@ -1,0 +1,37 @@
+name: DSA contract validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - engine/contracts/**
+      - tests/acceptance/test_draft_seat_assignment_contract_validation.py
+      - tests/fixtures/draft_seat_assignment/**
+      - contracts/draft/spamml-2026-draft-seat-assignment-v1.1.yaml
+      - contracts/league_rules/spamml-2026-v0.4.yaml
+      - pyproject.toml
+      - .github/workflows/dsa-contract-validation.yml
+  push:
+    branches: [main]
+    paths:
+      - engine/contracts/**
+      - tests/acceptance/test_draft_seat_assignment_contract_validation.py
+      - tests/fixtures/draft_seat_assignment/**
+      - contracts/draft/spamml-2026-draft-seat-assignment-v1.1.yaml
+      - contracts/league_rules/spamml-2026-v0.4.yaml
+      - pyproject.toml
+      - .github/workflows/dsa-contract-validation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest tests/acceptance/test_draft_seat_assignment_contract_validation.py -q
