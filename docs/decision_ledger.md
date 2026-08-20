@@ -2,143 +2,66 @@
 
 ## Version History
 
-### Version 2.11 — 2026-08-17
-**Change:** Recorded the independent Evidence & Release Reviewer PASS verdict on the proposed
-B-06 v0.3 ingestion contract correction (PR #17) and resolved an over-broad merge-gate
-definition the Reviewer surfaced while re-validating a post-PASS head change.
+### Version 3.0 — 2026-08-19
+**Change:** Reconciled four merged pull requests against `main` that were never recorded in this
+ledger, closing a gap where confirmed repository state had drifted ahead of the ledger's own
+version history (last entry: v2.9, 2026-08-11). Direct repo inspection (PR reads, commit history,
+schema inspection) confirmed the following, in merge order:
 
-The Reviewer first issued PASS against PR #17 head `fba2e8959813c40fad9d176339a04cb7a486cc95`
-for contract-release criteria AC-04 (independent Parquet schema transcript naming all seven
-required columns; `touchdown`, `rush_attempt`, and `pass_attempt` observed as Arrow `double` /
-Parquet `DOUBLE`), AC-05 (2025 release asset provider digest present and matching independently
-computed local SHA-256), AC-06 (2016 release asset provider digest absent, local SHA-256 still
-computed and authoritative), and AC-16 (independent-validator isolation: a separate reviewer
-session reproduced release-asset retrieval and schema inspection outside Architect/Builder
-assertion). The scoped `nfl_data_py` active-use scan found no active-use matches; the PR
-remained contract/evidence-only with no B-06 ingestion adapter, raw/canonical-data write,
-database write, pointer publication, or external write.
+1. **B-05 Draft State Manager — contract and implementation** (PR #9, merged 2026-08-11T02:16:33Z;
+   PR #12, merged 2026-08-11T03:00:10Z). `contracts/draft/draft-state-manager-contract-v0.2-
+   correction.md` is APPROVED canonical, resolving U-B05-01 through U-B05-04. Implementation
+   (`engine/draft_state/`: `schema.py`, `repository.py`, `manager.py`) is a 3-table isolated
+   SQLite store (`draft_pick_entries`, `draft_session_state`, `draft_pick_overrides`). Reviewer
+   PASS confirmed on all 13 acceptance criteria (T01-T13). This closes out the B-05 line that
+   v2.8 had left blocked pending B-02.
+2. **SPAMML 2026 Draft Seat Assignment v1.0** (PR #18, merged 2026-08-18T21:51:29Z). Added
+   `contracts/draft/spamml-2026-draft-seat-assignment-v1.0.yaml` — manager identity/seat
+   resolution, draft schedule, `selection_state`. Reviewer P2/P3 fix aligned `draft_state.format`
+   to canonical league-rules vocabulary (`non_standard_snake`).
+3. **Seat Assignment v1.1 / U02 clock resolution / DSA-08** (PR #19, merged 2026-08-18T22:24:31Z).
+   Resolved U02 (SPAMML 2026 draft date/time: Mon Aug 31 2026 6pm Pacific / 2026-09-01T01:00:00Z).
+   Reviewer P1/P2 fix resolved U-DRAFT-02 (`draft_clock_status: confirmed_untimed`, matching
+   League Rules v0.4 `timer_enabled: false`) and normalized timezone provenance (IANA zone kept
+   separate from UTC offset/abbreviation). Added DSA-08 as the cross-contract clock-consistency
+   acceptance criterion.
+4. **DSA Contract Validation Harness, DSA-01 through DSA-08** (PR #20, merged commit
+   `26a6913c86d719dfd89ae46aafe895a939d2717e`, base `f6464cf17670ed71e4425ed4926d8033c1ef3485`,
+   merged 2026-08-19T06:56:04Z). Added CI/test-only validation infrastructure only:
+   `engine/contracts/draft_seat_assignment.py` (`validate_draft_seat_assignment(...)`,
+   `classify_draft_activity(...)`), fixture-backed pytest acceptance coverage (29 passed
+   locally), safe DSA-07 degraded-mode classification when transition/feed evidence is absent,
+   DSA-08 cross-contract clock-consistency enforcement, and a dedicated path-scoped GitHub
+   Actions workflow. Confirmed: no canonical contract mutation, no runtime consumer wiring, no
+   B-06/data/integration/recommendation/UI/storage/external-platform changes.
 
-A subsequent docs-only commit (`14af020dc914b650cc7570e76a0fd4debd1114d6`) updated
-`docs/architect-continuation-prompt.md` to reference the current reviewed head, moving PR #17's
-head and technically un-binding the prior PASS per AC-16's exact-current-head requirement. The
-Reviewer reissued PASS against the new head after independently confirming, via blob-SHA
-comparison, that `contracts/ingestion/nflverse-play-by-play-ingestion-contract-v0.3.md`,
-`docs/decision_ledger.md`, both evidence documents, the review utility, and its test file were
-byte-identical across both heads -- the only delta was the continuation-prompt file. AC-04,
-AC-05, AC-06, and AC-16 remain PASS under the reissued verdict; AC-01–AC-03 and AC-07–AC-15
-(required-subset validation, type/domain rules, discovery/Parquet/game-count failure handling,
-concurrency-safe promotion, pointer invariance, stale labeling, and the active-use scan
-fixture) remain unaddressed by either verdict and require B-06 implementation code to execute.
+**Cross-check performed before closing this reconciliation:** verified B-05's actual schema
+(`draft_pick_entries`, `draft_session_state`) contains no `manager_id`, `seat`, or team-identity
+column of any kind — confirmed via direct schema inspection, not inference. B-05 is a pick-
+sequence/session-resume ledger only; it was scoped and built (2026-08-11) before seat assignment
+or the DSA validator existed (2026-08-18/19) and does not model who owns a given `pick_number`.
+This means B-05 and the seat-assignment/DSA-01-08 line do not overlap or conflict at the schema
+level — no B-05 revision is required to consume DSA-07 activity classification.
 
-Separately, this review evidence reconciled a provenance discrepancy against v2.9's historical
-2025 asset record: v2.9 recorded 2025 asset ID `354718810` (20,343,981 bytes, digest
-`sha256:3730c4db2ab99d2dfc4017de975b7610c46c35301b9280b65c03de1b1c74265a`); the independent
-review-evidence retrieval instead observed 2025 asset ID `512957613` (20,337,029 bytes, digest
-`sha256:c6ecedd6d678cc37ed316b23ef84ee1ec6abb69c514bb11868a7ebd5a367df29`) for the same asset
-name at retrieval time. No mechanism for the difference is claimed; v2.9's record remains a
-historical observation, and the current evidence package is controlling only for its own
-time-bounded retrieval window.
-
-Architect further resolved an over-broad merge-gate definition: PR #17's original "Controlling
-gate" text required Reviewer validation of five items to merge, including collision-safe
-concurrency-safe promotion and the complete negative-path/acceptance-test matrix -- both of
-which require B-06 implementation code that does not exist in this PR. As written, the PR could
-never merge, including for its own contract text, because its merge condition demanded
-implementation-only evidence. Architect split the gate: this PR's merge now requires only the
-satisfied contract-release criteria (AC-04, AC-05, AC-06, AC-16); AC-01–AC-03 and AC-07–AC-15
-are reclassified as a separate, later B-06 implementation-kickoff gate, not a condition of
-merging this contract-only PR. PR #17's body was updated to reflect this split and to bind its
-Reviewer-verdict section to the current head.
-
-**Type:** Calibration (workflow/gate-definition correction and independent-review evidence
-record; does not revise source authority, canonical schema, or approved contract text).
-
-**Controlling gate:** `contracts/ingestion/nflverse-play-by-play-ingestion-contract-v0.3.md`
-has satisfied its contract-release gate (AC-04, AC-05, AC-06, AC-16) as of head
-`14af020dc914b650cc7570e76a0fd4debd1114d6` and may proceed toward merge on that basis alone.
-The separate B-06 implementation-kickoff gate (AC-01–AC-03, AC-07–AC-15) remains
-`BLOCKED_PENDING_EVIDENCE_AND_RELEASE_REVIEW`. Do not create `builder/b-06-nflverse-ingestion`;
-do not begin B-06 code, dependency installation, ingestion, raw-data write, canonical-data
-write, or Builder implementation work before that separate PASS and its own merge.
-
-**Evidence and process record:** PR #17 comments record the initial PASS (against
-`fba2e8959813c40fad9d176339a04cb7a486cc95`), the Architect delta-scope note (documenting the
-`fba2e895 → 14af020` head transition and confirming it touched only the continuation-prompt
-file), and the reissued PASS (against `14af020dc914b650cc7570e76a0fd4debd1114d6`, with
-per-path blob-SHA evidence). `docs/evidence/b06-pr17-release-review-evidence-v1.md` and its two
-schema-transcript files (`b06-pr17-release-schema-transcript-2016-v1.txt`,
-`b06-pr17-release-schema-transcript-2025-v1.txt`) remain the underlying AC-04/05/06 evidence and
-were independently confirmed byte-unchanged at the reissued head.
+**Type:** Structural (records four previously-unlogged canonical merges; establishes ledger
+currency with actual `main` state before further design work; no weights, thresholds, or
+calibration values changed)
 
 **Impact on build sequence:**
-- The satisfied AC-04/05/06/16 PASS makes PR #17 eligible for merge consideration as contract
-  text only; the PASS itself does not authorize or trigger merge -- merging remains a separate,
-  explicit user decision
-- B-06 remains hard-blocked pending a separate, later Reviewer PASS against an actual
-  implementation PR covering AC-01–AC-03 and AC-07–AC-15
-- v0.2 remains the current committed source-access baseline until v0.3 merges; v0.3 does not
-  revise the direct `nflverse/nflverse-data` source authority established by v0.2
-- The 2025 asset provenance discrepancy (`354718810` vs. `512957613`) is logged as a historical
-  reconciliation only; it does not require a ledger correction to v2.9 and does not block this
-  gate
+- Ledger now reflects true `main` state as of commit `26a6913c86d719dfd89ae46aafe895a939d2717e`
+- B-05 is CLOSED and canonical; no further B-05 work is queued
+- Confirmed open gap: `engine/contracts/draft_seat_assignment.py`'s validator and DSA-07
+  classifier remain unwired into any runtime consumer — this is the next build target
+- Confirmed non-conflict: the runtime draft-state consumer (next artifact) is a new read-only
+  join/derivation layer over B-05 + seat assignment v1.1 + the round-order-map contract set +
+  League Rules v0.4 — it does not read from or write to B-05's tables directly as a peer
+  schema, and it does not require modifying B-05
 
-**Highest-leverage next artifact:** Await explicit user authorization to merge PR #17 (contract
-text only); the satisfied contract-release gate does not itself authorize that merge. Once
-merged, open a separate B-06 implementation-kickoff decision requiring a fresh Reviewer PASS on
-AC-01–AC-03 and AC-07–AC-15 against real implementation code. U01 (2026 draft position) remains
-open and HIGH risk; still TBD per Devin.
-
----
-
-### Version 2.10 — 2026-08-11
-**Change:** Corrected the B-06 release process after PR #16 merged commit
-`29c3b9451c52b90a521dd4e8deb1378ebdbc0b22` was self-merged by `devintyler83` with zero
-recorded GitHub reviews. Generic CI checks did not validate the v0.2 ingestion contract's
-named required validation columns, nullable/provider-versus-local-digest behavior, immutable
-promotion semantics, concurrency behavior, or active-use prohibition scope. Version 2.9's
-substantive migration remains in force: direct `nflverse/nflverse-data` release assets remain
-the approved source-access model, v0.2 remains the committed source-access baseline, and the
-Projection Artifact Contract v1.2 addendum pattern remains preserved. This entry corrects
-v2.9's false implication that its independent-review gate was satisfied and replaces its
-stale next-artifact instruction that Builder should open B-06.
-
-**Type:** Calibration (process and release-gate correction). The proposed v0.3 ingestion
-contract is the required **structural contract correction** because it repairs the first broken
-contract boundary identified by the independent Evidence & Release Reviewer: named required
-columns, collision/concurrency-safe immutable promotion, and an enforceable active-use scope
-for the `nfl_data_py` prohibition.
-
-**Controlling gate:** `contracts/ingestion/nflverse-play-by-play-ingestion-contract-v0.3.md`
-is proposed only and is not effective until an independent Evidence & Release Reviewer PASS on
-its exact PR text and subsequent merge to `main`. The correction PR status is
-`BLOCKED_PENDING_EVIDENCE_AND_RELEASE_REVIEW`. Do not create
-`builder/b-06-nflverse-ingestion`; do not begin B-06 code, dependency, ingestion, raw-data
-write, canonical-data write, or Builder implementation work before that PASS and merge.
-
-**Evidence and process record:** PR #16 comments `issuecomment-5258159298`,
-`issuecomment-5258316240`, and controlling `issuecomment-5258375598` record the self-merge,
-zero reviews, pending v2.10 correction, and independent retroactive BLOCK. The Reviewer
-confirmed the merged commit, the `pbp` release ID `58152862`, one uploaded
-`play_by_play_{season}.parquet` asset for each 2016–2025 season, no 2026 asset, 2025 asset ID
-`354718810` (20,343,981 bytes) with provider digest
-`sha256:3730c4db2ab99d2dfc4017de975b7610c46c35301b9280b65c03de1b1c74265a`, and 2016 asset ID
-`250647177` without a provider digest. This sustains nullable provider digest plus mandatory
-local SHA-256; it does not substitute for the required independent Parquet schema transcript.
-
-**Impact on build sequence:**
-- PR #16's six intended document/contract files and v2.9 direct-source migration remain
-  substantively intact; this correction does not revise source authority or authorize an
-  implementation branch
-- v0.2 remains the current committed source-access baseline while v0.3 is proposed, unmerged,
-  and blocked pending independent review
-- B-06 is hard-blocked until Reviewer PASS on the exact v0.3 text and merge; generic CI,
-  Architect assertion, PR authorship, or self-merge is not substitute evidence
-- Structural contract changes must go to the Evidence & Release Reviewer before merge; the
-  Reviewer must independently validate the release-asset schema transcript and the v0.3
-  acceptance matrix
-
-**Highest-leverage next artifact:** Evidence & Release Reviewer verdict on the exact v0.3
-correction PR. Builder branch creation is explicitly prohibited pending that verdict and merge.
+**Highest-leverage next artifact:** Runtime Draft-State Consumer Contract v1.0 — the read-only
+join adapter that wires the validated seat-assignment artifact and DSA-07 activity
+classification into a live-usable draft-state snapshot for the draft-day UI and recommendation
+adapter, without deriving pick order locally and without silently trusting degraded evidence.
+U01 (2026 draft position) remains open and HIGH risk; still TBD per Devin.
 
 ---
 
