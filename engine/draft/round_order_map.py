@@ -6,8 +6,11 @@ from pathlib import Path
 import re
 from typing import Final
 
+import yaml
+
 LEAGUE_SIZE: Final = 16
 TOTAL_ROUNDS: Final = 8
+PROVENANCE_UNAVAILABLE: Final = "PROVENANCE_UNAVAILABLE"
 
 
 def _league_rules_version() -> str:
@@ -23,7 +26,16 @@ def _league_rules_version() -> str:
         return tuple(int(part) for part in match.group(1).split("."))
 
     current_rules_file = max(candidates, key=version_key)
-    return current_rules_file.stem
+    try:
+        with current_rules_file.open(encoding="utf-8") as rules_file:
+            rules = yaml.safe_load(rules_file)
+    except (OSError, yaml.YAMLError):
+        return PROVENANCE_UNAVAILABLE
+
+    contract_version = rules.get("contract_version") if isinstance(rules, dict) else None
+    if not isinstance(contract_version, str) or re.fullmatch(r"\d+(?:\.\d+)*", contract_version) is None:
+        return PROVENANCE_UNAVAILABLE
+    return contract_version
 
 
 def _round_patterns() -> list[tuple[str, list[int]]]:
