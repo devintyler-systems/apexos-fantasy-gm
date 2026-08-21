@@ -2,6 +2,78 @@
 
 ## Version History
 
+### Version 3.1 — 2026-08-20
+**Change:** Resolved three contract-boundary conflicts (C-01, C-02, C-03) that Builder (via
+Codex) surfaced during interface inspection for Issue #23
+(`engine/draft/live_state_consumer.py` against Runtime Draft-State Consumer Contract v1.1,
+merged PR #22) and correctly halted on before writing code, rather than guessing past them.
+
+1. **C-01 (DSA-08 failure-mode contradiction):** Contract v1.1 §4.3 mapped every
+   `ContractValidationError` to `UNKNOWN`/`DSA_VALIDATION_FAILED_<criterion>`, but Issue #23's
+   ordered work already assumed DSA-08 specifically degrades to `DEGRADED`/`DSA08_CLOCK_MISMATCH`.
+   Both could not be true as written. Resolved by publishing Runtime Draft-State Consumer
+   Contract v1.2 (PR #24): a narrow exception where `.criterion == "DSA-08"` maps to
+   `DEGRADED`/`DSA08_CLOCK_MISMATCH`; every other criterion's handling is unchanged from v1.1.
+2. **C-02 (unparseable provenance rule):** The approved snapshot-provenance rule requires a
+   parsed League Rules `contract_version` field, but direct source inspection confirmed
+   `engine/draft/round_order_map.py:_league_rules_version()` derives version by regex-matching
+   the league-rules YAML **filename** (`re.search(r"v(\d+(?:\.\d+)*)$", path.stem)`), and a
+   repo-wide search confirmed zero `contracts/league_rules/*.yaml` files have ever carried a
+   `contract_version` field. Resolved by publishing `contracts/league_rules/spamml-2026-v0.5.yaml`
+   (PR #24) — additive, immutable, byte-identical to v0.4 except a new top-level
+   `contract_version: "0.5"` field and one changelog line. **The corresponding code change to
+   `_league_rules_version()` (read the parsed field only; fail to `PROVENANCE_UNAVAILABLE` on a
+   missing/invalid field, never infer one) is tracked as Issue #25, blocked on PR #24 merging,
+   and is explicitly NOT included in PR #24 itself** — Architect does not write production code.
+3. **C-03 (missing scope-lock record):** Issue #23 asserted SPAMML-2026-only binding for the DSA
+   validator/consumer as accepted scope, but no ledger entry recorded this decision. Recorded
+   below.
+
+**Assumptions Register addition:**
+- **ID:** U-DSA-IDENTITY-01
+- **Item:** DSA validator/consumer identity scope (`EXPECTED_MANAGER_NAME`,
+  `EXPECTED_MANAGER_SEAT` hard-coded module-level constants in
+  `engine/contracts/draft_seat_assignment.py`)
+- **Decision:** Explicitly scope-locked to SPAMML 2026 only (`"Professor FleX"`, seat 4). A
+  general-purpose, multi-league successor validator is deferred to a future ticket and is
+  explicitly NOT blocking Issue #23's implementation.
+- **Affected module:** `engine/contracts/draft_seat_assignment.py`,
+  `engine/draft/live_state_consumer.py`
+- **Risk:** Medium — this validator will hard-fail DSA-03 for any second league or season without
+  a successor.
+- **Owner:** Architect
+- **Decision deadline:** Before onboarding any second league.
+
+**Type:** Calibration (a narrow contract exception, one additive league-rules artifact, and one
+Assumptions Register/scope-lock record; no scoring, roster, or optimizer weight changed).
+
+**Controlling gate:** Issue #23 (`engine/draft/live_state_consumer.py`) remains PAUSED until
+PR #24 merges to `main` **and** Issue #25's `round_order_map.py` parsing-fix PR also merges.
+Builder/Codex may resume implementation only after both are independently confirmed merged on
+`main` — a Reviewer PASS or green CI on either is not itself "merged" (v2.7 ledger lesson:
+merge verification is a separate fact from Reviewer PASS/CI verdict).
+
+**Impact on build sequence:**
+- Runtime Draft-State Consumer Contract v1.2 supersedes v1.1 for §4.3 only; all other sections
+  unchanged; Issue #23 must implement against v1.2, not v1.1.
+- `spamml-2026-v0.5.yaml` is additive; v0.4 remains on record unmodified and is not superseded
+  for any field other than the new `contract_version` key's existence.
+- `round_order_map.py`'s filename-regex version inference remains ACTIVE and UNCORRECTED until
+  Issue #25's PR merges — `league_rules_version` in the runtime-consumer output snapshot remains
+  filename-derived until then; do not assume `contract_version` is being read yet.
+- **Process note:** the Architect Space's GitHub connector could not return raw file content via
+  `get_file_contents` for any file regardless of size (confirmed on files from 1.8KB to 12KB)
+  in the 2026-08-20 remediation session. This ledger's own Versions 2.0 through 0.1 (below this
+  point) were NOT re-verified that session — content below Version 2.1 reflects the last
+  independently confirmed state and was intentionally left untouched rather than risking a
+  blind full-file overwrite via the connector.
+
+**Highest-leverage next artifact:** Issue #25 (`round_order_map.py` parsing fix), owned by
+Builder, blocked on PR #24. Once PR #24 and Issue #25's PR are both independently confirmed
+merged, lift Issue #23's pause and hand it back to Builder/Codex referencing Contract v1.2.
+
+---
+
 ### Version 3.0 — 2026-08-19
 **Change:** Reconciled four merged pull requests against `main` that were never recorded in this
 ledger, closing a gap where confirmed repository state had drifted ahead of the ledger's own
