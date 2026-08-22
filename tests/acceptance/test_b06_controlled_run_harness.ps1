@@ -100,6 +100,7 @@ if ($args.Count -ge 5 -and $args[0] -eq "-B" -and $args[1] -like "*b06-adapter-r
         New-Item -ItemType Directory -Path $eventsRoot -Force | Out-Null
         [ordered]@{
             retrieval_event_id = "mock-retrieval"
+            source_asset_url = "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2023.parquet"
             outcome = "success_new_revision"
             freshness = "fresh"
             local_revision_sha256 = $revisionSha
@@ -151,6 +152,7 @@ if ($args.Count -ge 5 -and $args[0] -eq "-B" -and $args[1] -like "*b06-adapter-r
         [ordered]@{
             attempt_id = "mock-cached-failure"
             attempted_at_utc = "2026-08-22T00:00:03Z"
+            attempted_url = "https://api.github.com/repos/nflverse/nflverse-data/releases/tags/pbp"
             failure_class = "http_status"
             failure_detail = "mocked failure with cached result"
             prior_valid_revision_sha256 = $revisionSha
@@ -268,7 +270,9 @@ Invoke-TestCase "what-if runs tests without adapter or raw evidence" {
         Assert-Equal (Get-Counter $sandbox "adapter") 0 "WhatIf must not invoke the adapter."
         Assert-True (-not (Test-Path -LiteralPath $sandbox.DataRoot)) "WhatIf created raw evidence."
         Assert-Equal $package.operation_mode "what_if" "Operation mode drifted."
+        Assert-Equal $package.adapter_invocation_attempted $false "WhatIf claimed an adapter invocation."
         Assert-Equal $package.provider_request_made $false "WhatIf claimed a provider request."
+        Assert-Equal $package.provider_request_evidence_source "none" "WhatIf claimed a provider evidence source."
         Assert-Equal $package.status "what_if_pass" "WhatIf package status drifted."
     }
     finally { Remove-TestSandbox $sandbox }
@@ -366,7 +370,10 @@ Invoke-TestCase "mock fresh result has complete SHA identity and bounded scope" 
         Assert-Equal (Get-Counter $sandbox "focused") 1 "Focused suite count drifted."
         Assert-Equal (Get-Counter $sandbox "adapter") 1 "Adapter was not invoked exactly once."
         Assert-Equal $package.status "fresh_success_pending_review" "Fresh status drifted."
+        Assert-Equal $package.adapter_invocation_attempted $true "Live runner attempt was not recorded."
         Assert-Equal $package.provider_request_made $true "Live request was not recorded."
+        Assert-Equal $package.provider_request_evidence_source "retrieval_event" "Fresh request evidence source drifted."
+        Assert-Equal @($package.provider_request_evidence_paths).Count 1 "Fresh request evidence path was not recorded."
         Assert-Equal $package.success_evidence.sha_identity.pointer_equals_manifest $true "Pointer/manifest SHA mismatch."
         Assert-Equal $package.success_evidence.sha_identity.manifest_equals_payload $true "Manifest/payload SHA mismatch."
         Assert-Equal $package.success_evidence.sha_identity.pointer_equals_payload $true "Pointer/payload SHA mismatch."
@@ -387,8 +394,29 @@ Invoke-TestCase "mock failed result records failure and exits nonzero" {
         Assert-Equal $package.status "failed_or_stale" "Failure status drifted."
         Assert-Equal $package.result.status "failed" "Adapter failure result was lost."
         Assert-Equal $package.result.failure_class "http_status" "Failure metadata was lost."
+        Assert-Equal $package.adapter_invocation_attempted $true "Failed runner attempt was not recorded."
+        Assert-Equal $package.provider_request_made $true "Failed provider request evidence was lost."
+        Assert-Equal $package.provider_request_evidence_source "failed_attempt_event" "Failure request evidence source drifted."
+        Assert-Equal @($package.provider_request_evidence_paths).Count 1 "Failure request evidence path was not recorded."
         Assert-True (@($package.events | Where-Object { $_.kind -eq "failed_attempt" }).Count -eq 1) "Failure event was not collected."
         Assert-True (@($package.events | Where-Object { $_.sha256 -match "^[0-9a-f]{64}$" }).Count -eq 1) "Failure event hash was not collected."
+    }
+    finally { Remove-TestSandbox $sandbox }
+}
+
+Invoke-TestCase "local runner failure cannot assert a provider request" {
+    $sandbox = New-TestSandbox
+    try {
+        $result = Invoke-Harness $sandbox (Get-CommonArguments $sandbox "-ExecuteLive") "runner_failure"
+        Assert-True ($result.ExitCode -ne 0) "Runner failure exited zero."
+        $package = Get-LatestReviewPackage $sandbox
+        Assert-Equal (Get-Counter $sandbox "adapter") 1 "Runner invocation attempt was not counted."
+        Assert-Equal $package.status "failed_or_stale" "Runner failure status drifted."
+        Assert-Equal $package.adapter_invocation_attempted $true "Runner failure lost the invocation attempt."
+        Assert-Equal $package.provider_request_made $false "Runner failure falsely asserted a provider request."
+        Assert-Equal $package.provider_request_evidence_source "none" "Runner failure invented an evidence source."
+        Assert-Equal @($package.provider_request_evidence_paths).Count 0 "Runner failure invented an evidence path."
+        Assert-Equal @($package.events).Count 0 "Runner failure unexpectedly emitted adapter evidence."
     }
     finally { Remove-TestSandbox $sandbox }
 }
@@ -403,6 +431,10 @@ Invoke-TestCase "cached-valid-after-failure is forced stale and nonzero" {
         Assert-Equal $package.result.status "cached_valid_after_failure" "Cached result status was lost."
         Assert-Equal $package.result.freshness "stale" "Cached result was not forced stale."
         Assert-Equal $package.result.stale_banner_required $true "Stale banner was not required."
+        Assert-Equal $package.adapter_invocation_attempted $true "Cached runner attempt was not recorded."
+        Assert-Equal $package.provider_request_made $true "Cached provider request evidence was lost."
+        Assert-Equal $package.provider_request_evidence_source "failed_attempt_event" "Cached request evidence source drifted."
+        Assert-Equal @($package.provider_request_evidence_paths).Count 1 "Cached request evidence path was not recorded."
     }
     finally { Remove-TestSandbox $sandbox }
 }
@@ -420,6 +452,9 @@ Invoke-TestCase "prior failed event is hashed and unchanged" {
         $package = Get-LatestReviewPackage $sandbox
         Assert-Equal @($package.data_root.prior_failed_attempts).Count 1 "Prior failure was not enumerated."
         Assert-Equal $package.data_root.prior_failed_attempts_unchanged $true "Prior failure was marked changed."
+        Assert-Equal $package.provider_request_made $false "A preexisting failure event was treated as current request evidence."
+        Assert-Equal $package.provider_request_evidence_source "none" "A preexisting failure event became an evidence source."
+        Assert-Equal @($package.provider_request_evidence_paths).Count 0 "A preexisting failure event became a current evidence path."
         Assert-Equal (Get-FileHash -LiteralPath $priorPath -Algorithm SHA256).Hash $before "Prior failure bytes changed."
     }
     finally { Remove-TestSandbox $sandbox }

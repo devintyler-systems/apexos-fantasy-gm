@@ -18,11 +18,14 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$HarnessVersion = "1.0.0"
+$HarnessVersion = "1.0.1"
 $FocusedTestCommand = "python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py -p no:cacheprovider -o addopts="
 $ExitCode = 2
 $FinalStatus = "blocked"
+$AdapterInvocationAttempted = $false
 $ProviderRequestMade = $false
+$ProviderRequestEvidenceSource = "none"
+$ProviderRequestEvidencePaths = @()
 $AdapterInvocationCount = 0
 $TranscriptStarted = $false
 $RunDirectory = $null
@@ -43,6 +46,7 @@ $HeadSha = $null
 $WorkingTreeStatus = @()
 $PriorFailedAttempts = @()
 $PriorFailureHashes = @{}
+$PreexistingEventHashes = @{}
 $PreexistingDerivedArtifactPaths = @()
 $PreexistingCurrent = $false
 $PreexistingRevisions = $false
@@ -166,6 +170,20 @@ function Get-ClaimEvidence {
     )
 }
 
+function Test-ProviderRequestEvidenceEvent {
+    param([Parameter(Mandatory = $true)]$Event)
+
+    if ($Event.kind -eq "retrieval") {
+        $urlProperty = $Event.content.PSObject.Properties["source_asset_url"]
+        return $null -ne $urlProperty -and -not [string]::IsNullOrWhiteSpace([string]$urlProperty.Value)
+    }
+    if ($Event.kind -eq "failed_attempt") {
+        $urlProperty = $Event.content.PSObject.Properties["attempted_url"]
+        return $null -ne $urlProperty -and -not [string]::IsNullOrWhiteSpace([string]$urlProperty.Value)
+    }
+    return $false
+}
+
 function Get-DerivedArtifactPaths {
     param([Parameter(Mandatory = $true)][string[]]$Roots)
 
@@ -247,6 +265,7 @@ if payload["manifest_path"] is not None:
 result_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 '@
     [IO.File]::WriteAllText($script:AdapterRunnerPath, $runnerSource, [Text.UTF8Encoding]::new($false))
+    $script:AdapterInvocationAttempted = $true
     & python -B $script:AdapterRunnerPath $RequestedSeason $Root $ResultPath 2>&1 |
         ForEach-Object { Write-Host $_ }
     $adapterExitCode = $LASTEXITCODE
@@ -261,7 +280,10 @@ function New-BaseReviewPackage {
         harness_version = $HarnessVersion
         generated_at_utc = $null
         operation_mode = $OperationMode
+        adapter_invocation_attempted = $false
         provider_request_made = $false
+        provider_request_evidence_source = "none"
+        provider_request_evidence_paths = @()
         requested_season = $Season
         command_parameters = [ordered]@{
             season = $Season
@@ -504,6 +526,9 @@ try {
     foreach ($failure in $PriorFailedAttempts) {
         $PriorFailureHashes[$failure.path] = $failure.sha256
     }
+    foreach ($event in @(Get-AllEventEvidence -SeasonRoot $seasonRoot)) {
+        $PreexistingEventHashes[$event.path] = $event.sha256
+    }
     $Package.data_root.preexisting_current_json = $PreexistingCurrent
     $Package.data_root.preexisting_revisions_directory = $PreexistingRevisions
     $Package.data_root.prior_failed_attempts = @($PriorFailedAttempts)
@@ -532,7 +557,6 @@ try {
         $ExitCode = 0
     }
     else {
-        $ProviderRequestMade = $true
         Push-Location $RepositoryRoot
         try {
             $adapterExitCode = Invoke-AdapterOnce -RequestedSeason $Season -Root $NormalizedDataRoot -ResultPath $AdapterResultPath
@@ -566,7 +590,7 @@ catch {
     $message = $_.Exception.Message
     Write-Error $message -ErrorAction Continue
     $KnownLimitations += "Harness outcome detail: $message"
-    if ($ProviderRequestMade -and $FinalStatus -eq "blocked") {
+    if ($AdapterInvocationAttempted -and $FinalStatus -eq "blocked") {
         $FinalStatus = "failed_or_stale"
         $ExitCode = 1
     }
@@ -587,6 +611,27 @@ finally {
             $PostexistingRevisions = Test-Path -LiteralPath (Join-Path $seasonRoot "revisions")
             $Events = @(Get-AllEventEvidence -SeasonRoot $seasonRoot)
             $Claims = @(Get-ClaimEvidence -Root $NormalizedDataRoot -RequestedSeason $Season)
+            $newRequestEvidence = @(
+                $Events | Where-Object {
+                    $AdapterInvocationAttempted -and
+                    -not $PreexistingEventHashes.ContainsKey($_.path) -and
+                    (Test-ProviderRequestEvidenceEvent -Event $_)
+                }
+            )
+            $ProviderRequestEvidencePaths = @($newRequestEvidence | ForEach-Object { $_.path })
+            $ProviderRequestMade = $ProviderRequestEvidencePaths.Count -gt 0
+            $evidenceKinds = @($newRequestEvidence | ForEach-Object { $_.kind } | Sort-Object -Unique)
+            if ($evidenceKinds.Count -eq 1) {
+                $ProviderRequestEvidenceSource = if ($evidenceKinds[0] -eq "retrieval") {
+                    "retrieval_event"
+                }
+                else {
+                    "failed_attempt_event"
+                }
+            }
+            elseif ($evidenceKinds.Count -gt 1) {
+                $ProviderRequestEvidenceSource = "multiple_adapter_event_types"
+            }
             $afterFailures = @($Events | Where-Object { $_.kind -eq "failed_attempt" })
             foreach ($priorPath in $PriorFailureHashes.Keys) {
                 $matching = @($afterFailures | Where-Object { $_.path -eq $priorPath })
@@ -601,7 +646,10 @@ finally {
             $runParquet = @(
                 Get-ChildItem -LiteralPath $NormalizedRunRoot -File -Recurse -Filter "*.parquet" -ErrorAction SilentlyContinue
             )
+            $Package.adapter_invocation_attempted = $AdapterInvocationAttempted
             $Package.provider_request_made = $ProviderRequestMade
+            $Package.provider_request_evidence_source = $ProviderRequestEvidenceSource
+            $Package.provider_request_evidence_paths = @($ProviderRequestEvidencePaths)
             $Package.repository.head_sha = $HeadSha
             $Package.repository.is_expected_sha = (
                 $null -ne $HeadSha -and $HeadSha.Equals($ExpectedCommitSha, [StringComparison]::OrdinalIgnoreCase)
@@ -640,6 +688,15 @@ finally {
                 $KnownLimitations += "A Parquet file was detected in the controlled run directory."
                 $FinalStatus = "blocked"
                 $ExitCode = 2
+            }
+            if (
+                $ExecuteLive -and
+                $null -ne $Package.result.status -and
+                -not $ProviderRequestMade
+            ) {
+                $KnownLimitations += "The adapter result lacked a qualifying new provider-request evidence event."
+                $FinalStatus = "failed_or_stale"
+                $ExitCode = 1
             }
             if ($ExecuteLive -and $Package.result.status -in @("failed", "cached_valid_after_failure")) {
                 if ($PostexistingCurrent -or $PostexistingRevisions) {

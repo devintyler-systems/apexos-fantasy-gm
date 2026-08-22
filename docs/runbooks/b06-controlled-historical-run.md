@@ -64,7 +64,8 @@ python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py -p no:cachep
 ```
 
 It makes no adapter/provider request and writes no B-06 raw evidence. A passing package records
-`operation_mode: "what_if"`, `provider_request_made: false`, and
+`operation_mode: "what_if"`, `adapter_invocation_attempted: false`,
+`provider_request_made: false`, and
 `status: "what_if_pass"`.
 
 ## One authorized live invocation
@@ -102,6 +103,22 @@ repository-local `data` directory when present, and the enclosing `data` lake wh
 uses the documented `data/raw/nflverse/pbp` layout. Preexisting matches are recorded separately;
 `derived_artifact_paths` contains only paths that appeared during this invocation.
 
+The package deliberately separates runner activity from provider-request evidence:
+
+| Field | Semantics and evidence rule |
+| --- | --- |
+| `adapter_invocation_attempted` | Harness-owned fact. It becomes `true` only immediately before the child Python adapter runner is launched. It does not claim that imports completed, the adapter function started, or a provider was contacted. |
+| `provider_request_made` | Evidence-derived claim. It is `true` only when this invocation creates a new adapter event containing `source_asset_url` (retrieval event) or `attempted_url` (failed-attempt event). Runner launch, process exit, and `adapter-result.json` alone are not evidence of provider contact. |
+| `provider_request_evidence_source` | `retrieval_event`, `failed_attempt_event`, or `none`, according to the qualifying new event. |
+| `provider_request_evidence_paths` | Local paths of the qualifying new immutable adapter events. Preexisting events never satisfy the claim. |
+
+Consequently, a local runner failure can produce
+`adapter_invocation_attempted: true` with `provider_request_made: false`, source `none`, and no
+evidence paths. In this state, `false` means that the package has no qualifying evidence that a
+provider request occurred; it is not an independent attestation that no network activity was
+possible. Preserve the transcript and package, treat the outcome as `FAILED_OR_STALE`, and do not
+retry until reviewed.
+
 The final console line has one of these values:
 
 | Line | Meaning | Operator action |
@@ -112,7 +129,8 @@ The final console line has one of these values:
 | `B06_CONTROLLED_RUN_STATUS=BLOCKED` | A preflight, commit, runtime, path, test, scope, or packaging guard failed. | Correct only the external precondition; do not bypass the guard. |
 
 The machine-readable package records command parameters (no secrets), UTC start/end times,
-repository SHA and working-tree status, Python version, focused-test exit code, prior and new
+repository SHA and working-tree status, Python version, focused-test exit code, the runner/request
+field split and evidence paths, prior and new
 events with content hashes, claims, result fields, pointer/manifest/payload SHA comparisons,
 revision identity/timestamps, the 2016 presence check, derived-artifact scan, and limitations.
 Null evidence fields are expected only when the status makes that evidence unavailable.
