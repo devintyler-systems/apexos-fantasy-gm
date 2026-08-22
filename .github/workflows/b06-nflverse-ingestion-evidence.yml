@@ -1,0 +1,117 @@
+name: B-06 nflverse ingestion evidence
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "engine/ingestion/**"
+      - "tests/acceptance/test_nflverse_pbp_ingestion.py"
+      - "pyproject.toml"
+      - "contracts/ingestion/nflverse-play-by-play-ingestion-contract-v0.3.md"
+      - ".github/workflows/b06-nflverse-ingestion-evidence.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  evidence:
+    name: b06-nflverse-ingestion-evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out reviewed head
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install project dependencies
+        shell: pwsh
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run exact focused suite and capture evidence
+        id: focused
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $evidenceDirectory = Join-Path $env:RUNNER_TEMP "b06-nflverse-ingestion-evidence"
+          $evidenceFile = Join-Path $evidenceDirectory "execution-evidence.txt"
+          New-Item -ItemType Directory -Path $evidenceDirectory -Force | Out-Null
+
+          $expectedCommand = "python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py -p no:cacheprovider -o addopts="
+          $pytestArguments = @(
+            "-B",
+            "-m",
+            "pytest",
+            "tests/acceptance/test_nflverse_pbp_ingestion.py",
+            "-p",
+            "no:cacheprovider",
+            "-o",
+            "addopts="
+          )
+          $actualCommand = "python " + ($pytestArguments -join " ")
+          if ($actualCommand -cne $expectedCommand) {
+            throw "Focused pytest command drifted. Expected '$expectedCommand'; got '$actualCommand'."
+          }
+
+          $testSourcePath = Join-Path $env:GITHUB_WORKSPACE "tests/acceptance/test_nflverse_pbp_ingestion.py"
+          $testSource = Get-Content -Raw -Path $testSourcePath
+          $requiredSafetyMarkers = @(
+            'httpx.MockTransport',
+            'monkeypatch.setattr(socket, "create_connection", fail)',
+            'monkeypatch.setattr(socket.socket, "connect", fail)',
+            'production_path = Path("data/raw/nflverse/pbp")'
+          )
+          foreach ($marker in $requiredSafetyMarkers) {
+            if (-not $testSource.Contains($marker)) {
+              throw "Required no-network/temporary-root safety marker is missing: $marker"
+            }
+          }
+
+          $productionPath = Join-Path $env:GITHUB_WORKSPACE "data/raw/nflverse/pbp"
+          if (Test-Path -LiteralPath $productionPath) {
+            throw "Production PBP path existed before the focused evidence run."
+          }
+
+          $pythonVersion = (& python --version 2>&1 | Out-String).Trim()
+          @(
+            "GITHUB_SHA=$env:GITHUB_SHA",
+            "PYTHON_VERSION=$pythonVersion",
+            "FOCUSED_PYTEST_COMMAND=$actualCommand",
+            "NO_LIVE_NETWORK_GUARD=socket.create_connection and socket.socket.connect blocked; every adapter call uses httpx.MockTransport",
+            "PRODUCTION_PBP_PATH_BEFORE=absent",
+            "PYTEST_TERMINAL_OUTPUT_BEGIN"
+          ) | Set-Content -Path $evidenceFile -Encoding utf8
+
+          & python @pytestArguments 2>&1 | Tee-Object -FilePath $evidenceFile -Append
+          $pytestExitCode = $LASTEXITCODE
+
+          "PYTEST_TERMINAL_OUTPUT_END" | Add-Content -Path $evidenceFile -Encoding utf8
+          "PYTEST_EXIT_CODE=$pytestExitCode" | Add-Content -Path $evidenceFile -Encoding utf8
+
+          if (Test-Path -LiteralPath $productionPath) {
+            "PRODUCTION_PBP_PATH_AFTER=present" | Add-Content -Path $evidenceFile -Encoding utf8
+            "NO_PRODUCTION_EVIDENCE_OR_POINTER_CONFIRMED=false" | Add-Content -Path $evidenceFile -Encoding utf8
+            throw "Focused evidence run created the prohibited production PBP path."
+          }
+
+          "PRODUCTION_PBP_PATH_AFTER=absent" | Add-Content -Path $evidenceFile -Encoding utf8
+          "NO_LIVE_NETWORK_CONFIRMED=true" | Add-Content -Path $evidenceFile -Encoding utf8
+          "NO_PRODUCTION_EVIDENCE_OR_POINTER_CONFIRMED=true" | Add-Content -Path $evidenceFile -Encoding utf8
+
+          if ($pytestExitCode -ne 0) {
+            exit $pytestExitCode
+          }
+
+      - name: Upload execution evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b06-nflverse-ingestion-evidence-${{ github.sha }}
+          path: ${{ runner.temp }}/b06-nflverse-ingestion-evidence/execution-evidence.txt
+          if-no-files-found: error
+          retention-days: 30
