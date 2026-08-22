@@ -1,0 +1,42 @@
+name: Issue #23 live-state-consumer acceptance tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - engine/draft/live_state_consumer.py
+      - tests/acceptance/test_live_state_consumer.py
+      - engine/contracts/draft_seat_assignment.py
+      - engine/draft/round_order_map.py
+      - engine/draft_state/**
+      - contracts/draft/spamml-2026-draft-seat-assignment-v1.1.yaml
+      - contracts/league_rules/spamml-2026-v0.5.yaml
+      - .github/workflows/issue23-live-state-consumer.yml
+  push:
+    branches: [main]
+    paths:
+      - engine/draft/live_state_consumer.py
+      - tests/acceptance/test_live_state_consumer.py
+      - engine/contracts/draft_seat_assignment.py
+      - engine/draft/round_order_map.py
+      - engine/draft_state/**
+      - contracts/draft/spamml-2026-draft-seat-assignment-v1.1.yaml
+      - contracts/league_rules/spamml-2026-v0.5.yaml
+      - .github/workflows/issue23-live-state-consumer.yml
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    name: Issue #23 acceptance tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -e ".[dev]"
+      - name: Run Issue #23 acceptance suite
+        run: python -m pytest tests/acceptance/test_live_state_consumer.py -v
