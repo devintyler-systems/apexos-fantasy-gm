@@ -1,16 +1,17 @@
 # Data Source and Connector Register
 
 **Artifact:** `data_source_connector_register`
-**Version:** 1.4
+**Version:** 1.5
 **Owner:** Devin Tyler (Architect)
 **Status:** APPROVED sources marked; all others BLOCKED pending review
 **Depends On:** League Rules Contract v0.3
 **Unlocks:** Projection Artifact Contract, PRV Calculator, backtest work (B-17)
 **Created:** 2026-08-09
-**Last Updated:** 2026-08-11 (v1.4 -- structural correction: replaced `nfl_data_py`
-approval with direct nflverse-data GitHub release-asset access per B-06 v0.2 ingestion
-contract. `nfl_data_py` is now explicitly PROHIBITED across this repository. See
-Decision Ledger for full rationale and verification evidence.)
+**Last Updated:** 2026-08-21 (v1.5 -- calibration: added Section 5, Candidate Connector
+Assumptions Register, with entries AR-C01 (ESPN public endpoints) and AR-C02 (Yahoo
+Fantasy Sports API). Neither connector is approved, implemented, or authorized for use
+in recommendations. No approved source, schema, or build-ticket dependency changed.
+See Decision Ledger v3.0.)
 
 ---
 
@@ -94,3 +95,67 @@ approval: `play_by_play_{season}.parquet` assets confirmed present for 2016-2025
 exists, and provider-reported digests are absent on pre-2019 season assets (confirming the
 nullable-digest design requirement). Full verification trail and dependent-document list in
 `docs/decision_ledger.md` Version 2.9.
+
+**v1.5 addition (2026-08-21):** Added Section 5 (Candidate Connector Assumptions Register)
+with entries for ESPN public endpoints (AR-C01) and Yahoo Fantasy Sports API (AR-C02).
+Calibration-only change. Neither connector is approved, implemented, or authorized for use
+in any recommendation path. See Decision Ledger v3.0.
+
+---
+
+## 5. Candidate Connector Assumptions Register
+
+These entries are discovery records only. `CANDIDATE` status does not authorize adapter
+implementation, production retrieval, use in recommendations, or a claim that ApexOS supports
+the associated platform. Promotion requires a versioned connector contract and independent
+verification of provider capability, terms, authentication, rate limits, freshness, fields,
+identity mapping, fallback, and degraded behavior.
+
+| ID | Candidate | Status | Intended decision/workflow | Default / current boundary | Affected module | Risk | Owner | Decision deadline |
+|---|---|---|---|---|---|---|---|---|
+| AR-C01 | `pseudo-r/Public-ESPN-API` / ESPN public endpoints | CANDIDATE — post-MVP only | Read-only roster, matchup, standings, scoring, and public league-state discovery for an ESPN-hosted league after ESPN platform support is separately approved | Do not retrieve or use ESPN data. SPAMML has no ESPN integration and remains permanent manual entry. No write operations in scope. | Future platform adapter; canonical identity resolution; league rules import; roster-state evidence | HIGH — endpoints are undocumented and unofficial; provider can change behavior without notice; rate limits, private-league support, and permitted-use posture require independent verification | Architect | Before any ESPN league is accepted as a supported platform |
+| AR-C02 | `uberfastman/yfpy` / Yahoo Fantasy Sports API | CANDIDATE — post-MVP only | Read-only league rules, roster state, matchup, standings, and player-availability retrieval for a Yahoo-hosted league after OAuth and supported-resource review | Do not retrieve or use Yahoo data. It is not a Fantrax connector and does not sync SPAMML or its Fantrax mirror. No write operations in scope. | Future platform adapter; OAuth credential boundary; canonical identity resolution; league rules import; roster-state evidence | MEDIUM-HIGH — OAuth token storage/rotation, API quota, and resource coverage need independent verification; wrapper must not become a core-schema dependency | Architect | Before any Yahoo league is accepted as a supported platform |
+
+### 5.1 AR-C01 — ESPN Candidate Promotion Gate
+
+**Claim status:** `unknown` pending independent provider review.
+
+| Required evidence | Required result before promotion |
+|---|---|
+| Purpose and supported workflow | Exact supported ESPN league types, public/private boundary, and read-only user workflow documented |
+| Fields and source mapping | Endpoint-to-raw-evidence mapping identifies league settings, roster, schedule, matchup, standings, player, and transaction fields; no provider fields enter the canonical model directly |
+| Authentication | Public versus private league behavior and any cookies, tokens, or unsupported mechanisms explicitly documented; unsupported methods prohibited |
+| Rate limits and resilience | Measured or documented request ceiling, timeout, retry/backoff, caching policy, and circuit-breaker behavior defined |
+| Terms and data rights | Permitted-use assessment recorded; unresolved terms risk blocks approval |
+| Freshness | Retrieval timestamp, observed update cadence, effective-time semantics, and stale threshold defined per resource |
+| Canonical identity | ESPN player/team IDs map through non-destructive canonical identity resolution; unresolved identities quarantined |
+| Fallback | Cached valid artifact plus manual roster/pick entry available; adapter failure never blocks user from operating ApexOS |
+| Degraded mode | UI exposes provider unavailable, last successful retrieval, artifact age, affected decision scope, and manual-entry path; no current-state claim shown after failure |
+| Safety | Adapter has no write methods, no credential harvesting; fixture-backed contract tests cover endpoint shape drift, malformed payloads, stale data, and identity conflicts |
+
+**Promotion blocker:** The reference documentation repository (`pseudo-r/Public-ESPN-API`)
+documents observed endpoint behavior but is not authority that ESPN permits, guarantees,
+or will maintain that behavior. Approved connector contract must bind to independently
+verified ESPN API capability, not to the reference repository's findings.
+
+### 5.2 AR-C02 — Yahoo Candidate Promotion Gate
+
+**Claim status:** `evidence-backed inference` that Yahoo provides an official developer API;
+exact usable resources and operational constraints remain `unknown` until verified.
+
+| Required evidence | Required result before promotion |
+|---|---|
+| Purpose and supported workflow | Exact Yahoo league types and read-only workflows documented; no inference that Yahoo data represents SPAMML or Fantrax |
+| Fields and source mapping | API-resource-to-raw-evidence mapping identifies league settings, scoring, roster, draft, matchup, transaction, and player-status coverage |
+| OAuth | Authorization flow, required scopes, secure local credential handling, refresh/expiration behavior, revocation path, and explicit user consent documented |
+| Rate limits and resilience | Current Yahoo quota, retry/backoff, caching, timeout, and token-refresh failure behavior defined |
+| Terms and data rights | Yahoo developer terms, app-registration requirements, attribution requirements, and permitted-use constraints recorded |
+| Freshness | Resource-specific retrieval cadence, effective-time meaning, artifact timestamping, and stale thresholds defined |
+| Canonical identity | Yahoo player/team keys route through canonical identity mapping; aliases and unresolved entities remain inspectable |
+| Fallback | Cached valid artifact and manual entry available for league rules, rosters, draft state, and player availability |
+| Degraded mode | OAuth failure, expired token, quota exhaustion, provider outage, and partial payload states show stale status and preserve manual operation |
+| Safety | Adapter remains read-only; no lineup, waiver, trade, roster, or draft-pick write capability exists; fixture-backed tests cover token expiry, quota response, missing fields, stale data, and identity collisions |
+
+**Promotion blocker:** `yfpy` is a convenience wrapper, not an architectural dependency.
+The approved connector contract must bind ApexOS to Yahoo's verified API behavior and
+raw evidence contract, not to the wrapper's model classes or field names.
