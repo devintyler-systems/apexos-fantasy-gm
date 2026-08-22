@@ -102,6 +102,30 @@ def test_time_integrity_uses_only_b05_session_age_for_staleness():
     assert snapshot["data_freshness"]["seat_assignment_artifact_age_seconds"] is not None
 
 
+def test_session_not_found_is_unknown():
+    connection = sqlite3.connect(":memory:")
+    create_schema(connection)
+
+    snapshot = _consumer(connection).snapshot()
+
+    assert snapshot["live_status"] == "UNKNOWN"
+    assert "B05_SESSION_NOT_FOUND" in snapshot["reason_codes"]
+
+
+def test_unparseable_b05_updated_at_surfaces_age_unavailable():
+    connection = _session()
+    connection.execute(
+        "UPDATE draft_session_state SET updated_at = ? WHERE draft_session_id = ?",
+        ("not-an-iso-timestamp", "draft-23"),
+    )
+    connection.commit()
+
+    snapshot = _consumer(connection).snapshot()
+
+    assert snapshot["live_status"] == "DEGRADED"
+    assert "B05_SESSION_AGE_UNAVAILABLE" in snapshot["reason_codes"]
+
+
 def test_reversibility_consumer_does_not_write_b05_or_artifacts(tmp_path):
     connection = _session()
     before = connection.execute("SELECT * FROM draft_session_state").fetchall()

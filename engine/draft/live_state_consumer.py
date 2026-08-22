@@ -96,9 +96,6 @@ class RuntimeDraftStateConsumer:
     def snapshot(self) -> dict[str, Any]:
         """Build the contract v1.2 snapshot at the time this method is called."""
         now = self._now().astimezone(timezone.utc)
-        session = self._read_session()
-        seat_artifact_age = _artifact_age_seconds(self._seat_artifact_path, now)
-        snapshot = self._base_snapshot(now, session, seat_artifact_age)
 
         # The validator is intentionally the first authority called for every
         # snapshot.  A rejected assignment never contributes a seat or manager.
@@ -107,6 +104,9 @@ class RuntimeDraftStateConsumer:
                 self._seat_artifact_path, self._league_rules_path
             )
         except ContractValidationError as exc:
+            snapshot = self._base_snapshot(
+                now, None, _artifact_age_seconds(self._seat_artifact_path, now)
+            )
             if exc.criterion == "DSA-08":
                 snapshot.update(
                     live_status="DEGRADED",
@@ -121,6 +121,10 @@ class RuntimeDraftStateConsumer:
                 )
             return snapshot
 
+        session = self._read_session()
+        snapshot = self._base_snapshot(
+            now, session, _artifact_age_seconds(self._seat_artifact_path, now)
+        )
         if session is None:
             snapshot.update(
                 live_status="UNKNOWN",
@@ -245,7 +249,7 @@ class RuntimeDraftStateConsumer:
             "input_snapshot_id": f"{self._draft_session_id}:{updated_at or 'unavailable'}",
             "dsa_validator_version": DSA_VALIDATOR_VERSION,
             "round_order_map_version": ROUND_ORDER_MAP_VERSION,
-            "league_rules_version": self._league_rules_version(),
+            "league_rules_version": build_full_map()["league_rules_version"],
             "current_pick_number": current_pick,
             "on_the_clock_seat": None,
             "on_the_clock_manager": None,
@@ -258,15 +262,6 @@ class RuntimeDraftStateConsumer:
             "known_limitations": self._known_limitations(),
             "degraded_banner_required": False,
         }
-
-    def _league_rules_version(self) -> str:
-        try:
-            with self._league_rules_path.open(encoding="utf-8") as stream:
-                rules = yaml.safe_load(stream)
-        except (OSError, yaml.YAMLError):
-            return PROVENANCE_UNAVAILABLE
-        version = rules.get("contract_version") if isinstance(rules, dict) else None
-        return version if isinstance(version, str) else PROVENANCE_UNAVAILABLE
 
     def _known_limitations(self) -> list[str]:
         try:
