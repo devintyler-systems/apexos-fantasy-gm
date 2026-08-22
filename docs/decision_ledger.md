@@ -2,6 +2,9 @@
 
 ## Version History
 
+### Version 3.3 — 2026-08-21
+**Change:** Recorded the full BLOCK -> fix -> re-verification cycle for PR #28...
+
 ### Version 3.2 — 2026-08-21
 **Change:** Reviewed and merged-gate-hardened PR #28 (Issue #23, engine/draft/live_state_consumer.py, Contract v1.2). Confirmed DSA-first ordering, exact DSA-08 exception, read-only B-05 access, and 900-second B-05-only staleness threshold all match contract. Logged three non-blocking findings: (1) DSA-07 non-live reason codes collapsed to one generic string rather than distinguishing non_live/manual/degraded; (2) DSA_VALIDATOR_VERSION/ROUND_ORDER_MAP_VERSION are hardcoded literals with no source-of-truth binding — accepted as a known limitation, same pattern as U-DSA-IDENTITY-01; (3) live-draft-failure tests cover 2 of 8 DSA fixtures, not all 8 — recommended, not required, before merge. Added scoped CI workflow issue23-live-state-consumer.yml so this consumer is never un-gated again. PR #28 not yet merged; routed to Evidence & Release Reviewer per Issue #23's branch/review gate.
 
