@@ -2,6 +2,14 @@
 
 ## Version History
 
+### Version 3.3 — 2026-08-21
+**Change:** Recorded the full BLOCK -> fix -> re-verification cycle for PR #28...
+
+### Version 3.2 — 2026-08-21
+**Change:** Reviewed and merged-gate-hardened PR #28 (Issue #23, engine/draft/live_state_consumer.py, Contract v1.2). Confirmed DSA-first ordering, exact DSA-08 exception, read-only B-05 access, and 900-second B-05-only staleness threshold all match contract. Logged three non-blocking findings: (1) DSA-07 non-live reason codes collapsed to one generic string rather than distinguishing non_live/manual/degraded; (2) DSA_VALIDATOR_VERSION/ROUND_ORDER_MAP_VERSION are hardcoded literals with no source-of-truth binding — accepted as a known limitation, same pattern as U-DSA-IDENTITY-01; (3) live-draft-failure tests cover 2 of 8 DSA fixtures, not all 8 — recommended, not required, before merge. Added scoped CI workflow issue23-live-state-consumer.yml so this consumer is never un-gated again. PR #28 not yet merged; routed to Evidence & Release Reviewer per Issue #23's branch/review gate.
+
+Highest-leverage next artifact: Evidence & Release Reviewer's independent pass on PR #28, then Devin's merge decision.
+
 ### Version 3.1 — 2026-08-20
 **Change:** Resolved three contract-boundary conflicts (C-01, C-02, C-03) that Builder (via
 Codex) surfaced during interface inspection for Issue #23
@@ -79,7 +87,6 @@ merged, lift Issue #23's pause and hand it back to Builder/Codex referencing Con
 ledger, closing a gap where confirmed repository state had drifted ahead of the ledger's own
 version history (last entry: v2.9, 2026-08-11). Direct repo inspection (PR reads, commit history,
 schema inspection) confirmed the following, in merge order:
-
 1. **B-05 Draft State Manager — contract and implementation** (PR #9, merged 2026-08-11T02:16:33Z;
    PR #12, merged 2026-08-11T03:00:10Z). `contracts/draft/draft-state-manager-contract-v0.2-
    correction.md` is APPROVED canonical, resolving U-B05-01 through U-B05-04. Implementation
