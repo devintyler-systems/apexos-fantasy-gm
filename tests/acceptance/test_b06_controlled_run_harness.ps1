@@ -333,6 +333,39 @@ Invoke-TestCase "nonmatching SHA blocks before tests and adapter" {
     finally { Remove-TestSandbox $sandbox }
 }
 
+Invoke-TestCase "dirty tracked file blocks before tests and adapter" {
+    $sandbox = New-TestSandbox
+    $trackedPath = Join-Path $RepositoryRoot "docs\runbooks\b06-controlled-historical-run.md"
+    $originalBytes = [IO.File]::ReadAllBytes($trackedPath)
+    try {
+        [IO.File]::AppendAllText(
+            $trackedPath,
+            [Environment]::NewLine + "dirty-tree acceptance marker" + [Environment]::NewLine,
+            [Text.UTF8Encoding]::new($false)
+        )
+        $result = Invoke-Harness $sandbox (Get-CommonArguments $sandbox "-ExecuteLive")
+        $package = Get-LatestReviewPackage $sandbox
+        $transcript = Get-ChildItem -LiteralPath $sandbox.RunRoot -File -Recurse -Filter "console-transcript.txt" |
+            Sort-Object LastWriteTimeUtc |
+            Select-Object -Last 1 |
+            Get-Content -Raw
+
+        Assert-True ($result.ExitCode -ne 0) "Dirty working tree passed."
+        Assert-Equal $package.status "blocked" "Dirty working tree was not blocked."
+        Assert-Equal (Get-Counter $sandbox "focused") 0 "Dirty working tree reached tests."
+        Assert-Equal (Get-Counter $sandbox "adapter") 0 "Dirty working tree reached adapter."
+        Assert-Equal $package.repository.working_tree_dirty $true "Dirty-tree boolean was not recorded."
+        Assert-True (@($package.repository.working_tree_porcelain_v1).Count -gt 0) "Raw porcelain output was not recorded."
+        Assert-True (($package.repository.working_tree_porcelain_v1 | Out-String) -match "docs/runbooks/b06-controlled-historical-run\.md") "Tracked dirty path was not recorded."
+        Assert-True ($transcript -match "WORKING_TREE_DIRTY=true") "Transcript omitted the dirty-tree boolean."
+        Assert-True ($transcript -match "docs/runbooks/b06-controlled-historical-run\.md") "Transcript omitted raw porcelain output."
+    }
+    finally {
+        [IO.File]::WriteAllBytes($trackedPath, $originalBytes)
+        Remove-TestSandbox $sandbox
+    }
+}
+
 Invoke-TestCase "preexisting current.json blocks live execution" {
     $sandbox = New-TestSandbox
     try {

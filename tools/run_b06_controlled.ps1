@@ -18,7 +18,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$HarnessVersion = "1.0.1"
+$HarnessVersion = "1.0.2"
 $FocusedTestCommand = "python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py -p no:cacheprovider -o addopts="
 $ExitCode = 2
 $FinalStatus = "blocked"
@@ -44,6 +44,7 @@ $PythonVersion = $null
 $FocusedTestExitCode = $null
 $HeadSha = $null
 $WorkingTreeStatus = @()
+$WorkingTreeDirty = $false
 $PriorFailedAttempts = @()
 $PriorFailureHashes = @{}
 $PreexistingEventHashes = @{}
@@ -300,6 +301,8 @@ function New-BaseReviewPackage {
             head_sha = $null
             expected_sha = $ExpectedCommitSha
             is_expected_sha = $false
+            working_tree_dirty = $false
+            working_tree_porcelain_v1 = @()
             working_tree_status = @()
         }
         runtime = [ordered]@{
@@ -500,15 +503,28 @@ try {
     if ($LASTEXITCODE -ne 0 -or $HeadSha -notmatch "^[0-9a-f]{40}$") {
         throw "Unable to resolve repository HEAD."
     }
+    $Package.repository.head_sha = $HeadSha
+    $Package.repository.is_expected_sha = $HeadSha.Equals($ExpectedCommitSha, [StringComparison]::OrdinalIgnoreCase)
+    if (-not $Package.repository.is_expected_sha) {
+        throw "ExpectedCommitSha does not equal git rev-parse HEAD."
+    }
+
     $WorkingTreeStatus = @(& git -C $RepositoryRoot status --porcelain=v1 2>&1)
     if ($LASTEXITCODE -ne 0) {
         throw "Unable to inspect repository working tree."
     }
-    $Package.repository.head_sha = $HeadSha
-    $Package.repository.is_expected_sha = $HeadSha.Equals($ExpectedCommitSha, [StringComparison]::OrdinalIgnoreCase)
+    $WorkingTreeDirty = $WorkingTreeStatus.Count -gt 0
+    $Package.repository.working_tree_dirty = $WorkingTreeDirty
+    $Package.repository.working_tree_porcelain_v1 = @($WorkingTreeStatus)
     $Package.repository.working_tree_status = @($WorkingTreeStatus)
-    if (-not $Package.repository.is_expected_sha) {
-        throw "ExpectedCommitSha does not equal git rev-parse HEAD."
+    Write-Host "WORKING_TREE_DIRTY=$($WorkingTreeDirty.ToString().ToLowerInvariant())"
+    Write-Host "WORKING_TREE_PORCELAIN_V1_BEGIN"
+    foreach ($statusLine in $WorkingTreeStatus) {
+        Write-Host $statusLine
+    }
+    Write-Host "WORKING_TREE_PORCELAIN_V1_END"
+    if ($WorkingTreeDirty) {
+        throw "The repository working tree must be clean for a controlled run."
     }
 
     $PythonVersion = (& python --version 2>&1 | Out-String).Trim()
@@ -654,6 +670,8 @@ finally {
             $Package.repository.is_expected_sha = (
                 $null -ne $HeadSha -and $HeadSha.Equals($ExpectedCommitSha, [StringComparison]::OrdinalIgnoreCase)
             )
+            $Package.repository.working_tree_dirty = $WorkingTreeDirty
+            $Package.repository.working_tree_porcelain_v1 = @($WorkingTreeStatus)
             $Package.repository.working_tree_status = @($WorkingTreeStatus)
             $Package.runtime.python_version = $PythonVersion
             $Package.runtime.focused_test_exit_code = $FocusedTestExitCode

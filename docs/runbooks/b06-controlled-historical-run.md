@@ -14,7 +14,10 @@ The review recipient is **Perplexity Evidence & Release Reviewer**. A live succe
 
 ## Safety boundaries
 
-- Use PowerShell 7 and Python 3.12.x from a clean checkout of the exact commit under review.
+- A clean working tree at the exact commit under review is a hard precondition. After confirming
+  `ExpectedCommitSha` equals `HEAD`, the harness runs `git status --porcelain=v1` and blocks
+  before the focused tests or adapter when any tracked or untracked change is present. Use
+  PowerShell 7 and Python 3.12.x.
 - Pass one integer season in the B-06 contract window, 2016 through 2025. The controlled 2023
   exercise passes only `-Season 2023`; the harness never loops over seasons.
 - `DataRoot` and `RunRoot` must be explicit absolute local paths. Neither may equal, contain, or
@@ -42,9 +45,11 @@ git status --short
 python --version
 ```
 
-The harness independently requires `ExpectedCommitSha` to equal `git rev-parse HEAD`. A mismatch
-blocks before the focused tests or adapter invocation. For a post-merge controlled run, use the
-reviewed full `main` SHA; for PR-only verification, use the reviewed PR-head SHA.
+The harness independently requires `ExpectedCommitSha` to equal `git rev-parse HEAD`, then
+requires `git status --porcelain=v1` to be empty. Either mismatch blocks before the focused tests
+or adapter invocation. Do not proceed from a checkout with staged, unstaged, or untracked files.
+For a post-merge controlled run, use the reviewed full `main` SHA; for PR-only verification, use
+the reviewed PR-head SHA.
 
 ## Required preflight (`-WhatIf`)
 
@@ -129,11 +134,15 @@ The final console line has one of these values:
 | `B06_CONTROLLED_RUN_STATUS=BLOCKED` | A preflight, commit, runtime, path, test, scope, or packaging guard failed. | Correct only the external precondition; do not bypass the guard. |
 
 The machine-readable package records command parameters (no secrets), UTC start/end times,
-repository SHA and working-tree status, Python version, focused-test exit code, the runner/request
-field split and evidence paths, prior and new
+repository SHA, `working_tree_dirty`, and raw `working_tree_porcelain_v1` output, Python version,
+focused-test exit code, the runner/request field split and evidence paths, prior and new
 events with content hashes, claims, result fields, pointer/manifest/payload SHA comparisons,
 revision identity/timestamps, the 2016 presence check, derived-artifact scan, and limitations.
 Null evidence fields are expected only when the status makes that evidence unavailable.
+
+Review-package migration note for harness v1.0.2: `repository.working_tree_dirty` and
+`repository.working_tree_porcelain_v1` are additive. The legacy
+`repository.working_tree_status` raw-output field remains populated for existing consumers.
 
 For a fresh 2023 root, reviewers should confirm:
 
