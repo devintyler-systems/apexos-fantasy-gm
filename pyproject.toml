@@ -9,6 +9,8 @@ description = "Local-first, league-aware fantasy football decision system."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "httpx>=0.27,<0.29",
+    "pyarrow>=19,<25",
     "PyYAML",
 ]
 
