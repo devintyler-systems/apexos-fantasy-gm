@@ -15,6 +15,44 @@ from engine.draft_state.schema import create_schema
 
 NOW = datetime(2026, 8, 31, 20, 0, tzinfo=timezone.utc)
 
+SNAPSHOT_KEYS = {
+    "as_of_timestamp",
+    "input_snapshot_id",
+    "dsa_validator_version",
+    "round_order_map_version",
+    "league_rules_version",
+    "current_pick_number",
+    "on_the_clock_seat",
+    "on_the_clock_manager",
+    "live_status",
+    "reason_codes",
+    "data_freshness",
+    "known_limitations",
+    "degraded_banner_required",
+}
+DATA_FRESHNESS_KEYS = {
+    "b05_session_age_seconds",
+    "seat_assignment_artifact_age_seconds",
+}
+NON_DSA08_ERROR_FIXTURES = [
+    pytest.param("dsa01_missing_seat.yaml", "DSA-01", id="dsa01-missing-seat"),
+    pytest.param("dsa01_duplicate_seat.yaml", "DSA-01", id="dsa01-duplicate-seat"),
+    pytest.param("dsa01_out_of_range_seat.yaml", "DSA-01", id="dsa01-out-of-range-seat"),
+    pytest.param("dsa02_whitespace_team_name.yaml", "DSA-02", id="dsa02-whitespace-team-name"),
+    pytest.param("dsa02_duplicate_team_name.yaml", "DSA-02", id="dsa02-duplicate-team-name"),
+    pytest.param("dsa03_no_manager_marker.yaml", "DSA-03", id="dsa03-no-manager-marker"),
+    pytest.param("dsa03_multiple_manager_markers.yaml", "DSA-03", id="dsa03-multiple-manager-markers"),
+    pytest.param("dsa03_marked_name_seat_mismatch.yaml", "DSA-03", id="dsa03-marked-name-seat-mismatch"),
+    pytest.param("dsa03_identity_mismatch.yaml", "DSA-03", id="dsa03-identity-mismatch"),
+    pytest.param("dsa04_missing_provenance.yaml", "DSA-04", id="dsa04-missing-provenance"),
+    pytest.param("dsa04_effective_utc_mismatch.yaml", "DSA-04", id="dsa04-effective-utc-mismatch"),
+    pytest.param("dsa05_embedded_pick_order.yaml", "DSA-05", id="dsa05-embedded-pick-order"),
+    pytest.param("dsa05_format_mismatch.yaml", "DSA-05", id="dsa05-format-mismatch"),
+    pytest.param("dsa05_missing_map_delegation.yaml", "DSA-05", id="dsa05-missing-map-delegation"),
+    pytest.param("dsa06_invalid_timezone.yaml", "DSA-06", id="dsa06-invalid-timezone"),
+    pytest.param("dsa06_merged_timezone_fields.yaml", "DSA-06", id="dsa06-merged-timezone-fields"),
+]
+
 
 def _session(updated_at: datetime = NOW, *, current_pick: int = 4, degraded: bool = False):
     connection = sqlite3.connect(":memory:")
@@ -71,6 +109,27 @@ def test_generic_snapshot_and_all_five_access_patterns(tmp_path):
 
     snapshot = consumer.snapshot()
 
+    assert set(snapshot) == SNAPSHOT_KEYS
+    assert type(snapshot["as_of_timestamp"]) is str
+    assert type(snapshot["input_snapshot_id"]) is str
+    assert type(snapshot["dsa_validator_version"]) is str
+    assert type(snapshot["round_order_map_version"]) is str
+    assert type(snapshot["league_rules_version"]) is str
+    assert type(snapshot["current_pick_number"]) is int
+    assert type(snapshot["on_the_clock_seat"]) is int
+    assert type(snapshot["on_the_clock_manager"]) is str
+    assert type(snapshot["live_status"]) is str
+    assert type(snapshot["reason_codes"]) is list
+    assert all(type(reason) is str for reason in snapshot["reason_codes"])
+    assert type(snapshot["data_freshness"]) is dict
+    assert set(snapshot["data_freshness"]) == DATA_FRESHNESS_KEYS
+    assert all(
+        value is None or type(value) in {int, float}
+        for value in snapshot["data_freshness"].values()
+    )
+    assert type(snapshot["known_limitations"]) is list
+    assert all(type(limitation) is str for limitation in snapshot["known_limitations"])
+    assert type(snapshot["degraded_banner_required"]) is bool
     assert snapshot["live_status"] == "LIVE"
     assert snapshot["current_pick_number"] == 4
     assert snapshot["on_the_clock_seat"] == 4
@@ -149,12 +208,15 @@ def test_live_draft_failure_dsa08_is_degraded_without_seat_or_manager():
     assert snapshot["degraded_banner_required"] is True
 
 
-def test_live_draft_failure_other_dsa_error_is_unknown_without_seat_or_manager():
-    fixture = Path("tests/fixtures/draft_seat_assignment/dsa03_identity_mismatch.yaml")
+@pytest.mark.parametrize(("fixture_name", "criterion"), NON_DSA08_ERROR_FIXTURES)
+def test_live_draft_failure_other_dsa_errors_are_unknown_without_seat_or_manager(
+    fixture_name, criterion
+):
+    fixture = Path("tests/fixtures/draft_seat_assignment") / fixture_name
     snapshot = _consumer(_session(), seat_artifact_path=fixture).snapshot()
 
     assert snapshot["live_status"] == "UNKNOWN"
-    assert snapshot["reason_codes"] == ["DSA_VALIDATION_FAILED_DSA-03"]
+    assert snapshot["reason_codes"] == [f"DSA_VALIDATION_FAILED_{criterion}"]
     assert snapshot["on_the_clock_seat"] is None
     assert snapshot["on_the_clock_manager"] is None
     assert snapshot["degraded_banner_required"] is True
