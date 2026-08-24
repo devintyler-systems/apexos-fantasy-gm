@@ -65,7 +65,7 @@ the reviewed PR-head SHA.
 This runs exactly:
 
 ```text
-python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py -p no:cacheprovider -o addopts=
+python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py tests/acceptance/test_b06_no_play_logical_field.py -p no:cacheprovider -o addopts=
 ```
 
 It makes no adapter/provider request and writes no B-06 raw evidence. A passing package records

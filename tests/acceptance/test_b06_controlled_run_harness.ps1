@@ -82,11 +82,35 @@ if ($args.Count -ge 5 -and $args[0] -eq "-B" -and $args[1] -like "*b06-adapter-r
         $payloadPath = Join-Path $revisionRoot "pbp.parquet"
         Move-Item -LiteralPath $temporaryPayload -Destination $payloadPath
         $manifestPath = Join-Path $revisionRoot "manifest.json"
+        $sourceUrl = "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2023.parquet"
         $manifest = [ordered]@{
+            provider = "nflverse/nflverse-data"
+            source_id = "nflverse/nflverse-data:release:pbp"
+            source_url = $sourceUrl
+            source_release_tag = "pbp"
+            source_release_id = 58152862
+            source_asset_id = 354728689
             requested_season = $season
             revision_sha256 = $revisionSha
+            reported_digest_sha256 = $revisionSha
+            computed_digest_sha256 = $revisionSha
+            digest_match = $true
             retrieved_at_utc = "2026-08-22T00:00:01Z"
+            retrieval_timestamp = "2026-08-22T00:00:01Z"
             effective_time = "2026-08-21T23:59:00Z"
+            parser_version = "b06-v0.2-evidence-1+b06-no-play-normalization-v0.1"
+            no_play_normalization_version = "b06-no-play-normalization-v0.1"
+            row_count = 1
+            raw_schema = @(
+                "season", "season_type", "game_id", "yardline_100", "touchdown",
+                "rush_attempt", "pass_attempt", "play_type"
+            ) | ForEach-Object { [ordered]@{ name = $_; type = "mock"; nullable = $true } }
+            logical_no_play_counts = [ordered]@{ true = 0; false = 1; unknown = 0 }
+            unknown_row_count = 0
+            regular_season_game_count_valid = $true
+            regular_season_game_count_expected = 272
+            regular_season_game_count_observed = 272
+            promotion_result = "pass"
         }
         $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
         $relativeManifest = "season=$season/revisions/sha256=$revisionSha/manifest.json"
@@ -100,7 +124,7 @@ if ($args.Count -ge 5 -and $args[0] -eq "-B" -and $args[1] -like "*b06-adapter-r
         New-Item -ItemType Directory -Path $eventsRoot -Force | Out-Null
         [ordered]@{
             retrieval_event_id = "mock-retrieval"
-            source_asset_url = "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2023.parquet"
+            source_asset_url = $sourceUrl
             outcome = "success_new_revision"
             freshness = "fresh"
             local_revision_sha256 = $revisionSha
@@ -410,6 +434,8 @@ Invoke-TestCase "mock fresh result has complete SHA identity and bounded scope" 
         Assert-Equal $package.success_evidence.sha_identity.pointer_equals_manifest $true "Pointer/manifest SHA mismatch."
         Assert-Equal $package.success_evidence.sha_identity.manifest_equals_payload $true "Manifest/payload SHA mismatch."
         Assert-Equal $package.success_evidence.sha_identity.pointer_equals_payload $true "Pointer/payload SHA mismatch."
+        Assert-Equal $package.promotion_gate.all_required_checks_pass $true "Seven-point gate did not pass."
+        Assert-Equal $package.promotion_gate.current_json_updated $true "Pointer update was not recorded."
         Assert-Equal $package.scope_scan.raw_parquet_copied_to_run_root $false "Package reports copied Parquet."
         Assert-Equal (@(Get-ChildItem -LiteralPath $sandbox.RunRoot -File -Recurse -Filter "*.parquet").Count) 0 "Raw Parquet was copied into RunRoot."
         Assert-Equal $package.scope_scan.season_2016_exists $false "2023 run did not report 2016 absence."

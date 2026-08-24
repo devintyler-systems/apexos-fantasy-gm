@@ -17,6 +17,8 @@ import pytest
 from engine.ingestion.active_use import scan_prohibited_active_use
 from engine.ingestion.nflverse_pbp import (
     DISCOVERY_URL,
+    NO_PLAY_NORMALIZATION_VERSION,
+    PARSER_VERSION,
     REQUIRED_COLUMNS,
     ingest_nflverse_pbp_season,
 )
@@ -58,6 +60,7 @@ def _valid_table(
             "touchdown": pa.array([index % 2 for index in range(rows)], type=pa.int8()),
             "rush_attempt": pa.array([(index + 1) % 2 for index in range(rows)], type=pa.int8()),
             "pass_attempt": pa.array([index % 2 for index in range(rows)], type=pa.int8()),
+            "play_type": pa.array(["pass"] * rows, type=pa.string()),
             "provider_extra_column": pa.array([marker] * rows, type=pa.string()),
         }
     )
@@ -80,7 +83,7 @@ def _asset(payload: bytes, *, url: str = ASSET_URL, **overrides: Any) -> dict[st
         "name": f"play_by_play_{SEASON}.parquet",
         "state": "uploaded",
         "size": len(payload),
-        "digest": None,
+        "digest": "sha256:" + hashlib.sha256(payload).hexdigest(),
         "browser_download_url": url,
         "updated_at": "2026-02-01T00:00:00Z",
     }
@@ -211,8 +214,26 @@ def test_ac01_success_preserves_exact_bytes_all_rows_and_extra_columns(tmp_path:
     assert "POST" in retained_table["season_type"].to_pylist()
     manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
     assert manifest["source_asset_digest_reported"] == digest
+    assert manifest["reported_digest_sha256"] == digest.removeprefix("sha256:")
+    assert manifest["computed_digest_sha256"] == digest.removeprefix("sha256:")
+    assert manifest["digest_match"] is True
     assert manifest["game_counts_by_season_type"] == {"POST": 1, "REG": 272}
     assert manifest["regular_season_game_count_valid"] is True
+    assert manifest["regular_season_game_count_expected"] == 272
+    assert manifest["regular_season_game_count_observed"] == 272
+    assert manifest["parser_version"] == PARSER_VERSION
+    assert NO_PLAY_NORMALIZATION_VERSION in manifest["parser_version"]
+    assert manifest["no_play_normalization_version"] == NO_PLAY_NORMALIZATION_VERSION
+    assert manifest["logical_no_play_counts"] == {
+        "false": table.num_rows,
+        "true": 0,
+        "unknown": 0,
+    }
+    assert manifest["unknown_row_count"] == 0
+    assert manifest["promotion_result"] == "pass"
+    assert manifest["row_count"] == table.num_rows
+    assert manifest["required_raw_columns"] == list(REQUIRED_COLUMNS)
+    assert any(field["name"] == "play_type" for field in manifest["raw_schema"])
 
 
 @pytest.mark.parametrize("column", ["season", "season_type", "game_id"])
@@ -244,7 +265,7 @@ def test_ac02_nullable_columns_accept_nulls(tmp_path: Path) -> None:
 def test_ac03_dictionary_encoded_strings_are_accepted(tmp_path: Path) -> None:
     table = _valid_table()
     dictionary_type = pa.dictionary(pa.int8(), pa.string())
-    for column in ("season_type", "game_id"):
+    for column in ("season_type", "game_id", "play_type"):
         table = _replace(table, column, table[column].to_pylist(), dictionary_type)
 
     result, _ = _ingest(tmp_path / "pbp", _parquet_bytes(table))
@@ -279,6 +300,12 @@ def _invalid_table(case: str) -> pa.Table:
         values = table["game_id"].to_pylist()
         values[0] = ""
         return _replace(table, "game_id", values, pa.string())
+    if case == "play_type_integer":
+        return _replace(table, "play_type", [1] * rows, pa.int8())
+    if case == "play_type_unknown":
+        values = table["play_type"].to_pylist()
+        values[0] = "provider_new_value"
+        return _replace(table, "play_type", values, pa.string())
     if case == "yardline_string":
         return _replace(table, "yardline_100", ["50"] * rows, pa.string())
     if case in {"yardline_nan", "yardline_infinite", "yardline_low", "yardline_high"}:
@@ -313,6 +340,8 @@ def _invalid_table(case: str) -> pa.Table:
         "season_type_unknown",
         "game_id_integer",
         "game_id_blank",
+        "play_type_integer",
+        "play_type_unknown",
         "yardline_string",
         "yardline_nan",
         "yardline_infinite",
@@ -335,7 +364,55 @@ def test_ac03_type_and_domain_rules_fail_closed(tmp_path: Path, case: str) -> No
         "season_mismatch",
         "season_type_domain",
         "game_id_domain",
+        "logical_no_play_unknown",
     }
+
+
+def test_no_play_null_without_opportunity_is_counted_true(tmp_path: Path) -> None:
+    table = _valid_table()
+    play_types = table["play_type"].to_pylist()
+    pass_attempts = table["pass_attempt"].to_pylist()
+    rush_attempts = table["rush_attempt"].to_pylist()
+    play_types[0] = None
+    pass_attempts[0] = 0
+    rush_attempts[0] = 0
+    table = _replace(table, "play_type", play_types, pa.string())
+    table = _replace(table, "pass_attempt", pass_attempts, pa.int8())
+    table = _replace(table, "rush_attempt", rush_attempts, pa.int8())
+
+    result, _ = _ingest(tmp_path / "pbp", _parquet_bytes(table))
+
+    assert result.status == "success_new_revision"
+    assert result.manifest_path is not None
+    manifest = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+    assert manifest["logical_no_play_counts"] == {
+        "false": table.num_rows - 1,
+        "true": 1,
+        "unknown": 0,
+    }
+
+
+@pytest.mark.parametrize(("pass_attempt", "rush_attempt"), [(1, 0), (0, 1)])
+def test_no_play_null_with_opportunity_blocks_promotion(
+    tmp_path: Path, pass_attempt: int, rush_attempt: int
+) -> None:
+    table = _valid_table()
+    play_types = table["play_type"].to_pylist()
+    pass_attempts = table["pass_attempt"].to_pylist()
+    rush_attempts = table["rush_attempt"].to_pylist()
+    play_types[0] = None
+    pass_attempts[0] = pass_attempt
+    rush_attempts[0] = rush_attempt
+    table = _replace(table, "play_type", play_types, pa.string())
+    table = _replace(table, "pass_attempt", pass_attempts, pa.int8())
+    table = _replace(table, "rush_attempt", rush_attempts, pa.int8())
+    root = tmp_path / "pbp"
+
+    result, _ = _ingest(root, _parquet_bytes(table))
+
+    _assert_failed_without_promotion(root, result)
+    assert result.failure_class == "logical_no_play_unknown"
+    assert "1 unknown row(s)" in (result.failure_detail or "")
 
 
 @pytest.mark.parametrize("arrow_type", [pa.bool_(), pa.int8(), pa.float64()])
@@ -447,6 +524,18 @@ def test_ac07_download_integrity_failures_do_not_promote(tmp_path: Path, case: s
 
     _assert_failed_without_promotion(root, result)
     assert result.failure_class in {"download_size", "digest_mismatch"}
+
+
+def test_promotion_window_requires_provider_reported_digest(tmp_path: Path) -> None:
+    payload = _parquet_bytes(_valid_table())
+    asset = _asset(payload, digest=None)
+    root = tmp_path / "pbp"
+
+    result, seen = _ingest(root, payload, release=_release(payload, asset=asset))
+
+    _assert_failed_without_promotion(root, result)
+    assert result.failure_class == "provider_digest_missing"
+    assert seen == [DISCOVERY_URL]
 
 
 def test_ac08_corrupt_parquet_fails_without_promotion(tmp_path: Path) -> None:
