@@ -68,6 +68,9 @@ if ($args.Count -ge 5 -and $args[0] -eq "-B" -and $args[1] -like "*b06-adapter-r
     $season = [int]$args[2]
     $dataRoot = [IO.Path]::GetFullPath($args[3])
     $resultPath = [IO.Path]::GetFullPath($args[4])
+    $repositoryRoot = [IO.Path]::GetFullPath($args[5])
+    $adapterModulePath = Join-Path $repositoryRoot "engine\ingestion\nflverse_pbp.py"
+    $adapterModuleSha256 = (Get-FileHash -LiteralPath $adapterModulePath -Algorithm SHA256).Hash.ToLowerInvariant()
     $seasonRoot = Join-Path $dataRoot "season=$season"
     $outcome = $env:B06_TEST_ADAPTER_OUTCOME
 
@@ -196,6 +199,8 @@ if ($args.Count -ge 5 -and $args[0] -eq "-B" -and $args[1] -like "*b06-adapter-r
         throw "Unknown mock adapter outcome '$outcome'."
     }
 
+    $result["adapter_module_path"] = $adapterModulePath
+    $result["adapter_module_sha256"] = $adapterModuleSha256
     $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $resultPath -Encoding utf8
     exit 0
 }
@@ -436,6 +441,7 @@ Invoke-TestCase "mock fresh result has complete SHA identity and bounded scope" 
         Assert-Equal $package.success_evidence.sha_identity.pointer_equals_payload $true "Pointer/payload SHA mismatch."
         Assert-Equal $package.promotion_gate.all_required_checks_pass $true "Seven-point gate did not pass."
         Assert-Equal $package.promotion_gate.current_json_updated $true "Pointer update was not recorded."
+        Assert-Equal $package.runtime.adapter_module_matches_repository $true "Adapter module provenance did not match the reviewed worktree."
         Assert-Equal $package.scope_scan.raw_parquet_copied_to_run_root $false "Package reports copied Parquet."
         Assert-Equal (@(Get-ChildItem -LiteralPath $sandbox.RunRoot -File -Recurse -Filter "*.parquet").Count) 0 "Raw Parquet was copied into RunRoot."
         Assert-Equal $package.scope_scan.season_2016_exists $false "2023 run did not report 2016 absence."
@@ -522,6 +528,8 @@ Invoke-TestCase "prior failed event is hashed and unchanged" {
 Invoke-TestCase "source has one adapter call and workflows have no live harness request" {
     $source = Get-Content -Raw -LiteralPath $HarnessPath
     Assert-Equal ([regex]::Matches($source, "result = ingest_nflverse_pbp_season\(").Count) 1 "Harness source does not contain exactly one adapter call."
+    Assert-True ($source.Contains('sys.path.insert(0, str(repository_root))')) "Runner does not pin imports to the reviewed repository."
+    Assert-True ($source.Contains('payload["adapter_module_sha256"]')) "Runner does not attest the adapter module hash."
     $workflowHits = @(
         Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot ".github\workflows") -File -Recurse |
             Select-String -Pattern "(?i)-ExecuteLive"

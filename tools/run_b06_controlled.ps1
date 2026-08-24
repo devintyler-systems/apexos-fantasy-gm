@@ -250,24 +250,33 @@ function Invoke-AdapterOnce {
 
     $runnerSource = @'
 from dataclasses import asdict
+import hashlib
 import json
 from pathlib import Path
 import sys
 
-from engine.ingestion.nflverse_pbp import ingest_nflverse_pbp_season
-
 season = int(sys.argv[1])
 data_root = Path(sys.argv[2])
 result_path = Path(sys.argv[3])
+repository_root = Path(sys.argv[4]).resolve()
+sys.path.insert(0, str(repository_root))
+
+from engine.ingestion import nflverse_pbp
+
+adapter_module_path = Path(nflverse_pbp.__file__).resolve()
+adapter_module_sha256 = hashlib.sha256(adapter_module_path.read_bytes()).hexdigest()
+ingest_nflverse_pbp_season = nflverse_pbp.ingest_nflverse_pbp_season
 result = ingest_nflverse_pbp_season(season, data_root)
 payload = asdict(result)
 if payload["manifest_path"] is not None:
     payload["manifest_path"] = str(payload["manifest_path"])
+payload["adapter_module_path"] = str(adapter_module_path)
+payload["adapter_module_sha256"] = adapter_module_sha256
 result_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 '@
     [IO.File]::WriteAllText($script:AdapterRunnerPath, $runnerSource, [Text.UTF8Encoding]::new($false))
     $script:AdapterInvocationAttempted = $true
-    & python -B $script:AdapterRunnerPath $RequestedSeason $Root $ResultPath 2>&1 |
+    & python -B $script:AdapterRunnerPath $RequestedSeason $Root $ResultPath $RepositoryRoot 2>&1 |
         ForEach-Object { Write-Host $_ }
     $adapterExitCode = $LASTEXITCODE
     return [int]$adapterExitCode
@@ -310,6 +319,9 @@ function New-BaseReviewPackage {
             working_directory = $InitialWorkingDirectory
             focused_test_command = $FocusedTestCommand
             focused_test_exit_code = $null
+            adapter_module_path = $null
+            adapter_module_sha256 = $null
+            adapter_module_matches_repository = $false
         }
         data_root = [ordered]@{
             path = $NormalizedDataRoot
@@ -394,6 +406,21 @@ function Set-ResultFields {
     $Package.result.failure_detail = if ($null -eq $AdapterResult.failure_detail) { $null } else { [string]$AdapterResult.failure_detail }
     $Package.result.freshness = if ($null -eq $AdapterResult.freshness) { $null } else { [string]$AdapterResult.freshness }
     $Package.result.stale_banner_required = [bool]$AdapterResult.stale_banner_required
+
+    $expectedAdapterModulePath = [IO.Path]::GetFullPath((Join-Path $RepositoryRoot "engine\ingestion\nflverse_pbp.py"))
+    $reportedAdapterModulePath = [IO.Path]::GetFullPath([string]$AdapterResult.adapter_module_path)
+    $reportedAdapterModuleSha256 = [string]$AdapterResult.adapter_module_sha256
+    $expectedAdapterModuleSha256 = Get-FileSha256 -Path $expectedAdapterModulePath
+    $adapterModuleMatchesRepository = (
+        $reportedAdapterModulePath.Equals($expectedAdapterModulePath, [StringComparison]::OrdinalIgnoreCase) -and
+        $reportedAdapterModuleSha256 -ceq $expectedAdapterModuleSha256
+    )
+    $Package.runtime.adapter_module_path = $reportedAdapterModulePath
+    $Package.runtime.adapter_module_sha256 = $reportedAdapterModuleSha256
+    $Package.runtime.adapter_module_matches_repository = $adapterModuleMatchesRepository
+    if (-not $adapterModuleMatchesRepository) {
+        throw "Adapter module path or SHA-256 does not match the reviewed repository module."
+    }
 
     if ($Package.result.status -eq "cached_valid_after_failure") {
         $Package.result.freshness = "stale"
