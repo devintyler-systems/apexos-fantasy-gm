@@ -476,4 +476,31 @@ risk; still TBD per Devin.
 ### Version 0.1 — 2026-08-09
 **Change:** Established first-league MVP architecture.
 **Type:** Structural
+
+---
+
+### Version 3.10 — 2026-08-24
+
+**Change:** Recorded the successful, reviewed B-06 controlled live-data rerun for the 2023 regular season after an earlier failed/degraded attempt exposed a controlled-runner import-provenance defect. PR #41 head `aaeaed6ca50ac5ca99c496adfd2eb8684c07bf4d` was squash-merged to canonical `main` as `7fd7d207d1b3cc2ca62c0f9aaa974d4e2b14af52` (`fix(b06): attest adapter and rerun 2023 promotion (#41)`). The merged calibration fixes pin controlled-runner child-process imports to the reviewed worktree adapter and add a pre-retrieval adapter path/SHA attestation. A mismatch now exits before provider retrieval, ingestion calls, provider events, partial-manifest output, or `current.json` promotion.
+
+**2023 controlled promotion evidence:** The fresh retry run root is `C:\ApexOS\b06-rerun-aaeaed6-v021`. Its immutable review package is `C:\ApexOS\b06-rerun-aaeaed6-v021\runs\20260824T192734954Z-season=2023-sha=aaeaed6ca50a-7899d551\review-package.json`, SHA-256 `5da47a686b2caf0737715091c27d936671c398adfd6cc56d9906ff93f878d6e1`. The promoted manifest is located under the content-addressed 2023 revision directory for SHA-256 `bd3484731408def6b0ec93225bba2bd7b2c65769ca707a2b9444d891abdc6776`. The official nflverse-data source was release `58152862`, asset `354728689`, 20,534,088 bytes. Reported/revision asset digest equality, pointer/manifest/payload digest identities, and atomic `current.json` update all passed. The 49,665-row artifact contains 272 regular-season games and 13 postseason games; B-06 regular-season validation passed. Runtime adapter attestation passed at reviewed path `C:\Projects\apexos-fantasy-gm\.worktrees\b06-rerun-7ca2b24\engine\ingestion\nflverse_pbp.py`, with adapter SHA-256 `7f21b953fd9252c9c1ea6d84ca07a836fd908cd240598b4500c969233da9a46a`. Parser version was `b06-v0.2-evidence-1+b06-no-play-normalization-v0.1`; logical `no_play` counts were false `43,658`, true `6,007`, unknown `0`.
+
+**Quarantined prior evidence:** The first 2023 attempt at implementation SHA `4761023cbab6d846ec98d514df984b8aaf06e568` remains `failed_or_stale` / degraded. It correctly verified the official 2023 asset digest and 272 regular-season games, but imported `b06-v0.3-evidence-1` from a different editable checkout; logical `no_play` normalization was consequently not applied. Its immutable evidence is preserved but cannot be consumed. Any pointer generated before rejection is non-current and must never be used as current evidence.
+
+**Type:** Calibration (not structural). This changes controlled-runner provenance validation and promotion safety; it does not alter the B-06 v0.2 controlling normalized source-field interface, raw provider bytes, canonical identity, B-07 rules or weighting, draft/live runtime, or projection behavior.
+
+**Verification:** PR #41 completed eight successful GitHub checks: B-01, B-02, B-04, B-05 acceptance checks; B-06 nflverse ingestion evidence; CodeQL; and CodeQL actions/Python analysis. Local evidence recorded 89 production and no-play focused tests passed, the Ledger-referenced normalization subset 28 passed, controlled-run harness 14 passed / 0 failed, synthetic adapter mismatch behavior with zero ingestion calls, zero provider events, and absent data root, plus clean `git diff --check` against `7ca2b244bfa8648d5458cd9c163e763ce8744be8`.
+
+**Impact on build sequence:**
+- B-06 v0.2 remains controlling, now with the v0.2.1 adapter-attestation safety calibration enforced by merged code.
+- 2023 is the only completed controlled live-data promotion.
+- 2024 remains unstarted and is the next authorized season, must execute from a fresh root using canonical `main` at `7fd7d207d1b3cc2ca62c0f9aaa974d4e2b14af52` or later, and must halt for Architect review before 2025 begins.
+- 2025 remains unstarted and requires the same independent gate.
+- B-07 remains BLOCKED: no lookup table, xTD artifact, or production projection behavior is authorized until 2024 and 2025 independently pass their controlled B-06 promotion gates and a separate B-07 execution handoff is issued.
+- The next authorized action is the 2024 fresh-root controlled run, only after this Decision Ledger v3.10 PR is merged.
+
+**Highest-leverage next artifact:** B-06 2024 Controlled Live-Data Retrieval and Promotion Rerun Handoff, bound to canonical `main` `7fd7d207d1b3cc2ca62c0f9aaa974d4e2b14af52`, with fresh-root execution and post-run independent evidence review.
+
+---
+
 (END)
