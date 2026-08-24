@@ -18,8 +18,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$HarnessVersion = "1.0.2"
-$FocusedTestCommand = "python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py -p no:cacheprovider -o addopts="
+$HarnessVersion = "1.2.0"
+$FocusedTestCommand = "python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py tests/acceptance/test_b06_no_play_logical_field.py -p no:cacheprovider -o addopts="
 $ExitCode = 2
 $FinalStatus = "blocked"
 $AdapterInvocationAttempted = $false
@@ -33,6 +33,7 @@ $ReviewPackagePath = $null
 $TranscriptPath = $null
 $AdapterRunnerPath = $null
 $AdapterResultPath = $null
+$AdapterAttestationPath = $null
 $Package = $null
 $StartedAtUtc = [DateTimeOffset]::UtcNow
 $EndedAtUtc = $null
@@ -230,7 +231,7 @@ function Get-DerivedScanRoots {
 
 function Invoke-FocusedTests {
     Write-Host "FOCUSED_TEST_COMMAND=$FocusedTestCommand"
-    & python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py -p no:cacheprovider -o "addopts=" 2>&1 |
+    & python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py tests/acceptance/test_b06_no_play_logical_field.py -p no:cacheprovider -o "addopts=" 2>&1 |
         ForEach-Object { Write-Host $_ }
     $focusedExitCode = $LASTEXITCODE
     return [int]$focusedExitCode
@@ -250,24 +251,56 @@ function Invoke-AdapterOnce {
 
     $runnerSource = @'
 from dataclasses import asdict
+from datetime import datetime, timezone
+import hashlib
 import json
+import os
 from pathlib import Path
 import sys
-
-from engine.ingestion.nflverse_pbp import ingest_nflverse_pbp_season
 
 season = int(sys.argv[1])
 data_root = Path(sys.argv[2])
 result_path = Path(sys.argv[3])
-result = ingest_nflverse_pbp_season(season, data_root)
+repository_root = Path(sys.argv[4]).resolve()
+attestation_path = Path(sys.argv[5])
+expected_adapter_module_path = Path(sys.argv[6]).resolve()
+expected_adapter_module_sha = sys.argv[7]
+sys.path.insert(0, str(repository_root))
+
+from engine.ingestion import nflverse_pbp
+
+adapter_module_path = Path(nflverse_pbp.__file__).resolve()
+adapter_module_sha = hashlib.sha256(adapter_module_path.read_bytes()).hexdigest()
+adapter_attestation_pass = (
+    os.path.normcase(str(adapter_module_path))
+    == os.path.normcase(str(expected_adapter_module_path))
+    and adapter_module_sha == expected_adapter_module_sha
+)
+attestation = {
+    "adapter_module_path": str(adapter_module_path),
+    "adapter_module_sha": adapter_module_sha,
+    "adapter_attestation_pass": adapter_attestation_pass,
+    "expected_adapter_module_path": str(expected_adapter_module_path),
+    "expected_adapter_module_sha": expected_adapter_module_sha,
+    "attested_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+}
+with attestation_path.open("x", encoding="utf-8", newline="\n") as stream:
+    json.dump(attestation, stream, indent=2, sort_keys=True)
+    stream.write("\n")
+if not adapter_attestation_pass:
+    raise SystemExit(86)
+
+result = nflverse_pbp.ingest_nflverse_pbp_season(season, data_root)
 payload = asdict(result)
 if payload["manifest_path"] is not None:
     payload["manifest_path"] = str(payload["manifest_path"])
 result_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 '@
     [IO.File]::WriteAllText($script:AdapterRunnerPath, $runnerSource, [Text.UTF8Encoding]::new($false))
+    $expectedAdapterModulePath = [IO.Path]::GetFullPath((Join-Path $RepositoryRoot "engine\ingestion\nflverse_pbp.py"))
+    $expectedAdapterModuleSha = Get-FileSha256 -Path $expectedAdapterModulePath
     $script:AdapterInvocationAttempted = $true
-    & python -B $script:AdapterRunnerPath $RequestedSeason $Root $ResultPath 2>&1 |
+    & python -B $script:AdapterRunnerPath $RequestedSeason $Root $ResultPath $RepositoryRoot $script:AdapterAttestationPath $expectedAdapterModulePath $expectedAdapterModuleSha 2>&1 |
         ForEach-Object { Write-Host $_ }
     $adapterExitCode = $LASTEXITCODE
     return [int]$adapterExitCode
@@ -282,6 +315,9 @@ function New-BaseReviewPackage {
         generated_at_utc = $null
         operation_mode = $OperationMode
         adapter_invocation_attempted = $false
+        adapter_module_path = $null
+        adapter_module_sha = $null
+        adapter_attestation_pass = $false
         provider_request_made = $false
         provider_request_evidence_source = "none"
         provider_request_evidence_paths = @()
@@ -310,6 +346,9 @@ function New-BaseReviewPackage {
             working_directory = $InitialWorkingDirectory
             focused_test_command = $FocusedTestCommand
             focused_test_exit_code = $null
+            adapter_module_path = $null
+            adapter_module_sha256 = $null
+            adapter_module_matches_repository = $false
         }
         data_root = [ordered]@{
             path = $NormalizedDataRoot
@@ -345,6 +384,20 @@ function New-BaseReviewPackage {
                 pointer_equals_payload = $null
             }
             revision_directory = $null
+        }
+        promotion_gate = [ordered]@{
+            contract_version = "b06_promotion_gate_v0.2.1"
+            controlling_interface = "b06-no-play-normalization-v0.1"
+            adapter_attestation_pass = $false
+            authentic_provider_lineage = $false
+            reported_digest_equals_computed_digest = $false
+            required_raw_schema_present = $false
+            logical_no_play_normalization_applied = $false
+            regular_season_game_count_valid = $false
+            manifest_immutable_and_timestamped = $false
+            current_json_pointer_update_atomic = $false
+            current_json_updated = $false
+            all_required_checks_pass = $false
         }
         events = @()
         claims = @()
@@ -385,6 +438,38 @@ function Set-ResultFields {
     if ($Package.result.status -eq "cached_valid_after_failure") {
         $Package.result.freshness = "stale"
         $Package.result.stale_banner_required = $true
+    }
+}
+
+function Set-AdapterAttestationFields {
+    param(
+        [Parameter(Mandatory = $true)]$Package,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Runtime-loaded adapter did not emit the required pre-retrieval attestation."
+    }
+    $attestation = [IO.File]::ReadAllText($Path, [Text.Encoding]::UTF8) | ConvertFrom-Json
+    $expectedPath = [IO.Path]::GetFullPath((Join-Path $RepositoryRoot "engine\ingestion\nflverse_pbp.py"))
+    $expectedSha = Get-FileSha256 -Path $expectedPath
+    $reportedPath = [IO.Path]::GetFullPath([string]$attestation.adapter_module_path)
+    $reportedSha = [string]$attestation.adapter_module_sha
+    $computedPass = (
+        $reportedPath.Equals($expectedPath, [StringComparison]::OrdinalIgnoreCase) -and
+        $reportedSha -ceq $expectedSha
+    )
+    $attestationPass = $attestation.adapter_attestation_pass -eq $true -and $computedPass
+
+    $Package.adapter_module_path = $reportedPath
+    $Package.adapter_module_sha = $reportedSha
+    $Package.adapter_attestation_pass = $attestationPass
+    $Package.runtime.adapter_module_path = $reportedPath
+    $Package.runtime.adapter_module_sha256 = $reportedSha
+    $Package.runtime.adapter_module_matches_repository = $computedPass
+    $Package.promotion_gate.adapter_attestation_pass = $attestationPass
+    if (-not $attestationPass) {
+        throw "Runtime-loaded adapter path or SHA does not match the reviewed worktree adapter; retrieval was not started."
     }
 }
 
@@ -456,6 +541,85 @@ function Collect-SuccessEvidence {
     )) {
         throw "Pointer, manifest, and payload SHA identities do not all agree."
     }
+
+    $manifest = $manifestEvidence.content
+    $rawSchemaNames = @($manifest.raw_schema | ForEach-Object { [string]$_.name })
+    $requiredRawColumns = @(
+        "season", "season_type", "game_id", "yardline_100", "touchdown",
+        "rush_attempt", "pass_attempt", "play_type"
+    )
+    $authenticProviderLineage = (
+        $manifest.provider -ceq "nflverse/nflverse-data" -and
+        $manifest.source_id -ceq "nflverse/nflverse-data:release:pbp" -and
+        $manifest.source_release_tag -ceq "pbp" -and
+        [int64]$manifest.source_release_id -gt 0 -and
+        [int64]$manifest.source_asset_id -gt 0 -and
+        [string]$manifest.source_url -match "^https://(github\.com|objects\.githubusercontent\.com|release-assets\.githubusercontent\.com)/"
+    )
+    $digestEquality = (
+        $manifest.digest_match -eq $true -and
+        [string]$manifest.reported_digest_sha256 -ceq [string]$manifest.computed_digest_sha256 -and
+        [string]$manifest.computed_digest_sha256 -ceq $payloadHash
+    )
+    $requiredRawSchemaPresent = @($requiredRawColumns | Where-Object { $rawSchemaNames -notcontains $_ }).Count -eq 0
+    $logicalNoPlayApplied = (
+        $manifest.no_play_normalization_version -ceq "b06-no-play-normalization-v0.1" -and
+        [string]$manifest.parser_version -match "b06-no-play-normalization-v0\.1" -and
+        [int64]$manifest.unknown_row_count -eq 0 -and
+        ([int64]$manifest.logical_no_play_counts.true +
+            [int64]$manifest.logical_no_play_counts.false +
+            [int64]$manifest.logical_no_play_counts.unknown) -eq [int64]$manifest.row_count
+    )
+    $regularSeasonValid = (
+        $manifest.regular_season_game_count_valid -eq $true -and
+        [int64]$manifest.regular_season_game_count_expected -eq [int64]$manifest.regular_season_game_count_observed
+    )
+    $retrievalTimestamp = [DateTimeOffset]$manifest.retrieval_timestamp
+    $retrievedAtUtc = [DateTimeOffset]$manifest.retrieved_at_utc
+    $promotionResult = [string]$manifest.promotion_result
+    $manifestRawJson = [IO.File]::ReadAllText($manifestPath, [Text.Encoding]::UTF8)
+    $manifestImmutableAndTimestamped = (
+        [bool]$Package.success_evidence.revision_directory.name_matches_identity -and
+        ($manifestRawJson -match '"retrieval_timestamp"\s*:\s*"\d{4}-\d{2}-\d{2}T[^"\r\n]*Z"') -and
+        ($retrievalTimestamp.UtcDateTime -eq $retrievedAtUtc.UtcDateTime) -and
+        ($promotionResult -ceq "pass")
+    )
+    $pointerAtomic = (
+        $Package.success_evidence.sha_identity.pointer_equals_manifest -and
+        $Package.success_evidence.sha_identity.manifest_equals_payload -and
+        $Package.success_evidence.sha_identity.pointer_equals_payload
+    )
+    $allRequiredChecksPass = (
+        $Package.promotion_gate.adapter_attestation_pass -and
+        $authenticProviderLineage -and
+        $digestEquality -and
+        $requiredRawSchemaPresent -and
+        $logicalNoPlayApplied -and
+        $regularSeasonValid -and
+        $manifestImmutableAndTimestamped -and
+        $pointerAtomic
+    )
+    $Package.promotion_gate.authentic_provider_lineage = $authenticProviderLineage
+    $Package.promotion_gate.reported_digest_equals_computed_digest = $digestEquality
+    $Package.promotion_gate.required_raw_schema_present = $requiredRawSchemaPresent
+    $Package.promotion_gate.logical_no_play_normalization_applied = $logicalNoPlayApplied
+    $Package.promotion_gate.regular_season_game_count_valid = $regularSeasonValid
+    $Package.promotion_gate.manifest_immutable_and_timestamped = $manifestImmutableAndTimestamped
+    $Package.promotion_gate.current_json_pointer_update_atomic = $pointerAtomic
+    $Package.promotion_gate.current_json_updated = $pointerAtomic
+    $Package.promotion_gate.all_required_checks_pass = $allRequiredChecksPass
+    if (-not $allRequiredChecksPass) {
+        $failedChecks = @(
+            $Package.promotion_gate.GetEnumerator() |
+                Where-Object { $_.Key -notin @("contract_version", "controlling_interface", "current_json_updated", "all_required_checks_pass") -and -not [bool]$_.Value } |
+                ForEach-Object { $_.Key }
+        )
+        $diagnostic = if ($failedChecks -contains "manifest_immutable_and_timestamped") {
+            " revision_name_matches=$([bool]$Package.success_evidence.revision_directory.name_matches_identity); retrieval_timestamp='$($retrievalTimestamp.ToString("o"))'; retrieved_at_utc='$($retrievedAtUtc.ToString("o"))'; promotion_result='$promotionResult'."
+        }
+        else { "" }
+        throw "The B-06 v0.2.1 precondition and seven-point promotion gate did not fully pass: $($failedChecks -join ', ').$diagnostic"
+    }
 }
 
 try {
@@ -491,6 +655,7 @@ try {
     $ReviewPackagePath = Join-Path $RunDirectory "review-package.json"
     $AdapterRunnerPath = Join-Path $RunDirectory "b06-adapter-runner.py"
     $AdapterResultPath = Join-Path $RunDirectory "adapter-result.json"
+    $AdapterAttestationPath = Join-Path $RunDirectory "adapter-attestation.json"
     Start-Transcript -LiteralPath $TranscriptPath -Force | Out-Null
     $TranscriptStarted = $true
 
@@ -580,6 +745,7 @@ try {
         finally {
             Pop-Location
         }
+        Set-AdapterAttestationFields -Package $Package -Path $AdapterAttestationPath
         if ($adapterExitCode -ne 0 -or -not (Test-Path -LiteralPath $AdapterResultPath -PathType Leaf)) {
             $FinalStatus = "failed_or_stale"
             throw "The single adapter invocation did not emit a readable result."
@@ -744,6 +910,9 @@ finally {
             }
             if ($null -ne $AdapterResultPath) {
                 Remove-Item -LiteralPath $AdapterResultPath -Force -ErrorAction SilentlyContinue
+            }
+            if ($null -ne $AdapterAttestationPath) {
+                Remove-Item -LiteralPath $AdapterAttestationPath -Force -ErrorAction SilentlyContinue
             }
         }
     }

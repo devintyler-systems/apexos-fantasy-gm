@@ -6,7 +6,8 @@
 nflverse play-by-play season. It does not replace the adapter: only
 `engine.ingestion.nflverse_pbp.ingest_nflverse_pbp_season()` may retrieve and write B-06
 provider evidence. The harness performs preflight checks, runs the exact synthetic acceptance
-suite, permits at most one adapter invocation, and packages review metadata without copying raw
+suite, requires runtime-loaded adapter path/SHA attestation before retrieval, permits at most one
+adapter invocation, and packages review metadata without copying raw
 Parquet bytes.
 
 The review recipient is **Perplexity Evidence & Release Reviewer**. A live success remains
@@ -65,7 +66,7 @@ the reviewed PR-head SHA.
 This runs exactly:
 
 ```text
-python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py -p no:cacheprovider -o addopts=
+python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py tests/acceptance/test_b06_no_play_logical_field.py -p no:cacheprovider -o addopts=
 ```
 
 It makes no adapter/provider request and writes no B-06 raw evidence. A passing package records
@@ -116,6 +117,7 @@ The package deliberately separates runner activity from provider-request evidenc
 | `provider_request_made` | Evidence-derived claim. It is `true` only when this invocation creates a new adapter event containing `source_asset_url` (retrieval event) or `attempted_url` (failed-attempt event). Runner launch, process exit, and `adapter-result.json` alone are not evidence of provider contact. |
 | `provider_request_evidence_source` | `retrieval_event`, `failed_attempt_event`, or `none`, according to the qualifying new event. |
 | `provider_request_evidence_paths` | Local paths of the qualifying new immutable adapter events. Preexisting events never satisfy the claim. |
+| `adapter_attestation_pass` | Pre-retrieval gate. True only when the child runtime's loaded adapter path and SHA equal the reviewed worktree path and SHA. A mismatch exits before the ingestion function is called. |
 
 Consequently, a local runner failure can produce
 `adapter_invocation_attempted: true` with `provider_request_made: false`, source `none`, and no

@@ -63,13 +63,37 @@ if ($args -contains "pytest") {
     exit 0
 }
 
-if ($args.Count -ge 5 -and $args[0] -eq "-B" -and $args[1] -like "*b06-adapter-runner.py") {
+if ($args.Count -ge 9 -and $args[0] -eq "-B" -and $args[1] -like "*b06-adapter-runner.py") {
     Increment-Counter "adapter"
     $season = [int]$args[2]
     $dataRoot = [IO.Path]::GetFullPath($args[3])
     $resultPath = [IO.Path]::GetFullPath($args[4])
-    $seasonRoot = Join-Path $dataRoot "season=$season"
+    $repositoryRoot = [IO.Path]::GetFullPath($args[5])
+    $attestationPath = [IO.Path]::GetFullPath($args[6])
+    $expectedAdapterModulePath = [IO.Path]::GetFullPath($args[7])
+    $expectedAdapterModuleSha = [string]$args[8]
     $outcome = $env:B06_TEST_ADAPTER_OUTCOME
+    $adapterModulePath = if ($outcome -eq "attestation_mismatch") {
+        Join-Path $repositoryRoot "engine\ingestion\active_use.py"
+    }
+    else { $expectedAdapterModulePath }
+    $adapterModuleSha = (Get-FileHash -LiteralPath $adapterModulePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $adapterAttestationPass = (
+        $adapterModulePath.Equals($expectedAdapterModulePath, [StringComparison]::OrdinalIgnoreCase) -and
+        $adapterModuleSha -ceq $expectedAdapterModuleSha
+    )
+    [ordered]@{
+        adapter_module_path = $adapterModulePath
+        adapter_module_sha = $adapterModuleSha
+        adapter_attestation_pass = $adapterAttestationPass
+        expected_adapter_module_path = $expectedAdapterModulePath
+        expected_adapter_module_sha = $expectedAdapterModuleSha
+        attested_at_utc = "2026-08-24T00:00:00Z"
+    } | ConvertTo-Json | Set-Content -LiteralPath $attestationPath -Encoding utf8
+    if (-not $adapterAttestationPass) { exit 86 }
+
+    Increment-Counter "ingest"
+    $seasonRoot = Join-Path $dataRoot "season=$season"
 
     if ($outcome -eq "fresh") {
         $revisionRootBase = Join-Path $seasonRoot "revisions"
@@ -82,11 +106,35 @@ if ($args.Count -ge 5 -and $args[0] -eq "-B" -and $args[1] -like "*b06-adapter-r
         $payloadPath = Join-Path $revisionRoot "pbp.parquet"
         Move-Item -LiteralPath $temporaryPayload -Destination $payloadPath
         $manifestPath = Join-Path $revisionRoot "manifest.json"
+        $sourceUrl = "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2023.parquet"
         $manifest = [ordered]@{
+            provider = "nflverse/nflverse-data"
+            source_id = "nflverse/nflverse-data:release:pbp"
+            source_url = $sourceUrl
+            source_release_tag = "pbp"
+            source_release_id = 58152862
+            source_asset_id = 354728689
             requested_season = $season
             revision_sha256 = $revisionSha
+            reported_digest_sha256 = $revisionSha
+            computed_digest_sha256 = $revisionSha
+            digest_match = $true
             retrieved_at_utc = "2026-08-22T00:00:01Z"
+            retrieval_timestamp = "2026-08-22T00:00:01Z"
             effective_time = "2026-08-21T23:59:00Z"
+            parser_version = "b06-v0.2-evidence-1+b06-no-play-normalization-v0.1"
+            no_play_normalization_version = "b06-no-play-normalization-v0.1"
+            row_count = 1
+            raw_schema = @(
+                "season", "season_type", "game_id", "yardline_100", "touchdown",
+                "rush_attempt", "pass_attempt", "play_type"
+            ) | ForEach-Object { [ordered]@{ name = $_; type = "mock"; nullable = $true } }
+            logical_no_play_counts = [ordered]@{ true = 0; false = 1; unknown = 0 }
+            unknown_row_count = 0
+            regular_season_game_count_valid = $true
+            regular_season_game_count_expected = 272
+            regular_season_game_count_observed = 272
+            promotion_result = "pass"
         }
         $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
         $relativeManifest = "season=$season/revisions/sha256=$revisionSha/manifest.json"
@@ -100,7 +148,7 @@ if ($args.Count -ge 5 -and $args[0] -eq "-B" -and $args[1] -like "*b06-adapter-r
         New-Item -ItemType Directory -Path $eventsRoot -Force | Out-Null
         [ordered]@{
             retrieval_event_id = "mock-retrieval"
-            source_asset_url = "https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2023.parquet"
+            source_asset_url = $sourceUrl
             outcome = "success_new_revision"
             freshness = "fresh"
             local_revision_sha256 = $revisionSha
@@ -268,6 +316,7 @@ Invoke-TestCase "what-if runs tests without adapter or raw evidence" {
         Assert-Equal $result.ExitCode 0 "WhatIf must pass. Output: $($result.Output) Limitations: $($package.known_limitations -join '; ') Derived: $($package.scope_scan.derived_artifact_paths -join '; ')"
         Assert-Equal (Get-Counter $sandbox "focused") 1 "WhatIf must run the focused suite once."
         Assert-Equal (Get-Counter $sandbox "adapter") 0 "WhatIf must not invoke the adapter."
+        Assert-Equal (Get-Counter $sandbox "ingest") 0 "WhatIf must not call the ingestion function."
         Assert-True (-not (Test-Path -LiteralPath $sandbox.DataRoot)) "WhatIf created raw evidence."
         Assert-Equal $package.operation_mode "what_if" "Operation mode drifted."
         Assert-Equal $package.adapter_invocation_attempted $false "WhatIf claimed an adapter invocation."
@@ -394,6 +443,24 @@ Invoke-TestCase "preexisting revisions directory blocks live execution" {
     finally { Remove-TestSandbox $sandbox }
 }
 
+Invoke-TestCase "adapter attestation mismatch aborts before retrieval" {
+    $sandbox = New-TestSandbox
+    try {
+        $result = Invoke-Harness $sandbox (Get-CommonArguments $sandbox "-ExecuteLive") "attestation_mismatch"
+        $package = Get-LatestReviewPackage $sandbox
+        Assert-True ($result.ExitCode -ne 0) "Adapter attestation mismatch exited zero."
+        Assert-Equal (Get-Counter $sandbox "adapter") 1 "Attestation runner was not launched exactly once."
+        Assert-Equal (Get-Counter $sandbox "ingest") 0 "Attestation mismatch called the ingestion function."
+        Assert-Equal $package.adapter_attestation_pass $false "Attestation mismatch was recorded as pass."
+        Assert-Equal $package.promotion_gate.adapter_attestation_pass $false "Promotion gate recorded attestation pass."
+        Assert-Equal $package.provider_request_made $false "Attestation mismatch claimed a provider request."
+        Assert-Equal @($package.events).Count 0 "Attestation mismatch emitted provider events."
+        Assert-True (-not (Test-Path -LiteralPath $sandbox.DataRoot)) "Attestation mismatch created partial data evidence."
+        Assert-Equal $package.status "failed_or_stale" "Attestation mismatch status drifted."
+    }
+    finally { Remove-TestSandbox $sandbox }
+}
+
 Invoke-TestCase "mock fresh result has complete SHA identity and bounded scope" {
     $sandbox = New-TestSandbox
     try {
@@ -402,6 +469,7 @@ Invoke-TestCase "mock fresh result has complete SHA identity and bounded scope" 
         Assert-Equal $result.ExitCode 0 "Fresh mock must exit zero. Output: $($result.Output) Limitations: $($package.known_limitations -join '; ') Derived: $($package.scope_scan.derived_artifact_paths -join '; ')"
         Assert-Equal (Get-Counter $sandbox "focused") 1 "Focused suite count drifted."
         Assert-Equal (Get-Counter $sandbox "adapter") 1 "Adapter was not invoked exactly once."
+        Assert-Equal (Get-Counter $sandbox "ingest") 1 "Ingestion function was not called exactly once."
         Assert-Equal $package.status "fresh_success_pending_review" "Fresh status drifted."
         Assert-Equal $package.adapter_invocation_attempted $true "Live runner attempt was not recorded."
         Assert-Equal $package.provider_request_made $true "Live request was not recorded."
@@ -410,6 +478,13 @@ Invoke-TestCase "mock fresh result has complete SHA identity and bounded scope" 
         Assert-Equal $package.success_evidence.sha_identity.pointer_equals_manifest $true "Pointer/manifest SHA mismatch."
         Assert-Equal $package.success_evidence.sha_identity.manifest_equals_payload $true "Manifest/payload SHA mismatch."
         Assert-Equal $package.success_evidence.sha_identity.pointer_equals_payload $true "Pointer/payload SHA mismatch."
+        Assert-Equal $package.promotion_gate.all_required_checks_pass $true "Seven-point gate did not pass."
+        Assert-Equal $package.promotion_gate.current_json_updated $true "Pointer update was not recorded."
+        Assert-Equal $package.runtime.adapter_module_matches_repository $true "Adapter module provenance did not match the reviewed worktree."
+        Assert-Equal $package.adapter_attestation_pass $true "Adapter attestation did not pass."
+        Assert-Equal $package.promotion_gate.adapter_attestation_pass $true "Promotion gate omitted adapter attestation."
+        Assert-Equal $package.adapter_module_path $package.runtime.adapter_module_path "Adapter module path fields disagree."
+        Assert-Equal $package.adapter_module_sha $package.runtime.adapter_module_sha256 "Adapter module SHA fields disagree."
         Assert-Equal $package.scope_scan.raw_parquet_copied_to_run_root $false "Package reports copied Parquet."
         Assert-Equal (@(Get-ChildItem -LiteralPath $sandbox.RunRoot -File -Recurse -Filter "*.parquet").Count) 0 "Raw Parquet was copied into RunRoot."
         Assert-Equal $package.scope_scan.season_2016_exists $false "2023 run did not report 2016 absence."
@@ -495,7 +570,10 @@ Invoke-TestCase "prior failed event is hashed and unchanged" {
 
 Invoke-TestCase "source has one adapter call and workflows have no live harness request" {
     $source = Get-Content -Raw -LiteralPath $HarnessPath
-    Assert-Equal ([regex]::Matches($source, "result = ingest_nflverse_pbp_season\(").Count) 1 "Harness source does not contain exactly one adapter call."
+    Assert-Equal ([regex]::Matches($source, "result = nflverse_pbp\.ingest_nflverse_pbp_season\(").Count) 1 "Harness source does not contain exactly one adapter call."
+    Assert-True ($source.Contains('sys.path.insert(0, str(repository_root))')) "Runner does not pin imports to the reviewed repository."
+    Assert-True ($source.Contains('"adapter_module_sha": adapter_module_sha')) "Runner does not attest the adapter module hash."
+    Assert-True ($source.IndexOf('if not adapter_attestation_pass:') -lt $source.IndexOf('result = nflverse_pbp.ingest_nflverse_pbp_season(')) "Attestation does not precede retrieval."
     $workflowHits = @(
         Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot ".github\workflows") -File -Recurse |
             Select-String -Pattern "(?i)-ExecuteLive"

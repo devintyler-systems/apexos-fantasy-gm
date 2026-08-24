@@ -2,45 +2,15 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
-from typing import Literal
 
 import pytest
 
-
-LogicalNoPlay = Literal["true", "false", "unknown"]
-
-FALSE_PLAY_TYPES = frozenset(
-    {
-        "extra_point",
-        "field_goal",
-        "kickoff",
-        "pass",
-        "punt",
-        "qb_kneel",
-        "qb_spike",
-        "run",
-    }
+from engine.ingestion.nflverse_pbp import (
+    FALSE_PLAY_TYPES,
+    NO_PLAY_NORMALIZATION_VERSION,
+    PARSER_VERSION,
+    normalize_no_play,
 )
-
-
-def _is_true(value: object) -> bool:
-    return value is True or (type(value) in {int, float} and value == 1)
-
-
-def normalize_no_play(row: dict[str, object]) -> LogicalNoPlay:
-    required = {"play_type", "pass_attempt", "rush_attempt"}
-    if not required <= row.keys():
-        return "unknown"
-    play_type = row["play_type"]
-    if play_type == "no_play":
-        return "true"
-    if play_type is None:
-        if _is_true(row["pass_attempt"]) or _is_true(row["rush_attempt"]):
-            return "unknown"
-        return "true"
-    if play_type in FALSE_PLAY_TYPES:
-        return "false"
-    return "unknown"
 
 
 def test_direct_no_play_is_true() -> None:
@@ -176,3 +146,9 @@ def test_contract_addenda_bind_mapping_and_preserve_b07_rules() -> None:
     assert "100.0 weighted-sample confidence threshold" in b07
     assert "rolling-origin Brier-score promotion gate" in b07
     assert "B-07 remains blocked" in b07
+
+
+def test_parser_identity_binds_controlling_interface_and_normalization() -> None:
+    assert PARSER_VERSION.startswith("b06-v0.2-")
+    assert NO_PLAY_NORMALIZATION_VERSION in PARSER_VERSION
+    assert "b06-v0.3" not in PARSER_VERSION

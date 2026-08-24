@@ -8,7 +8,7 @@ only after validation and immutable promotion. Callers can inject an
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -32,7 +32,9 @@ import pyarrow.parquet as pq
 
 DISCOVERY_URL = "https://api.github.com/repos/nflverse/nflverse-data/releases/tags/pbp"
 CANONICAL_SOURCE_ID = "nflverse/nflverse-data:release:pbp"
-PARSER_VERSION = "b06-v0.3-evidence-1"
+PROVIDER = "nflverse/nflverse-data"
+NO_PLAY_NORMALIZATION_VERSION = "b06-no-play-normalization-v0.1"
+PARSER_VERSION = f"b06-v0.2-evidence-1+{NO_PLAY_NORMALIZATION_VERSION}"
 REQUIRED_COLUMNS = (
     "season",
     "season_type",
@@ -41,6 +43,19 @@ REQUIRED_COLUMNS = (
     "touchdown",
     "rush_attempt",
     "pass_attempt",
+    "play_type",
+)
+FALSE_PLAY_TYPES = frozenset(
+    {
+        "extra_point",
+        "field_goal",
+        "kickoff",
+        "pass",
+        "punt",
+        "qb_kneel",
+        "qb_spike",
+        "run",
+    }
 )
 EXPECTED_REGULAR_SEASON_GAMES = {
     **{season: 256 for season in range(2016, 2021)},
@@ -68,6 +83,7 @@ IngestionOutcome: TypeAlias = Literal[
     "failed",
 ]
 Freshness: TypeAlias = Literal["fresh", "stale", "unavailable"]
+LogicalNoPlay: TypeAlias = Literal["true", "false", "unknown"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,6 +115,8 @@ class ValidationSummary:
     row_count: int
     game_counts_by_season_type: dict[str, int]
     expected_regular_season_games: int
+    logical_no_play_counts: dict[str, int]
+    raw_schema: list[dict[str, Any]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -161,6 +179,12 @@ def ingest_nflverse_pbp_season(
 
         release = _request_json(client, DISCOVERY_URL)
         asset = _select_asset(release, season)
+        if season in {2023, 2024, 2025} and asset.digest is None:
+            raise IngestionFailure(
+                "provider_digest_missing",
+                "A provider-reported SHA-256 digest is required for the 2023-2025 promotion gate.",
+                attempted_url=asset.download_url,
+            )
         attempted_url = asset.download_url
         retrieved_at = _utc_timestamp(clock())
         candidate_path, revision_sha256 = _download_candidate(
@@ -415,6 +439,14 @@ def _download_candidate(
 def _validate_parquet(path: Path, season: int) -> ValidationSummary:
     try:
         parquet_file = pq.ParquetFile(path)
+        raw_schema = [
+            {
+                "name": field.name,
+                "type": str(field.type),
+                "nullable": field.nullable,
+            }
+            for field in parquet_file.schema_arrow
+        ]
         names = set(parquet_file.schema_arrow.names)
         missing = sorted(set(REQUIRED_COLUMNS) - names)
         if missing:
@@ -448,6 +480,28 @@ def _validate_parquet(path: Path, season: int) -> ValidationSummary:
     _validate_finite_numeric_column(table, "yardline_100", minimum=0, maximum=100)
     for name in ("touchdown", "rush_attempt", "pass_attempt"):
         _validate_binary_column(table, name)
+    _validate_string_column(table, "play_type", nullable=True)
+
+    logical_no_play_counts = {"true": 0, "false": 0, "unknown": 0}
+    for play_type, pass_attempt, rush_attempt in zip(
+        table["play_type"].to_pylist(),
+        table["pass_attempt"].to_pylist(),
+        table["rush_attempt"].to_pylist(),
+    ):
+        logical_no_play = normalize_no_play(
+            {
+                "play_type": play_type,
+                "pass_attempt": pass_attempt,
+                "rush_attempt": rush_attempt,
+            }
+        )
+        logical_no_play_counts[logical_no_play] += 1
+    if logical_no_play_counts["unknown"]:
+        raise IngestionFailure(
+            "logical_no_play_unknown",
+            "Logical no-play normalization produced "
+            f"{logical_no_play_counts['unknown']} unknown row(s); promotion is blocked.",
+        )
 
     counts: dict[str, int] = {}
     for season_type in sorted(set(season_types)):
@@ -466,7 +520,35 @@ def _validate_parquet(path: Path, season: int) -> ValidationSummary:
             "game_count_mismatch",
             f"Expected {expected} distinct REG games; observed {counts.get('REG', 0)}.",
         )
-    return ValidationSummary(table.num_rows, counts, expected)
+    return ValidationSummary(
+        table.num_rows,
+        counts,
+        expected,
+        logical_no_play_counts,
+        raw_schema,
+    )
+
+
+def normalize_no_play(row: Mapping[str, object]) -> LogicalNoPlay:
+    """Resolve the v0.1 logical no-play value without mutating provider data."""
+
+    required = {"play_type", "pass_attempt", "rush_attempt"}
+    if not required <= row.keys():
+        return "unknown"
+    play_type = row["play_type"]
+    if play_type == "no_play":
+        return "true"
+    if play_type is None:
+        if _is_explicit_true(row["pass_attempt"]) or _is_explicit_true(row["rush_attempt"]):
+            return "unknown"
+        return "true"
+    if play_type in FALSE_PLAY_TYPES:
+        return "false"
+    return "unknown"
+
+
+def _is_explicit_true(value: object) -> bool:
+    return value is True or (type(value) in {int, float} and value == 1)
 
 
 def _validate_integral_column(table: pa.Table, name: str, *, nullable: bool) -> None:
@@ -581,21 +663,39 @@ def _promote_revision(
             os.fsync(destination.fileno())
         manifest = {
             "canonical_source_id": CANONICAL_SOURCE_ID,
-            "source_url": DISCOVERY_URL,
+            "provider": PROVIDER,
+            "source_url": asset.download_url,
+            "source_discovery_url": DISCOVERY_URL,
             "source_release_tag": asset.release_tag,
             "source_release_id": asset.release_id,
             "source_asset_id": asset.asset_id,
             "source_asset_name": asset.name,
             "source_asset_size_bytes_reported": asset.size,
             "source_asset_digest_reported": asset.digest,
+            "reported_digest_sha256": asset.digest.removeprefix("sha256:") if asset.digest else None,
+            "computed_digest_sha256": revision_sha256,
+            "digest_match": asset.digest is not None
+            and asset.digest.removeprefix("sha256:") == revision_sha256,
             "requested_season": season,
+            "season": season,
+            "row_count": summary.row_count,
+            "required_raw_columns": list(REQUIRED_COLUMNS),
+            "raw_schema": summary.raw_schema,
             "game_counts_by_season_type": summary.game_counts_by_season_type,
             "regular_season_expected_game_count": summary.expected_regular_season_games,
+            "regular_season_game_count_expected": summary.expected_regular_season_games,
+            "regular_season_game_count_observed": summary.game_counts_by_season_type.get("REG", 0),
             "regular_season_game_count_valid": True,
             "revision_sha256": revision_sha256,
             "retrieved_at_utc": retrieved_at,
+            "retrieval_timestamp": retrieved_at,
             "effective_time": asset.source_observed_at_utc,
             "parser_version": PARSER_VERSION,
+            "source_id": CANONICAL_SOURCE_ID,
+            "no_play_normalization_version": NO_PLAY_NORMALIZATION_VERSION,
+            "logical_no_play_counts": summary.logical_no_play_counts,
+            "unknown_row_count": summary.logical_no_play_counts["unknown"],
+            "promotion_result": "pass",
             "promotion_claim_id": promotion_claim_id,
             "retrieval_event_id": retrieval_event_id,
         }
@@ -651,21 +751,38 @@ def _validate_manifest(
 ) -> None:
     required_fields = {
         "canonical_source_id",
+        "provider",
         "source_url",
+        "source_discovery_url",
         "source_release_tag",
         "source_release_id",
         "source_asset_id",
         "source_asset_name",
         "source_asset_size_bytes_reported",
         "source_asset_digest_reported",
+        "reported_digest_sha256",
+        "computed_digest_sha256",
+        "digest_match",
         "requested_season",
+        "season",
+        "row_count",
+        "required_raw_columns",
+        "raw_schema",
         "game_counts_by_season_type",
         "regular_season_expected_game_count",
+        "regular_season_game_count_expected",
+        "regular_season_game_count_observed",
         "regular_season_game_count_valid",
         "revision_sha256",
         "retrieved_at_utc",
+        "retrieval_timestamp",
         "effective_time",
         "parser_version",
+        "source_id",
+        "no_play_normalization_version",
+        "logical_no_play_counts",
+        "unknown_row_count",
+        "promotion_result",
         "promotion_claim_id",
         "retrieval_event_id",
     }
@@ -678,7 +795,8 @@ def _validate_manifest(
         raise IngestionFailure("evidence_collision", "Existing manifest digest is invalid.")
     if (
         manifest["canonical_source_id"] != CANONICAL_SOURCE_ID
-        or manifest["source_url"] != DISCOVERY_URL
+        or manifest["provider"] != PROVIDER
+        or manifest["source_discovery_url"] != DISCOVERY_URL
         or manifest["source_release_tag"] != "pbp"
         or not isinstance(manifest["source_release_id"], int)
         or not isinstance(manifest["source_asset_id"], int)
@@ -686,16 +804,34 @@ def _validate_manifest(
         or not isinstance(manifest["source_asset_size_bytes_reported"], int)
         or manifest["source_asset_size_bytes_reported"] <= 0
         or manifest["requested_season"] != season
+        or manifest["season"] != season
+        or manifest["row_count"] != summary.row_count
+        or manifest["required_raw_columns"] != list(REQUIRED_COLUMNS)
+        or manifest["raw_schema"] != summary.raw_schema
         or manifest["revision_sha256"] != revision_sha256
+        or manifest["computed_digest_sha256"] != revision_sha256
+        or manifest["reported_digest_sha256"]
+        != (digest.removeprefix("sha256:") if digest else None)
+        or manifest["digest_match"] is not (digest is not None)
         or manifest["game_counts_by_season_type"] != summary.game_counts_by_season_type
         or manifest["regular_season_expected_game_count"]
         != summary.expected_regular_season_games
+        or manifest["regular_season_game_count_expected"]
+        != summary.expected_regular_season_games
+        or manifest["regular_season_game_count_observed"]
+        != summary.game_counts_by_season_type.get("REG", 0)
         or manifest["regular_season_game_count_valid"] is not True
-        or not isinstance(manifest["parser_version"], str)
-        or not manifest["parser_version"]
+        or manifest["retrieval_timestamp"] != manifest["retrieved_at_utc"]
+        or manifest["parser_version"] != PARSER_VERSION
+        or manifest["source_id"] != CANONICAL_SOURCE_ID
+        or manifest["no_play_normalization_version"] != NO_PLAY_NORMALIZATION_VERSION
+        or manifest["logical_no_play_counts"] != summary.logical_no_play_counts
+        or manifest["unknown_row_count"] != 0
+        or manifest["promotion_result"] != "pass"
     ):
         raise IngestionFailure("evidence_collision", "Existing manifest provenance is invalid.")
     try:
+        _validate_source_url(manifest["source_url"])
         _normalize_timestamp(manifest["retrieved_at_utc"])
         if manifest["effective_time"] is not None:
             _normalize_timestamp(manifest["effective_time"])
