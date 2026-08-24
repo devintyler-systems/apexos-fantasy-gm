@@ -2,6 +2,27 @@
 
 ## Version History
 
+### Version 3.5 — 2026-08-23
+
+**Change:** Closed the Issue #23 Runtime Draft-State Consumer v1.2 evidence and regression-protection gate. PR #36 (`test(issue-23): close runtime consumer evidence and snapshot-contract gaps`) merged to `main` at merge commit `f4300623a02185535936ff8378b2224845fea2f5`. The merged change was strictly limited to `.github/workflows/issue23-live-state-consumer.yml` and `tests/acceptance/test_live_state_consumer.py`; no production runtime behavior, contract, schema, League Rules content, or provider integration changed.
+
+The closure added: (1) retained focused-suite CI evidence under artifact name `issue23-live-state-consumer-evidence`; (2) immutable tested-commit, runtime-consumer, League Rules v0.5, and workflow blob provenance; (3) valid-LIVE v1.2 §4.2 snapshot-shape and nested freshness assertions; and (4) parameterized non-DSA-08 structured validation mappings while retaining the DSA-08-specific degraded-mode mapping.
+
+Independent artifact inspection completed against Actions run `32673035038`. The artifact bundle identified CI tested merge commit `c9ee725533d857ff15ca430866f447072c719ddd`, Python `3.12.14`, runtime-consumer blob `40d03dedfcdf97f5a8fda6f4a1d5aa3ae40e3386`, League Rules v0.5 blob `80262aba946697bcd048f318bb2bea24a2f609f9`, and workflow blob `27a2897cbe1a4d6acfefcb1ae228ac49a0ae09cc`. Its raw pytest transcript confirmed `25 collected / 25 passed / 0 failed` for `python -m pytest tests/acceptance/test_live_state_consumer.py -v`. Final PASS was recorded on PR #36.
+
+Also merged PR #35 (`docs: establish execution authority and escalation protocol v1.0`), making `docs/apexos-execution-authority-and-escalation-protocol-v1.0.md` the canonical routing protocol: Architect owns contracts and gates; Codex owns local byte-level implementation, verification, commits, pushes, and PR creation; Reviewer owns independent evidence audit; GitHub is canonical evidence and review transport.
+
+**Type:** Calibration — closes evidence, test-contract, and execution-routing gaps without altering runtime recommendation behavior or approved product scope.
+
+**Impact on build sequence:**
+- Issue #23 is PASS and no longer blocks dependent live-draft workflow work.
+- All future source/test/workflow/configuration/migration/commit/PR tasks requiring local files or command execution must route through Codex in the clean local checkout.
+- The next implementation ticket must be selected from canonical backlog dependencies and opened explicitly; no open GitHub issue currently represents the next approved build target.
+
+**Highest-leverage next artifact:** Architect dependency audit and one complete Codex handoff for the next unblocked MVP backlog ticket.
+
+***
+
 ### Version 3.4 — 2026-08-21
 **Change:** Added Section 5 (Candidate Connector Assumptions Register) to
 `docs/data_source_connector_register.md` (v1.4 → v1.5), recording two post-MVP candidate
