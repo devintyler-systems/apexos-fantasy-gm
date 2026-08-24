@@ -17,6 +17,63 @@
 
 ***
 
+### Version 3.9 — 2026-08-23
+**Change:** Recorded the merged structural B-06/B-07 logical `no_play`
+source-field resolution. PR #39 was independently evidence-reviewed PASS
+at head `288c9571eef9154592d2856adf5ae25f045174f4` and squash-merged to
+canonical `main` as `a1856e5d47016cd8ea1e45c100f1940542da9702`
+(`docs(b-06): resolve logical no_play source field v0.1 (#39)`). The
+resolution responds to controlled live-run evidence from official
+`nflverse/nflverse-data` release `58152862`, asset `354728689`,
+20,534,088 bytes, SHA-256
+`bd3484731408def6b0ec93225bba2bd7b2c65769ca707a2b9444d891abdc6776`,
+which established that the raw physical `no_play` column is absent. The
+merged B-06 v0.2 addendum defines `b06-no-play-normalization-v0.1` at the
+normalized decision-adapter boundary: raw provider bytes and columns remain
+unchanged; the logical field is deterministic and source-traceable; missing
+required fields, unexpected domains, and ambiguous opportunity-shaped null
+rows resolve fail-closed as `logical_no_play_unknown`. The B-07 addendum
+consumes this normalized logical field while preserving all existing B-07
+rules: regular-season-only 2023–2025 inputs; count weighting
+0.17/0.33/0.50; exact seven buckets and 14-row output; receiver identity
+requirement for pass targets; low-confidence behavior; immutable append-only
+output; and rolling-origin Brier-score promotion gate. Focused verification
+recorded 199 collected, 171 deselected, and 28 passed; all seven GitHub
+checks succeeded.
+
+**Solo-Operator Exception:** GitHub identity `devintyler83` is the sole
+human operator and PR #39 author, so GitHub self-approval was unavailable.
+The merge used Solo-Operator Evidence & Release Review Exception v0.2:
+separate evidence-review role, Reviewer PASS with no findings, immutable
+reviewed head/base SHA verification, exact four-path diff verification,
+seven successful checks, Architect merge authorization, and Codex
+post-merge canonical-state verification. This is a disclosed governance
+exception; it does not claim an independent human GitHub approval or a
+GitHub-recorded PASS comment.
+
+**Type:** Structural (changes the approved B-06 normalized source-field
+interface used by B-07; does not alter raw source evidence or B-07
+weighting, scoring, lookup outputs, or production projection behavior).
+
+**Impact on build sequence:**
+- B-06 v0.2 remains the sole controlling ingestion interface; B-06 v0.3
+  remains non-controlling.
+- B-06 controlled live-data promotion remains required and must be rerun
+  against canonical `main` at
+  `a1856e5d47016cd8ea1e45c100f1940542da9702` for 2023, 2024, and 2025.
+- A B-06 season may promote only after authentic provider lineage, reported
+  and computed digest equality, required raw schema, logical `no_play`
+  normalization, regular-season game-count validation, immutable manifest,
+  and atomic `current.json` pointer requirements all pass.
+- B-07 remains BLOCKED. No B-07 lookup table, xTD artifact, or production
+  projection behavior is authorized until all three B-06 controlled
+  revisions pass the live/controlled-data gate and the separate B-07
+  execution handoff is issued.
+
+**Highest-leverage next artifact:** B-06 Controlled Live-Data Retrieval and
+Promotion Rerun Handoff v0.2, bound to canonical `main`
+`a1856e5d47016cd8ea1e45c100f1940542da9702`.
+
 ### Version 3.5 — 2026-08-23
 
 **Change:** Closed the Issue #23 Runtime Draft-State Consumer v1.2 evidence and regression-protection gate. PR #36 (`test(issue-23): close runtime consumer evidence and snapshot-contract gaps`) merged to `main` at merge commit `f4300623a02185535936ff8378b2224845fea2f5`. The merged change was strictly limited to `.github/workflows/issue23-live-state-consumer.yml` and `tests/acceptance/test_live_state_consumer.py`; no production runtime behavior, contract, schema, League Rules content, or provider integration changed.
