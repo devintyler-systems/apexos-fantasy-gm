@@ -18,7 +18,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$HarnessVersion = "1.1.0"
+$HarnessVersion = "1.2.0"
 $FocusedTestCommand = "python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py tests/acceptance/test_b06_no_play_logical_field.py -p no:cacheprovider -o addopts="
 $ExitCode = 2
 $FinalStatus = "blocked"
@@ -33,6 +33,7 @@ $ReviewPackagePath = $null
 $TranscriptPath = $null
 $AdapterRunnerPath = $null
 $AdapterResultPath = $null
+$AdapterAttestationPath = $null
 $Package = $null
 $StartedAtUtc = [DateTimeOffset]::UtcNow
 $EndedAtUtc = $null
@@ -250,8 +251,10 @@ function Invoke-AdapterOnce {
 
     $runnerSource = @'
 from dataclasses import asdict
+from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -259,24 +262,45 @@ season = int(sys.argv[1])
 data_root = Path(sys.argv[2])
 result_path = Path(sys.argv[3])
 repository_root = Path(sys.argv[4]).resolve()
+attestation_path = Path(sys.argv[5])
+expected_adapter_module_path = Path(sys.argv[6]).resolve()
+expected_adapter_module_sha = sys.argv[7]
 sys.path.insert(0, str(repository_root))
 
 from engine.ingestion import nflverse_pbp
 
 adapter_module_path = Path(nflverse_pbp.__file__).resolve()
-adapter_module_sha256 = hashlib.sha256(adapter_module_path.read_bytes()).hexdigest()
-ingest_nflverse_pbp_season = nflverse_pbp.ingest_nflverse_pbp_season
-result = ingest_nflverse_pbp_season(season, data_root)
+adapter_module_sha = hashlib.sha256(adapter_module_path.read_bytes()).hexdigest()
+adapter_attestation_pass = (
+    os.path.normcase(str(adapter_module_path))
+    == os.path.normcase(str(expected_adapter_module_path))
+    and adapter_module_sha == expected_adapter_module_sha
+)
+attestation = {
+    "adapter_module_path": str(adapter_module_path),
+    "adapter_module_sha": adapter_module_sha,
+    "adapter_attestation_pass": adapter_attestation_pass,
+    "expected_adapter_module_path": str(expected_adapter_module_path),
+    "expected_adapter_module_sha": expected_adapter_module_sha,
+    "attested_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+}
+with attestation_path.open("x", encoding="utf-8", newline="\n") as stream:
+    json.dump(attestation, stream, indent=2, sort_keys=True)
+    stream.write("\n")
+if not adapter_attestation_pass:
+    raise SystemExit(86)
+
+result = nflverse_pbp.ingest_nflverse_pbp_season(season, data_root)
 payload = asdict(result)
 if payload["manifest_path"] is not None:
     payload["manifest_path"] = str(payload["manifest_path"])
-payload["adapter_module_path"] = str(adapter_module_path)
-payload["adapter_module_sha256"] = adapter_module_sha256
 result_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 '@
     [IO.File]::WriteAllText($script:AdapterRunnerPath, $runnerSource, [Text.UTF8Encoding]::new($false))
+    $expectedAdapterModulePath = [IO.Path]::GetFullPath((Join-Path $RepositoryRoot "engine\ingestion\nflverse_pbp.py"))
+    $expectedAdapterModuleSha = Get-FileSha256 -Path $expectedAdapterModulePath
     $script:AdapterInvocationAttempted = $true
-    & python -B $script:AdapterRunnerPath $RequestedSeason $Root $ResultPath $RepositoryRoot 2>&1 |
+    & python -B $script:AdapterRunnerPath $RequestedSeason $Root $ResultPath $RepositoryRoot $script:AdapterAttestationPath $expectedAdapterModulePath $expectedAdapterModuleSha 2>&1 |
         ForEach-Object { Write-Host $_ }
     $adapterExitCode = $LASTEXITCODE
     return [int]$adapterExitCode
@@ -291,6 +315,9 @@ function New-BaseReviewPackage {
         generated_at_utc = $null
         operation_mode = $OperationMode
         adapter_invocation_attempted = $false
+        adapter_module_path = $null
+        adapter_module_sha = $null
+        adapter_attestation_pass = $false
         provider_request_made = $false
         provider_request_evidence_source = "none"
         provider_request_evidence_paths = @()
@@ -359,8 +386,9 @@ function New-BaseReviewPackage {
             revision_directory = $null
         }
         promotion_gate = [ordered]@{
-            contract_version = "b06_promotion_gate_v0.2"
+            contract_version = "b06_promotion_gate_v0.2.1"
             controlling_interface = "b06-no-play-normalization-v0.1"
+            adapter_attestation_pass = $false
             authentic_provider_lineage = $false
             reported_digest_equals_computed_digest = $false
             required_raw_schema_present = $false
@@ -407,24 +435,41 @@ function Set-ResultFields {
     $Package.result.freshness = if ($null -eq $AdapterResult.freshness) { $null } else { [string]$AdapterResult.freshness }
     $Package.result.stale_banner_required = [bool]$AdapterResult.stale_banner_required
 
-    $expectedAdapterModulePath = [IO.Path]::GetFullPath((Join-Path $RepositoryRoot "engine\ingestion\nflverse_pbp.py"))
-    $reportedAdapterModulePath = [IO.Path]::GetFullPath([string]$AdapterResult.adapter_module_path)
-    $reportedAdapterModuleSha256 = [string]$AdapterResult.adapter_module_sha256
-    $expectedAdapterModuleSha256 = Get-FileSha256 -Path $expectedAdapterModulePath
-    $adapterModuleMatchesRepository = (
-        $reportedAdapterModulePath.Equals($expectedAdapterModulePath, [StringComparison]::OrdinalIgnoreCase) -and
-        $reportedAdapterModuleSha256 -ceq $expectedAdapterModuleSha256
-    )
-    $Package.runtime.adapter_module_path = $reportedAdapterModulePath
-    $Package.runtime.adapter_module_sha256 = $reportedAdapterModuleSha256
-    $Package.runtime.adapter_module_matches_repository = $adapterModuleMatchesRepository
-    if (-not $adapterModuleMatchesRepository) {
-        throw "Adapter module path or SHA-256 does not match the reviewed repository module."
-    }
-
     if ($Package.result.status -eq "cached_valid_after_failure") {
         $Package.result.freshness = "stale"
         $Package.result.stale_banner_required = $true
+    }
+}
+
+function Set-AdapterAttestationFields {
+    param(
+        [Parameter(Mandatory = $true)]$Package,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Runtime-loaded adapter did not emit the required pre-retrieval attestation."
+    }
+    $attestation = [IO.File]::ReadAllText($Path, [Text.Encoding]::UTF8) | ConvertFrom-Json
+    $expectedPath = [IO.Path]::GetFullPath((Join-Path $RepositoryRoot "engine\ingestion\nflverse_pbp.py"))
+    $expectedSha = Get-FileSha256 -Path $expectedPath
+    $reportedPath = [IO.Path]::GetFullPath([string]$attestation.adapter_module_path)
+    $reportedSha = [string]$attestation.adapter_module_sha
+    $computedPass = (
+        $reportedPath.Equals($expectedPath, [StringComparison]::OrdinalIgnoreCase) -and
+        $reportedSha -ceq $expectedSha
+    )
+    $attestationPass = $attestation.adapter_attestation_pass -eq $true -and $computedPass
+
+    $Package.adapter_module_path = $reportedPath
+    $Package.adapter_module_sha = $reportedSha
+    $Package.adapter_attestation_pass = $attestationPass
+    $Package.runtime.adapter_module_path = $reportedPath
+    $Package.runtime.adapter_module_sha256 = $reportedSha
+    $Package.runtime.adapter_module_matches_repository = $computedPass
+    $Package.promotion_gate.adapter_attestation_pass = $attestationPass
+    if (-not $attestationPass) {
+        throw "Runtime-loaded adapter path or SHA does not match the reviewed worktree adapter; retrieval was not started."
     }
 }
 
@@ -545,6 +590,7 @@ function Collect-SuccessEvidence {
         $Package.success_evidence.sha_identity.pointer_equals_payload
     )
     $allRequiredChecksPass = (
+        $Package.promotion_gate.adapter_attestation_pass -and
         $authenticProviderLineage -and
         $digestEquality -and
         $requiredRawSchemaPresent -and
@@ -572,7 +618,7 @@ function Collect-SuccessEvidence {
             " revision_name_matches=$([bool]$Package.success_evidence.revision_directory.name_matches_identity); retrieval_timestamp='$($retrievalTimestamp.ToString("o"))'; retrieved_at_utc='$($retrievedAtUtc.ToString("o"))'; promotion_result='$promotionResult'."
         }
         else { "" }
-        throw "The B-06 v0.2 seven-point promotion gate did not fully pass: $($failedChecks -join ', ').$diagnostic"
+        throw "The B-06 v0.2.1 precondition and seven-point promotion gate did not fully pass: $($failedChecks -join ', ').$diagnostic"
     }
 }
 
@@ -609,6 +655,7 @@ try {
     $ReviewPackagePath = Join-Path $RunDirectory "review-package.json"
     $AdapterRunnerPath = Join-Path $RunDirectory "b06-adapter-runner.py"
     $AdapterResultPath = Join-Path $RunDirectory "adapter-result.json"
+    $AdapterAttestationPath = Join-Path $RunDirectory "adapter-attestation.json"
     Start-Transcript -LiteralPath $TranscriptPath -Force | Out-Null
     $TranscriptStarted = $true
 
@@ -698,6 +745,7 @@ try {
         finally {
             Pop-Location
         }
+        Set-AdapterAttestationFields -Package $Package -Path $AdapterAttestationPath
         if ($adapterExitCode -ne 0 -or -not (Test-Path -LiteralPath $AdapterResultPath -PathType Leaf)) {
             $FinalStatus = "failed_or_stale"
             throw "The single adapter invocation did not emit a readable result."
@@ -862,6 +910,9 @@ finally {
             }
             if ($null -ne $AdapterResultPath) {
                 Remove-Item -LiteralPath $AdapterResultPath -Force -ErrorAction SilentlyContinue
+            }
+            if ($null -ne $AdapterAttestationPath) {
+                Remove-Item -LiteralPath $AdapterAttestationPath -Force -ErrorAction SilentlyContinue
             }
         }
     }

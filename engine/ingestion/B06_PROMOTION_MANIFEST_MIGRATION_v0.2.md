@@ -25,3 +25,11 @@ SHA-256 path contains an older manifest remains historical evidence and is not s
 Missing normalization fields, unexpected `play_type` values, or opportunity-shaped null
 `play_type` rows block promotion. A missing provider digest also blocks the 2023–2025 handoff
 window. Synthetic acceptance tests cover every new field and fail-closed branch.
+
+## Workflow calibration v0.2.1
+
+Before retrieval starts, the controlled child runtime must attest that its loaded adapter module
+path and SHA equal the reviewed worktree adapter path and SHA supplied by the parent harness. A
+mismatch exits before the ingestion function is called and before any provider request, revision,
+manifest, or pointer can be created. The timestamped review package records
+`adapter_module_path`, `adapter_module_sha`, and `adapter_attestation_pass`.
