@@ -503,4 +503,28 @@ risk; still TBD per Devin.
 
 ---
 
+### Version 3.11 — 2026-08-24
+
+**Decision:** Accepted and promoted the B-06 2024 raw play-by-play evidence after independent Architect review. The accepted controlled run completed with final run state `FRESH_SUCCESS_PENDING_REVIEW` from canonical checkout SHA `2694c1070b253e2f5f43ec54bf555579f8c735a8`, worktree `C:\tmp\apexos-b06-fresh-2694c107`, branch `main`, and worktree cleanliness `true`. The run ID is `20260824T212737205Z-season=2024-sha=2694c1070b25-35e1ab5f`; its evidence root is `C:\ApexOS\b06-rerun-2694c107-v021`.
+
+**Evidence identities:** The immutable review package SHA-256 is `c52e64eeb70a67fd7aaa4adce481036ef134f9dda589424eb9898687228541a5`. The immutable manifest SHA-256 is `bcf3186b3722d4de733b8dfe1aaac857acdb26e942917b15ac1f262a7e04b30c`. The source asset / Parquet SHA-256 is `3fd2896bc0b911b615142d2f1fabae54a4bbba5ab7b73b28187b118ef8af6a3b`. The `current.json` SHA-256 is `5587e31b8a2c67950f1dbbe7c10c61431925dc836443caa40136166de0e17b37`. The retrieval event SHA-256 is `389ee2793ec2bb2996830f9c634238672ab5cbb9ba09372f365a07f2c900db98`.
+
+**Adapter attestation:** The runtime adapter path was `C:\tmp\apexos-b06-fresh-2694c107\engine\ingestion\nflverse_pbp.py`. Its runtime and reviewed-worktree SHA-256 were both `a922817a0512d6b7edf258bb936f8575c730deb30d1d0aeb4dbd498aff0ef34f`. Path equality was `true`; SHA equality was `true`; `adapter_attestation_pass: true`; and `adapter_module_matches_repository: true`.
+
+**Provider lineage:** Provider/source `nflverse/nflverse-data`, release tag `pbp`, release ID `58152862`, asset ID `512957858`, and asset name `play_by_play_2024.parquet` identified the accepted source. The source URL was `https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2024.parquet`. Retrieval timestamp was `2026-08-24T21:27:40.284375Z`; effective timestamp was `2026-08-13T12:26:27Z`; byte count was `20,597,560`; and the reported and computed SHA-256 digest match was `true`.
+
+**Promotion-gate result:** Required raw schema `pass`; raw row count `49,492`; regular-season game count `272 observed / 272 expected`; postseason game count `13`; logical `no_play` normalization version `b06-no-play-normalization-v0.1`; logical `no_play` counts false `43,110`, true `6,382`, unknown `0`; pointer/manifest/payload digest identities all `true`; atomic `current.json` update `pass`; preexisting `current.json` `false`; preexisting revisions directory `false`; new derived artifacts `none`; promotion result `pass`.
+
+**Verification:** The what-if controlled harness passed. The live controlled harness finished `FRESH_SUCCESS_PENDING_REVIEW`. The focused acceptance command was `python -B -m pytest tests/acceptance/test_nflverse_pbp_ingestion.py tests/acceptance/test_b06_no_play_logical_field.py -p no:cacheprovider -o addopts=` and recorded 89 passed in the live run. `git diff --check` was clean.
+
+**Type:** Documentation/evidence-record update only; it is not a B-06 interface, provider, schema, normalization, or algorithm change. No runtime, B-07 behavior, projection, recommendation, league-rules, or other implementation change is authorized or made by this record.
+
+**Release control:** 2025 remains NOT STARTED and requires a separate, fresh-root B-06 execution handoff only after this ledger update is reviewed and merged.
+
+B-07 remains BLOCKED. No B-07 lookup, xTD artifact, or production projection behavior is authorized.
+
+**Highest-leverage next artifact:** Independent review and merge of this Decision Ledger v3.11 documentation-only record. No 2025 execution may begin before that merge and a separate fresh-root handoff.
+
+---
+
 (END)
