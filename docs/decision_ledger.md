@@ -2,6 +2,21 @@
 
 ## Version History
 
+### Version 3.6 — 2026-08-23
+**Change:** Approved B-07 xTD Lookup Table Contract Resolution Addendum v0.1 as the structural resolution of B-07’s contract blockers. B-07 uses regular-season-only 2023–2025 PBP data, applies count-weighted 0.17 / 0.33 / 0.50 seasonal decay, defines deterministic rush-attempt and pass-target eligibility, requires immutable B-06 v0.2 revision provenance, and establishes low-confidence propagation, immutable artifact behavior, a live/controlled-data generation gate, and a Brier-score feature-promotion gate. B-06 v0.2 remains controlling; B-06 v0.3 is not adopted without independent Evidence & Release Reviewer PASS and a subsequent Decision Ledger entry.
+
+**Type:** Structural
+
+**Impact on build sequence:**
+- B-07 implementation is not authorized until this addendum is merged and independently reviewed PASS.
+- Real B-07 artifact generation remains blocked on valid non-synthetic B-06 revisions for 2023, 2024, and 2025 that satisfy the live/controlled-data gate.
+- B-07 output cannot affect a production projection artifact unless it passes the defined rolling-origin Brier-score promotion gate.
+- B-08 remains blocked by B-07 completion.
+
+**Highest-leverage next artifact:** Evidence & Release Reviewer audit of the B-07 contract-promotion PR.
+
+***
+
 ### Version 3.5 — 2026-08-23
 
 **Change:** Closed the Issue #23 Runtime Draft-State Consumer v1.2 evidence and regression-protection gate. PR #36 (`test(issue-23): close runtime consumer evidence and snapshot-contract gaps`) merged to `main` at merge commit `f4300623a02185535936ff8378b2224845fea2f5`. The merged change was strictly limited to `.github/workflows/issue23-live-state-consumer.yml` and `tests/acceptance/test_live_state_consumer.py`; no production runtime behavior, contract, schema, League Rules content, or provider integration changed.
