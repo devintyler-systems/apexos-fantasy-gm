@@ -557,4 +557,20 @@ B-07 remains BLOCKED. No B-07 lookup, xTD artifact, or production projection beh
 
 ---
 
+### Version 3.13 — 2026-08-25
+
+**Change:** Promoted B-07 Candidate-Phase Evaluation Plan v0.1 and Candidate Registration Record v0.1. Registered `b07-v0.1-l2-logit-separate-opportunity-types-1`: separately fit L2-regularized logistic regression for rush and pass target, development-only feature preprocessing, fixed `scikit-learn==1.6.1`, `lbfgs`, L2 penalty, `C=1.0`, no post-fit calibration, and no player/team or post-play predictors. Froze candidate severe-calibration failure at ECE > 0.015 for any primary 2025 population. No candidate code, fit, evaluation, artifact, endpoint, pointer, or recommendation behavior is authorized by this documentation decision.
+
+**Type:** Structural
+
+**Impact on build sequence:**
+- Candidate implementation remains blocked until a new Architect-to-Codex implementation handoff.
+- 2025 remains evaluation-only and unavailable to fitting, preprocessing fitting, feature selection, calibration, tuning, or candidate selection.
+- Candidate promotion requires strict Brier improvement in rush, pass target, and combined populations; retained reliability and cohort diagnostics; 2,000 paired game-clustered bootstrap resamples; ECE <= 0.015 in each primary population; Architect audit; and independent Reviewer PASS.
+- A passing candidate remains non-production.
+
+**Highest-leverage next artifact:** B-07 registered-candidate implementation handoff v0.1.
+
+---
+
 (END)
