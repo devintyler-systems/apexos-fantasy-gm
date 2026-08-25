@@ -256,8 +256,21 @@ def test_2025_is_rejected_from_every_development_path(document: dict, purpose: s
     _assert_reason(exc_info, "B07_HOLDOUT_ISOLATION_REQUIRED")
 
 
-def test_2025_labels_are_rejected_even_with_explicit_evaluation_mode(document: dict) -> None:
+def test_2025_labels_are_rejected_outside_explicit_evaluation_mode(document: dict) -> None:
     with pytest.raises(B07ValidationError) as exc_info:
+        validate_season_access(
+            document,
+            season=2025,
+            purpose="preprocessing",
+            labels_requested=True,
+        )
+    _assert_reason(exc_info, "B07_HOLDOUT_LABEL_ACCESS_PROHIBITED")
+
+
+def test_holdout_labels_are_available_only_in_explicit_evaluation_mode(
+    document: dict,
+) -> None:
+    assert (
         validate_season_access(
             document,
             season=2025,
@@ -265,18 +278,8 @@ def test_2025_labels_are_rejected_even_with_explicit_evaluation_mode(document: d
             evaluation_mode=True,
             labels_requested=True,
         )
-    _assert_reason(exc_info, "B07_HOLDOUT_LABEL_ACCESS_PROHIBITED")
-
-
-def test_holdout_evaluation_requires_later_implementation(document: dict) -> None:
-    with pytest.raises(B07ValidationError) as exc_info:
-        validate_season_access(
-            document,
-            season=2025,
-            purpose="holdout_evaluation",
-            evaluation_mode=True,
-        )
-    _assert_reason(exc_info, "B07_HOLDOUT_EVALUATION_NOT_IMPLEMENTED")
+        is None
+    )
 
 
 @pytest.mark.parametrize("season", [2023, 2024])
