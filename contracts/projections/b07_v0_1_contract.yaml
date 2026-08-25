@@ -57,7 +57,7 @@ b07_v0_1_contract:
 
     game_seconds_remaining:
       type: int
-      range: [3600, 0]
+      range: [0, 3600]
       source: raw_b06_game_seconds_remaining
       timing: pre_event
       required: true

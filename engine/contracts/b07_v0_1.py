@@ -211,7 +211,7 @@ def validate_b07_contract(document: Mapping[str, Any]) -> None:
         },
         "game_seconds_remaining": {
             "type": "int",
-            "range": [3600, 0],
+            "range": [0, 3600],
             "source": "raw_b06_game_seconds_remaining",
             "timing": "pre_event",
             "required": True,
@@ -531,6 +531,15 @@ def exclusion_reason_codes(
 ) -> tuple[str, ...]:
     """Return stable reason codes for invalid synthetic opportunity metadata."""
     validate_b07_contract(document)
+    contract = _contract(document)
+    features = _mapping(contract["feature_allowlist"], "feature_allowlist")
+    baseline = _mapping(contract["contextual_baseline"], "contextual_baseline")
+
+    def in_declared_range(feature_name: str, value: Any) -> bool:
+        policy = _mapping(features[feature_name], f"feature_allowlist.{feature_name}")
+        lower, upper = policy["range"]
+        return type(value) is int and lower <= value <= upper
+
     reasons: list[str] = []
     opportunity_type = synthetic_event.get("opportunity_type")
     if opportunity_type not in {"rush", "pass_target"}:
@@ -541,22 +550,25 @@ def exclusion_reason_codes(
         reasons.append("B07_EXCLUDE_MISSING_YARDLINE_100")
     elif type(yardline) is not int:
         reasons.append("B07_EXCLUDE_INVALID_YARDLINE_100")
-    elif not 0 <= yardline <= 99:
+    elif not any(
+        lower <= yardline <= upper for lower, upper in baseline["yardline_bands"]
+    ):
         reasons.append("B07_EXCLUDE_INVALID_YARDLINE_BAND")
 
     down = synthetic_event.get("down")
-    if type(down) is not int or not 1 <= down <= 4:
+    if not in_declared_range("down", down):
         reasons.append("B07_EXCLUDE_INVALID_DOWN")
     ydstogo = synthetic_event.get("ydstogo")
-    if type(ydstogo) is not int or ydstogo < 1:
+    ydstogo_policy = _mapping(features["ydstogo"], "feature_allowlist.ydstogo")
+    if type(ydstogo) is not int or ydstogo < ydstogo_policy["minimum"]:
         reasons.append("B07_EXCLUDE_INVALID_YDSTOGO")
     if type(synthetic_event.get("goal_to_go")) is not bool:
         reasons.append("B07_EXCLUDE_MISSING_GOAL_TO_GO")
     quarter = synthetic_event.get("quarter")
-    if type(quarter) is not int or not 1 <= quarter <= 5:
+    if not in_declared_range("quarter", quarter):
         reasons.append("B07_EXCLUDE_INVALID_QUARTER")
     seconds = synthetic_event.get("game_seconds_remaining")
-    if type(seconds) is not int or not 0 <= seconds <= 3600:
+    if not in_declared_range("game_seconds_remaining", seconds):
         reasons.append("B07_EXCLUDE_INVALID_GAME_SECONDS_REMAINING")
     if type(synthetic_event.get("score_differential")) is not int:
         reasons.append("B07_EXCLUDE_INVALID_SCORE_DIFFERENTIAL")

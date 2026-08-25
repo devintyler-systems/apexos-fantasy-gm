@@ -92,6 +92,16 @@ def test_contract_validator_rejects_split_mutation(document: dict) -> None:
     _assert_reason(exc_info, "B07_CONTRACT_FROZEN_VALUE_MISMATCH")
 
 
+def test_contract_validator_rejects_reversed_game_seconds_range(document: dict) -> None:
+    changed = deepcopy(document)
+    changed["b07_v0_1_contract"]["feature_allowlist"]["game_seconds_remaining"][
+        "range"
+    ] = [3600, 0]
+    with pytest.raises(B07ValidationError) as exc_info:
+        validate_b07_contract(changed)
+    _assert_reason(exc_info, "B07_CONTRACT_FEATURE_POLICY_MISMATCH")
+
+
 def test_every_allowlisted_feature_is_typed_required_sourced_and_pre_event(document: dict) -> None:
     features = document["b07_v0_1_contract"]["feature_allowlist"]
     for name, policy in features.items():
@@ -354,6 +364,28 @@ def test_invalid_opportunity_metadata_has_explicit_reason_code(
 
 def test_valid_synthetic_opportunity_has_no_exclusion(document: dict) -> None:
     assert exclusion_reason_codes(document, _valid_event()) == ()
+
+
+@pytest.mark.parametrize("seconds", [0, 3600])
+def test_game_seconds_inclusive_contract_boundaries_are_valid(
+    document: dict, seconds: int
+) -> None:
+    event = _valid_event()
+    event["game_seconds_remaining"] = seconds
+    assert "B07_EXCLUDE_INVALID_GAME_SECONDS_REMAINING" not in exclusion_reason_codes(
+        document, event
+    )
+
+
+@pytest.mark.parametrize("seconds", [-1, 3601])
+def test_game_seconds_outside_contract_boundaries_fail_closed(
+    document: dict, seconds: int
+) -> None:
+    event = _valid_event()
+    event["game_seconds_remaining"] = seconds
+    assert "B07_EXCLUDE_INVALID_GAME_SECONDS_REMAINING" in exclusion_reason_codes(
+        document, event
+    )
 
 
 @pytest.mark.parametrize(
