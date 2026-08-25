@@ -20,6 +20,58 @@ from engine.projections.b07_baseline import (
 )
 
 
+RETAINED_PACKAGE_FILES = (
+    "lookup-tables.json",
+    "metrics.json",
+    "review-report.md",
+    "scored-events.jsonl",
+)
+MUTABLE_POINTER_NAMES = frozenset(("current.json", "latest", "latest.json"))
+
+
+def retained_inspection_evidence(root: str | Path) -> dict:
+    """Return review-surface evidence after fail-closed package inspection."""
+    path = Path(root).resolve()
+    result = inspect_validation_artifact(path)
+    artifact_files = result.get("artifact_files")
+    if not isinstance(artifact_files, dict) or set(artifact_files) != set(
+        RETAINED_PACKAGE_FILES
+    ):
+        raise BaselineValidationError(
+            "B07_ARTIFACT_PACKAGE_FILE_SET_MISMATCH",
+            f"expected={list(RETAINED_PACKAGE_FILES)} actual={sorted(artifact_files or {})}",
+        )
+
+    pointer_paths = sorted(
+        str(candidate)
+        for candidate in path.iterdir()
+        if candidate.name.casefold() in MUTABLE_POINTER_NAMES
+        and (candidate.exists() or candidate.is_symlink())
+    )
+    if pointer_paths:
+        raise BaselineValidationError(
+            "B07_ARTIFACT_MUTABLE_POINTER_PRESENT",
+            f"paths={pointer_paths}",
+        )
+
+    package_digests = {
+        name: artifact_files[name]["sha256"] for name in RETAINED_PACKAGE_FILES
+    }
+    package_digests.update(
+        {
+            "manifest.json": result["manifest_sha256"],
+            "validation-artifact.json": result["validation_artifact_sha256"],
+        }
+    )
+    return {
+        "artifact_root": str(path),
+        "current_or_latest_pointer_exists": False,
+        "current_or_latest_pointer_paths": [],
+        "package_digests": package_digests,
+        **result,
+    }
+
+
 def _source(value: str) -> SourceSpec:
     parts = value.split("|", 3)
     if len(parts) != 4:
@@ -87,7 +139,7 @@ def main(argv: list[str] | None = None) -> int:
     sources = _sources_from_args(args)
     try:
         if args.inspect:
-            result = inspect_validation_artifact(args.inspect)
+            result = retained_inspection_evidence(args.inspect)
         elif args.what_if:
             if args.output_root is None or len(sources) != 3:
                 _parser().error("--what-if requires exactly three --source values and --output-root")

@@ -29,6 +29,7 @@ from engine.projections.b07_baseline import (
     validate_source_spec,
     write_validation_artifact,
 )
+from tools.run_b07_baseline import retained_inspection_evidence
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -530,6 +531,56 @@ def test_artifact_has_required_linkage_reason_and_limitation_fields(
     assert inspect_validation_artifact(result["root"])["result"] == (
         "FRESH_SUCCESS_PENDING_REVIEW"
     )
+
+
+def test_retained_inspection_exposes_all_package_digests_and_no_pointer(
+    contract: dict, tmp_path: Path
+) -> None:
+    artifact, lookup, scored = _artifact_fixture(contract)
+    result = write_validation_artifact(tmp_path / "immutable-b07", artifact, lookup, scored)
+
+    evidence = retained_inspection_evidence(result["root"])
+
+    assert evidence["artifact_root"] == str(Path(result["root"]).resolve())
+    assert evidence["run_id"] == "synthetic-run"
+    assert evidence["input_snapshot_id"] == "snapshot"
+    assert set(evidence["package_digests"]) == {
+        "lookup-tables.json",
+        "metrics.json",
+        "review-report.md",
+        "scored-events.jsonl",
+        "manifest.json",
+        "validation-artifact.json",
+    }
+    assert evidence["current_or_latest_pointer_exists"] is False
+    assert evidence["current_or_latest_pointer_paths"] == []
+
+
+@pytest.mark.parametrize("pointer_name", ["current.json", "latest", "latest.json"])
+def test_retained_inspection_fails_closed_when_mutable_pointer_exists(
+    contract: dict, tmp_path: Path, pointer_name: str
+) -> None:
+    artifact, lookup, scored = _artifact_fixture(contract)
+    result = write_validation_artifact(tmp_path / "immutable-b07", artifact, lookup, scored)
+    (Path(result["root"]) / pointer_name).write_text("{}", encoding="utf-8")
+
+    with pytest.raises(BaselineValidationError) as exc_info:
+        retained_inspection_evidence(result["root"])
+
+    assert exc_info.value.reason_code == "B07_ARTIFACT_MUTABLE_POINTER_PRESENT"
+
+
+def test_retained_inspection_preserves_digest_mismatch_reason(
+    contract: dict, tmp_path: Path
+) -> None:
+    artifact, lookup, scored = _artifact_fixture(contract)
+    result = write_validation_artifact(tmp_path / "immutable-b07", artifact, lookup, scored)
+    (Path(result["root"]) / "metrics.json").write_text("{}", encoding="utf-8")
+
+    with pytest.raises(BaselineValidationError) as exc_info:
+        retained_inspection_evidence(result["root"])
+
+    assert exc_info.value.reason_code == "B07_ARTIFACT_FILE_DIGEST_MISMATCH"
 
 
 @pytest.mark.parametrize("name", ["current.json", "latest", "recommendation", "projection"])
