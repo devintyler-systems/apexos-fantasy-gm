@@ -490,26 +490,19 @@ def validate_season_access(
     development = tuple(source_inputs["development_seasons"])
     holdout = source_inputs["final_out_of_time_holdout"]
     if season == holdout:
-        if labels_requested:
-            _fail(
-                "B07_HOLDOUT_LABEL_ACCESS_PROHIBITED",
-                "season",
-                season,
-                "no 2025 labels in any development artifact",
-            )
         if purpose != "holdout_evaluation" or evaluation_mode is not True:
+            reason = (
+                "B07_HOLDOUT_LABEL_ACCESS_PROHIBITED"
+                if labels_requested
+                else "B07_HOLDOUT_ISOLATION_REQUIRED"
+            )
             _fail(
-                "B07_HOLDOUT_ISOLATION_REQUIRED",
+                reason,
                 "season",
                 season,
                 "future explicit holdout_evaluation mode only",
             )
-        _fail(
-            "B07_HOLDOUT_EVALUATION_NOT_IMPLEMENTED",
-            "purpose",
-            purpose,
-            "a separately authorized evaluation implementation",
-        )
+        return
     if season not in development:
         _fail(
             "B07_DEVELOPMENT_SEASON_NOT_ALLOWED",
