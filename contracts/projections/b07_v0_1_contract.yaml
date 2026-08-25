@@ -1,0 +1,178 @@
+b07_v0_1_contract:
+  schema_version: "0.1.0"
+  status: "frozen_pending_tests"
+
+  source_inputs:
+    development_seasons: [2023, 2024]
+    final_out_of_time_holdout: 2025
+    allowed_payload_digests:
+      "2023": "bd3484731408def6b0ec93225bba2bd7b2c65769ca707a2b9444d891abdc6776"
+      "2024": "3fd2896bc0b911b615142d2f1fabae54a4bbba5ab7b73b28187b118ef8af6a3b"
+      "2025": "c6ecedd6d678cc37ed316b23ef84ee1ec6abb69c514bb11868a7ebd5a367df29"
+
+  estimators:
+    - rush
+    - pass_target
+
+  feature_allowlist:
+    yardline_100:
+      type: int
+      source: raw_b06_yardline_100
+      timing: pre_event
+      required: true
+      domain_policy:
+        authoritative_domain: observed_b06_domain_per_season
+        unsupported_value_action: exclude_with_reason_code
+        exclusion_reason_code: B07_EXCLUDE_INVALID_YARDLINE_100
+
+    down:
+      type: int
+      range: [1, 4]
+      source: raw_b06_down
+      timing: pre_event
+      required: true
+
+    ydstogo:
+      type: int
+      minimum: 1
+      source: raw_b06_ydstogo
+      timing: pre_event
+      required: true
+
+    goal_to_go:
+      type: bool
+      source: raw_b06_goal_to_go
+      timing: pre_event
+      required: true
+      fallback_derivation:
+        status: prohibited_in_v0_1_without_source_semantics_test
+        reason: goal_to_go must not be inferred from yardline_100 == ydstogo by assumption
+
+    quarter:
+      type: int
+      range: [1, 5]
+      source: raw_b06_quarter
+      timing: pre_event
+      required: true
+
+    game_seconds_remaining:
+      type: int
+      range: [0, 3600]
+      source: raw_b06_game_seconds_remaining
+      timing: pre_event
+      required: true
+
+    score_differential:
+      type: int
+      source: raw_b06_score_differential
+      timing: pre_event
+      required: true
+
+  deferred_features:
+    - shotgun
+    - no_huddle
+
+  prohibited_predictors:
+    - player_id
+    - posteam_id
+    - team_strength_proxy
+    - player_history
+    - realized_touchdown
+    - yards_gained
+    - epa
+    - wpa
+    - success
+    - fantasy_points
+    - post_play_scores
+    - future_game_information
+    - season_end_aggregates
+
+  contextual_baseline:
+    separate_estimators: true
+    fitting_seasons: [2023, 2024]
+    holdout_season: 2025
+    grouping_features:
+      - yardline_band
+      - goal_to_go
+      - down
+    yardline_bands:
+      - [0, 5]
+      - [6, 10]
+      - [11, 20]
+      - [21, 40]
+      - [41, 60]
+      - [61, 80]
+      - [81, 99]
+    out_of_band_action: exclude_with_reason_code
+    out_of_band_reason_code: B07_EXCLUDE_INVALID_YARDLINE_BAND
+    min_cell_support_opportunities: 30
+    backoff_hierarchy:
+      - [opportunity_type, yardline_band, goal_to_go, down]
+      - [opportunity_type, yardline_band, goal_to_go]
+      - [opportunity_type, yardline_band]
+      - [opportunity_type_global_rate]
+    missing_context_action: exclude_with_reason_code
+    excluded_context_must_be_reported: true
+
+  material_cohorts:
+    eligibility_rule: >
+      Frozen before candidate scoring. A cohort must satisfy declared minimum
+      2025 holdout opportunity count and distinct-game count. Below-support
+      cohorts are reported as diagnostic-only and cannot support a calibration
+      pass claim.
+    cohort_definitions:
+      - opportunity_type
+      - yardline_band
+      - goal_to_go
+      - down_when_support_eligible
+    required_reporting:
+      - opportunity_count
+      - distinct_game_count
+      - touchdown_count
+      - brier_score
+      - calibration_diagnostic
+      - exclusion_reason_counts
+    severe_calibration_failure_procedure:
+      freeze_point: after_baseline_measurement_before_candidate_scoring
+      required_evidence:
+        - reliability_table
+        - observed_minus_expected_gap
+        - uncertainty_interval
+        - declared_baseline_comparison
+        - operational_risk_statement
+
+  validation_protocol:
+    holdout_season: 2025
+    primary_metric: brier_score
+    baseline_comparison: paired_candidate_minus_baseline_brier_delta
+    resampling_method: paired_bootstrap
+    resampling_cluster_unit: game_id
+    resamples: 2000
+    confidence_interval: 0.95
+    reliability_binning:
+      method: equal_frequency_quantiles
+      requested_bins: 10
+      low_support_bin_action: report_with_uncertainty
+    required_diagnostics:
+      - prediction_decile_reliability_tables
+      - ece_by_estimator
+      - brier_by_material_cohort
+      - paired_bootstrap_brier_delta
+      - exclusion_reason_counts
+
+  promotion_gate:
+    required:
+      - candidate_out_of_time_brier_less_than_declared_baseline
+    blocks:
+      - severe_calibration_failure_in_material_cohort
+      - time_integrity_failure
+      - source_digest_or_manifest_failure
+      - identity_ambiguity_or_required_label_failure
+
+  access:
+    v0_1: immutable_validation_artifact_and_local_inspection
+    endpoint: explicitly_out_of_scope
+
+  execution_control:
+    one_run_stop_condition: true
+    candidate_estimator_training: out_of_scope_until_baseline_artifact_review
