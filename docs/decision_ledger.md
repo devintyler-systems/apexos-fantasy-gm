@@ -572,4 +572,20 @@ B-07 remains BLOCKED. No B-07 lookup, xTD artifact, or production projection beh
 
 ---
 
+### Version 3.14 — 2026-08-25
+
+**Change:** Added the finalized, versioned SPAMML 2026 round-order authority and corrected the planned draft schedule. The accepted all-league source PDF is retained at `data/raw/draft_order/spamml_2026_draft_order.pdf` with SHA-256 `da7208e307a7fe6f56b06a5c8ae02291815f72a7424a8f8e1170820c98f40de6`; the raw manifest records the reconciled Professor FleX picks PDF and the 2026-08-25 operator confirmation. The validated 128-pick authority resolves Professor FleX at seat 4 to `[4, 29, 45, 52, 68, 93, 109, 116]`. The approved local schedule is `2026-08-30 16:00 America/Los_Angeles`, derived through timezone-aware code as `2026-08-30T23:00:00Z`.
+
+**Type:** Structural
+
+**Impact on build sequence:**
+- Runtime reads only the versioned finalized 2026 authority; the retained unversioned generic processed maps are non-consumable superseded artifacts.
+- Missing or invalid finalized map data fails closed; the generic pivot formula cannot substitute for the 2026 authority.
+- Planned schedule state remains subordinate to validated manual live-draft events and B-05 session state.
+- No provider sync, external write, recommendation behavior, B-06, B-07, projection, dependency, or CI behavior is authorized or changed.
+
+**Highest-leverage next artifact:** Independent review of the SPAMML 2026 schedule-correction evidence and map authority.
+
+---
+
 (END)

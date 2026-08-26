@@ -136,9 +136,10 @@ def test_generic_snapshot_and_all_five_access_patterns(tmp_path):
     assert snapshot["on_the_clock_manager"] == "Professor FleX"
     assert snapshot["degraded_banner_required"] is False
     assert snapshot["league_rules_version"] == "0.5"
+    assert snapshot["dsa_validator_version"] == "1.2"
     assert snapshot["data_freshness"]["b05_session_age_seconds"] == 0
     assert consumer.current_manager_seat() == 4
-    assert consumer.next_manager_picks(3) == [4, 29, 44]
+    assert consumer.next_manager_picks(3) == [4, 29, 45]
     assert consumer.pick_number_owner(17) == 16
 
 
@@ -148,7 +149,7 @@ def test_causality_trace_keeps_pick_ownership_delegated(tmp_path):
     snapshot = consumer.snapshot()
 
     assert snapshot["on_the_clock_seat"] == consumer.pick_number_owner(17)
-    assert consumer.next_picks_for_seat(4, 2) == [29, 44]
+    assert consumer.next_picks_for_seat(4, 2) == [29, 45]
 
 
 def test_time_integrity_uses_only_b05_session_age_for_staleness():

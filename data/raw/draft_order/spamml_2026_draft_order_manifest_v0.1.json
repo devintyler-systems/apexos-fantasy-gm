@@ -1,0 +1,37 @@
+{
+  "artifact_id": "spamml_2026_draft_order_raw_evidence",
+  "version": "0.1",
+  "status": "accepted_operator_confirmed_source",
+  "effective_season": 2026,
+  "retrieved_at_utc": "2026-08-25T00:00:00Z",
+  "source_artifacts": [
+    {
+      "role": "all_league_order",
+      "original_filename": "2026 DRAFT ORDER.pdf",
+      "preserved_path": "data/raw/draft_order/spamml_2026_draft_order.pdf",
+      "sha256": "da7208e307a7fe6f56b06a5c8ae02291815f72a7424a8f8e1170820c98f40de6",
+      "page_count": 1
+    },
+    {
+      "role": "manager_pick_reconciliation",
+      "original_filename": "2026 DRAFT PICKS - Professor FleX.pdf",
+      "source_path": "data/incoming/2026 DRAFT PICKS - Professor FleX.pdf",
+      "sha256": "3a43d7f8fd8860c6092e40492522fc5dd00aa765c637f5896304cf9dd6accc2d",
+      "page_count": 1
+    }
+  ],
+  "extraction": {
+    "parser": "pdfplumber",
+    "parser_version": "0.11.9",
+    "method": "complete one-page text extraction and accepted-source reconciliation",
+    "result": "128 pick-to-manager assignments; 16 distinct managers; 8 picks per manager"
+  },
+  "operator_confirmation": {
+    "date": "2026-08-25",
+    "manager_team_name": "Professor FleX",
+    "manager_draft_seat": 4,
+    "draft_start_local": "2026-08-30T16:00:00 America/Los_Angeles",
+    "manager_pick_numbers": [4, 29, 45, 52, 68, 93, 109, 116],
+    "reconciliation": "Both submitted PDFs are accepted; no pick-116 conflict remains."
+  }
+}

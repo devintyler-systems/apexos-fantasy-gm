@@ -1,0 +1,129 @@
+pick_number,round_number,slot_in_round,draft_seat,manager_team_name
+1,1,1,1,Cockney Punter
+2,1,2,2,Step Burrow I'm Stuck
+3,1,3,3,Prime Tut
+4,1,4,4,Professor FleX
+5,1,5,5,Shaq In His Prime
+6,1,6,6,Hurricane Ditka
+7,1,7,7,King Of The North
+8,1,8,8,Curtis My Favorite Martin
+9,1,9,9,Cork Dork
+10,1,10,10,Spam
+11,1,11,11,Biggus Dickus
+12,1,12,12,Slama Jama
+13,1,13,13,El Borracho
+14,1,14,14,Mr. Creosote
+15,1,15,15,Mulligan
+16,1,16,16,Rock Duro
+17,2,1,16,Rock Duro
+18,2,2,15,Mulligan
+19,2,3,14,Mr. Creosote
+20,2,4,13,El Borracho
+21,2,5,12,Slama Jama
+22,2,6,11,Biggus Dickus
+23,2,7,10,Spam
+24,2,8,9,Cork Dork
+25,2,9,8,Curtis My Favorite Martin
+26,2,10,7,King Of The North
+27,2,11,6,Hurricane Ditka
+28,2,12,5,Shaq In His Prime
+29,2,13,4,Professor FleX
+30,2,14,3,Prime Tut
+31,2,15,2,Step Burrow I'm Stuck
+32,2,16,1,Cockney Punter
+33,3,1,9,Cork Dork
+34,3,2,10,Spam
+35,3,3,11,Biggus Dickus
+36,3,4,12,Slama Jama
+37,3,5,13,El Borracho
+38,3,6,14,Mr. Creosote
+39,3,7,15,Mulligan
+40,3,8,16,Rock Duro
+41,3,9,8,Curtis My Favorite Martin
+42,3,10,7,King Of The North
+43,3,11,6,Hurricane Ditka
+44,3,12,5,Shaq In His Prime
+45,3,13,4,Professor FleX
+46,3,14,3,Prime Tut
+47,3,15,2,Step Burrow I'm Stuck
+48,3,16,1,Cockney Punter
+49,4,1,1,Cockney Punter
+50,4,2,2,Step Burrow I'm Stuck
+51,4,3,3,Prime Tut
+52,4,4,4,Professor FleX
+53,4,5,5,Shaq In His Prime
+54,4,6,6,Hurricane Ditka
+55,4,7,7,King Of The North
+56,4,8,8,Curtis My Favorite Martin
+57,4,9,9,Cork Dork
+58,4,10,10,Spam
+59,4,11,11,Biggus Dickus
+60,4,12,12,Slama Jama
+61,4,13,13,El Borracho
+62,4,14,14,Mr. Creosote
+63,4,15,15,Mulligan
+64,4,16,16,Rock Duro
+65,5,1,1,Cockney Punter
+66,5,2,2,Step Burrow I'm Stuck
+67,5,3,3,Prime Tut
+68,5,4,4,Professor FleX
+69,5,5,5,Shaq In His Prime
+70,5,6,6,Hurricane Ditka
+71,5,7,7,King Of The North
+72,5,8,8,Curtis My Favorite Martin
+73,5,9,9,Cork Dork
+74,5,10,10,Spam
+75,5,11,11,Biggus Dickus
+76,5,12,12,Slama Jama
+77,5,13,13,El Borracho
+78,5,14,14,Mr. Creosote
+79,5,15,15,Mulligan
+80,5,16,16,Rock Duro
+81,6,1,16,Rock Duro
+82,6,2,15,Mulligan
+83,6,3,14,Mr. Creosote
+84,6,4,13,El Borracho
+85,6,5,12,Slama Jama
+86,6,6,11,Biggus Dickus
+87,6,7,10,Spam
+88,6,8,9,Cork Dork
+89,6,9,8,Curtis My Favorite Martin
+90,6,10,7,King Of The North
+91,6,11,6,Hurricane Ditka
+92,6,12,5,Shaq In His Prime
+93,6,13,4,Professor FleX
+94,6,14,3,Prime Tut
+95,6,15,2,Step Burrow I'm Stuck
+96,6,16,1,Cockney Punter
+97,7,1,9,Cork Dork
+98,7,2,10,Spam
+99,7,3,11,Biggus Dickus
+100,7,4,12,Slama Jama
+101,7,5,13,El Borracho
+102,7,6,14,Mr. Creosote
+103,7,7,15,Mulligan
+104,7,8,16,Rock Duro
+105,7,9,8,Curtis My Favorite Martin
+106,7,10,7,King Of The North
+107,7,11,6,Hurricane Ditka
+108,7,12,5,Shaq In His Prime
+109,7,13,4,Professor FleX
+110,7,14,3,Prime Tut
+111,7,15,2,Step Burrow I'm Stuck
+112,7,16,1,Cockney Punter
+113,8,1,1,Cockney Punter
+114,8,2,2,Step Burrow I'm Stuck
+115,8,3,3,Prime Tut
+116,8,4,4,Professor FleX
+117,8,5,5,Shaq In His Prime
+118,8,6,6,Hurricane Ditka
+119,8,7,7,King Of The North
+120,8,8,8,Curtis My Favorite Martin
+121,8,9,9,Cork Dork
+122,8,10,10,Spam
+123,8,11,11,Biggus Dickus
+124,8,12,12,Slama Jama
+125,8,13,13,El Borracho
+126,8,14,14,Mr. Creosote
+127,8,15,15,Mulligan
+128,8,16,16,Rock Duro

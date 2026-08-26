@@ -1,0 +1,57 @@
+artifact:
+  name: spamml_2026_round_order_map
+  version: "1.0"
+  status: FINALIZED_OPERATOR_CONFIRMED
+  owner: Architect
+  effective_season: 2026
+  source_manifest: data/raw/draft_order/spamml_2026_draft_order_manifest_v0.1.json
+  source_sha256: da7208e307a7fe6f56b06a5c8ae02291815f72a7424a8f8e1170820c98f40de6
+  parser_identity: pdfplumber-0.11.9
+  operator_confirmation_date: "2026-08-25"
+  immutable_after_confirmation: true
+
+league:
+  league_id: SPAMML
+  season: 2026
+  league_size: 16
+  total_rounds: 8
+  total_picks: 128
+
+canonical_managers:
+  1: Cockney Punter
+  2: "Step Burrow I'm Stuck"
+  3: Prime Tut
+  4: Professor FleX
+  5: Shaq In His Prime
+  6: Hurricane Ditka
+  7: King Of The North
+  8: Curtis My Favorite Martin
+  9: Cork Dork
+  10: Spam
+  11: Biggus Dickus
+  12: Slama Jama
+  13: El Borracho
+  14: Mr. Creosote
+  15: Mulligan
+  16: Rock Duro
+
+# Each ordered row is one complete 16-pick round. Together they normalize all
+# 128 overall-pick assignments from the accepted all-league source PDF.
+round_seat_orders:
+  - [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  - [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  - [9, 10, 11, 12, 13, 14, 15, 16, 8, 7, 6, 5, 4, 3, 2, 1]
+  - [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  - [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+  - [16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  - [9, 10, 11, 12, 13, 14, 15, 16, 8, 7, 6, 5, 4, 3, 2, 1]
+  - [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+
+acceptance:
+  unique_pick_numbers_required: true
+  inverse_mapping_required: true
+  expected_pick_count: 128
+  expected_manager_count: 16
+  expected_picks_per_manager: 8
+  professor_flex_pick_numbers: [4, 29, 45, 52, 68, 93, 109, 116]
+  manual_live_events_outrank_planned_schedule: true
