@@ -13,11 +13,12 @@ from engine.contracts.draft_seat_assignment import (
     load_yaml_contract,
     validate_draft_seat_assignment,
 )
+from engine.draft.round_order_map import get_pick_numbers
 
 
 ROOT = Path(__file__).resolve().parents[2]
 CANONICAL_SEAT = (
-    ROOT / "contracts" / "draft" / "spamml-2026-draft-seat-assignment-v1.1.yaml"
+    ROOT / "contracts" / "draft" / "spamml-2026-draft-seat-assignment-v1.2.yaml"
 )
 CANONICAL_LEAGUE = (
     ROOT / "contracts" / "league_rules" / "spamml-2026-v0.4.yaml"
@@ -116,6 +117,7 @@ def test_dsa_03_canonical_resolves_professor_flex_as_only_manager_at_seat_4():
     result = validate_draft_seat_assignment(CANONICAL_SEAT, CANONICAL_LEAGUE)
     assert result.manager_team_name == "Professor FleX"
     assert result.manager_draft_seat == 4
+    assert get_pick_numbers(result.manager_draft_seat) == [4, 29, 45, 52, 68, 93, 109, 116]
 
 
 @pytest.mark.parametrize(
@@ -143,7 +145,7 @@ def test_dsa_04_confirmed_schedule_has_complete_matching_provenance():
     assert (
         contract["draft_date_time_provenance"]["effective_time_utc"]
         == contract["draft_state"]["draft_date_time_utc"]
-        == "2026-09-01T01:00:00Z"
+        == "2026-08-30T23:00:00Z"
     )
 
 
@@ -170,6 +172,7 @@ def test_dsa_05_format_matches_league_and_delegates_without_deriving_picks():
     league = load_yaml_contract(CANONICAL_LEAGUE)
     assert seat["draft_state"]["format"] == league["draft"]["format"] == "non_standard_snake"
     assert all(path in seat["artifact"]["depends_on"] for path in ROUND_ORDER_AUTHORITIES)
+    assert "contracts/draft/draft-round-order-map-contract-v1.1.md" in seat["artifact"]["depends_on"]
     assert "pick_order" not in seat["draft_state"]
 
 
@@ -198,7 +201,7 @@ def test_dsa_06_canonical_timezone_fields_are_separate_and_convert_exactly():
     assert provenance["timezone"] == "America/Los_Angeles"
     assert provenance["utc_offset"] == "-07:00"
     assert provenance["timezone_abbreviation"] == "PDT"
-    assert provenance["effective_time_utc"] == "2026-09-01T01:00:00Z"
+    assert provenance["effective_time_utc"] == "2026-08-30T23:00:00Z"
 
 
 @pytest.mark.parametrize(

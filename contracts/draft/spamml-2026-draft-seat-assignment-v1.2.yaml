@@ -1,0 +1,85 @@
+artifact:
+  name: spamml_2026_draft_seat_assignment
+  version: "1.2"
+  status: CONFIRMED_MANUAL_LEAGUE_STATE
+  owner: Architect
+  change_class: structural
+  created_at_utc: "2026-08-25T00:00:00Z"
+  as_of_timestamp_utc: "2026-08-25T00:00:00Z"
+  amends: contracts/draft/spamml-2026-draft-seat-assignment-v1.1.yaml
+  amendment_note: >-
+    Non-destructive schedule correction. v1.1 remains on record. This version
+    records the accepted 2026-08-25 schedule and binds seat resolution to the
+    finalized versioned 2026 round-order authority.
+  depends_on:
+    - contracts/draft/draft-round-order-map-contract-v1.0.md
+    - contracts/draft/draft-round-order-map-contract-v1.1-clarification.md
+    - contracts/draft/draft-round-order-map-contract-v1.2-correction.md
+    - contracts/draft/draft-round-order-map-contract-v1.1.md
+    - contracts/draft/spamml-2026-round-order-map-v1.0.yaml
+
+identity:
+  league_id: SPAMML
+  season: 2026
+  league_name: SPAMML
+  manager_team_name: Professor FleX
+  manager_draft_seat: 4
+
+source_provenance:
+  source_type: accepted_local_pdf_and_operator_confirmation
+  source_provider: league_operator
+  source_reference: data/raw/draft_order/spamml_2026_draft_order_manifest_v0.1.json
+  retrieved_at_utc: "2026-08-25T00:00:00Z"
+  effective_time_utc: null
+  parser_version: pdfplumber-0.11.9
+  canonical_identity_mapping_status: unambiguous
+
+draft_date_time_provenance:
+  source_type: manual_league_manager_confirmation
+  source_provider: league_operator
+  source_reference: "Operator confirmation on 2026-08-25: 2026-08-30 16:00 America/Los_Angeles (source wording: 4pm PST)."
+  retrieved_at_utc: "2026-08-25T00:00:00Z"
+  effective_time_utc: "2026-08-30T23:00:00Z"
+  timezone: America/Los_Angeles
+  utc_offset: "-07:00"
+  timezone_abbreviation: PDT
+  parser_version: zoneinfo-timezone-aware-v1
+
+draft_state:
+  format: non_standard_snake
+  league_size: 16
+  draft_date_time_utc: "2026-08-30T23:00:00Z"
+  draft_date_time_status: confirmed
+  draft_clock_status: confirmed_untimed
+  selection_state: not_started
+  manual_entry_mode: permanent_primary_input
+
+seat_assignments:
+  - {draft_seat: 1, team_name: Cockney Punter}
+  - {draft_seat: 2, team_name: "Step Burrow I'm Stuck"}
+  - {draft_seat: 3, team_name: Prime Tut}
+  - {draft_seat: 4, team_name: Professor FleX, is_manager_team: true}
+  - {draft_seat: 5, team_name: Shaq In His Prime}
+  - {draft_seat: 6, team_name: Hurricane Ditka}
+  - {draft_seat: 7, team_name: King Of The North}
+  - {draft_seat: 8, team_name: Curtis My Favorite Martin}
+  - {draft_seat: 9, team_name: Cork Dork}
+  - {draft_seat: 10, team_name: Spam}
+  - {draft_seat: 11, team_name: Biggus Dickus}
+  - {draft_seat: 12, team_name: Slama Jama}
+  - {draft_seat: 13, team_name: El Borracho}
+  - {draft_seat: 14, team_name: Mr. Creosote}
+  - {draft_seat: 15, team_name: Mulligan}
+  - {draft_seat: 16, team_name: Rock Duro}
+
+contract:
+  consumer_contract:
+    draft_recommendation_adapter:
+      order_derivation: >-
+        Resolve scheduled pick sequence only through the versioned draft-round order map;
+        do not derive pick order locally or infer it from this seat-assignment artifact.
+
+known_limitations:
+  - The finalized schedule is planned state only; it never establishes live-draft status.
+  - Manual live-draft events and validated B-05 session state outrank planned schedule data.
+  - No platform API or external write is authorized.

@@ -23,12 +23,12 @@ from engine.draft.round_order_map import PROVENANCE_UNAVAILABLE, build_full_map
 
 
 STALE_B05_SESSION_SECONDS = 900
-DSA_VALIDATOR_VERSION = "1.1"
+DSA_VALIDATOR_VERSION = "1.2"
 ROUND_ORDER_MAP_VERSION = "1.2"
 
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SEAT_ARTIFACT_PATH = (
-    _REPOSITORY_ROOT / "contracts" / "draft" / "spamml-2026-draft-seat-assignment-v1.1.yaml"
+    _REPOSITORY_ROOT / "contracts" / "draft" / "spamml-2026-draft-seat-assignment-v1.2.yaml"
 )
 DEFAULT_LEAGUE_RULES_PATH = (
     _REPOSITORY_ROOT / "contracts" / "league_rules" / "spamml-2026-v0.5.yaml"
