@@ -557,4 +557,19 @@ B-07 remains BLOCKED. No B-07 lookup, xTD artifact, or production projection beh
 
 ---
 
+### Version 3.13 — 2026-08-25
+
+**Change:** Canonicalized B-07 v0.1 contract digest attestation across checkout line endings. The frozen contract and SHA-256 remain unchanged; CRLF checkout bytes normalize to LF before hashing, while BOM and lone-CR input fail closed.
+
+**Type:** Structural
+
+**Impact on build sequence:**
+- B-07 contract attestation is reproducible on LF and CRLF checkouts.
+- Any true canonical-byte change continues to fail closed.
+- No candidate, production, artifact, endpoint, pointer, or recommendation behavior is authorized.
+
+**Highest-leverage next artifact:** Independent review of the B-07 contract-digest canonicalization evidence.
+
+---
+
 (END)
