@@ -207,8 +207,37 @@ def _scored_fixture(contract: dict) -> tuple[dict, list[dict]]:
 
 
 def test_contract_sha_and_version_are_required(contract: dict) -> None:
-    assert b07_baseline.sha256_file(CONTRACT_PATH) == EXPECTED_CONTRACT_SHA256
+    assert b07_baseline.sha256_contract_file(CONTRACT_PATH) == EXPECTED_CONTRACT_SHA256
     assert contract["b07_v0_1_contract"]["schema_version"] == "0.1.0"
+
+
+def test_contract_digest_uses_canonical_lf_bytes_for_lf_and_crlf_copies(tmp_path: Path) -> None:
+    lf_bytes = CONTRACT_PATH.read_bytes().replace(b"\r\n", b"\n")
+    lf_path = tmp_path / "contract-lf.yaml"
+    crlf_path = tmp_path / "contract-crlf.yaml"
+    lf_path.write_bytes(lf_bytes)
+    crlf_path.write_bytes(lf_bytes.replace(b"\n", b"\r\n"))
+
+    assert b07_baseline.sha256_contract_file(lf_path) == EXPECTED_CONTRACT_SHA256
+    assert b07_baseline.sha256_contract_file(crlf_path) == EXPECTED_CONTRACT_SHA256
+
+
+@pytest.mark.parametrize(
+    ("filename", "contents", "detail"),
+    [
+        ("contract-bom.yaml", b"\xef\xbb\xbf" + CONTRACT_PATH.read_bytes(), "UTF-8 BOM"),
+        ("contract-lone-cr.yaml", CONTRACT_PATH.read_bytes() + b"\r", "lone CR"),
+    ],
+)
+def test_contract_digest_rejects_noncanonical_bytes(
+    tmp_path: Path, filename: str, contents: bytes, detail: str
+) -> None:
+    path = tmp_path / filename
+    path.write_bytes(contents)
+    with pytest.raises(b07_baseline.BaselineValidationError) as exc_info:
+        load_contract_checked(path)
+    assert exc_info.value.reason_code == "B07_CONTRACT_CANONICALIZATION_FAILED"
+    assert detail in exc_info.value.detail
 
 
 def test_contract_digest_mismatch_fails_closed(tmp_path: Path) -> None:

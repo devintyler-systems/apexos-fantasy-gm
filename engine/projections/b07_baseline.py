@@ -175,6 +175,20 @@ def sha256_file(path: str | Path) -> str:
     return digest.hexdigest()
 
 
+def canonicalize_contract_bytes(value: bytes) -> bytes:
+    """Return the UTF-8 LF-byte form used by the frozen B-07 contract digest."""
+    if value.startswith(b"\xef\xbb\xbf"):
+        _fail("B07_CONTRACT_CANONICALIZATION_FAILED", "UTF-8 BOM is prohibited")
+    canonical = value.replace(b"\r\n", b"\n")
+    if b"\r" in canonical:
+        _fail("B07_CONTRACT_CANONICALIZATION_FAILED", "residual lone CR byte is prohibited")
+    return canonical
+
+
+def sha256_contract_file(path: str | Path) -> str:
+    return sha256_bytes(canonicalize_contract_bytes(Path(path).read_bytes()))
+
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace(
         "+00:00", "Z"
@@ -187,7 +201,7 @@ def load_contract_checked(
 ) -> dict[str, Any]:
     """Attest contract bytes before loading its frozen semantic validator."""
     path = Path(contract_path)
-    actual = sha256_file(path)
+    actual = sha256_contract_file(path)
     if actual != expected_sha256:
         _fail(
             "B07_CONTRACT_DIGEST_MISMATCH",
