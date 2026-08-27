@@ -604,4 +604,31 @@ B-07 remains BLOCKED. No B-07 lookup, xTD artifact, or production projection beh
 
 ---
 
+### Version 3.16 — 2026-08-27
+
+**Change:** Added the 2026 Player-Level Evidence Source & Freshness
+Authorization Contract v0.1 as a documentation-only governance gate. It
+requires a source-specific, immutable authorization record before any 2026
+player-level evidence source may be used. The record must establish read-only
+use, approved role, SHA-256, parser version, provider/locator,
+retrieval/effective/as-of provenance, U08 resolution, a source-specific
+freshness policy, and a degraded-mode statement.
+
+**Boundary:** This record authorizes no source, provider retrieval, network
+call, live evidence, live projection artifact, scoring, PRV, availability,
+roster-fit, or recommendation behavior. Rankings, ADP, and analyst projections
+remain benchmark-only. The contract validates temporal non-futurity only and
+does not make a false current or certified-freshness claim; stale or incomplete
+conditions must remain visible through `data_freshness_status` and
+`known_limitations`.
+
+**Type:** Documentation and contract-validation coverage only.
+
+**Highest-leverage next artifact:** Architect-approved, source-specific 2026
+player-level evidence authorization record with U08 resolution and a
+source-specific freshness policy; no live artifact build may begin until
+separately authorized.
+
+---
+
 (END)
