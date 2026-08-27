@@ -1,9 +1,9 @@
 # 2026 Player-Level Evidence Source & Freshness Authorization Contract v0.1
 
-**Artifact:** `2026_player_level_evidence_source_freshness_authorization`  
-**Version:** `0.1`  
-**Owner:** ApexOS Architect  
-**Status:** APPROVED GOVERNANCE GATE — NO SOURCE OR LIVE EVIDENCE AUTHORIZED  
+**Artifact:** `2026_player_level_evidence_source_freshness_authorization`
+**Version:** `0.1`
+**Owner:** ApexOS Architect
+**Status:** APPROVED GOVERNANCE GATE — NO SOURCE OR LIVE EVIDENCE AUTHORIZED
 **Scope:** Documentation and contract-validation only
 
 ## 1. Decision and non-authorization boundary
