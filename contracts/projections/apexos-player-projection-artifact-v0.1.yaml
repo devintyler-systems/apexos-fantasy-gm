@@ -1,0 +1,69 @@
+# ApexOS-owned Player Projection Artifact Contract
+artifact: apexos_player_projection_artifact
+contract_version: "0.1"
+status: READY_FOR_FIXTURE_ONLY_BUILDER
+owner: ApexOS Architect
+scope: fixture_only_foundation
+
+artifact_metadata:
+  required:
+    - artifact_id
+    - artifact_version
+    - created_at_utc
+    - as_of_timestamp_utc
+    - input_snapshot_id
+    - repository_commit_sha
+    - league_rules_version
+    - canonical_identity_snapshot_id
+    - frozen
+    - data_freshness_status
+    - source_manifest
+    - known_limitations
+  artifact_version: "0.1"
+  data_freshness_status: [fresh, stale, incomplete]
+
+source_manifest:
+  required:
+    - source_id
+    - source_path
+    - source_sha256
+    - retrieved_at_utc
+    - effective_time_utc
+    - allowed_role
+
+projection_row:
+  required:
+    - canonical_player_id
+    - canonical_team_id
+    - position
+    - projection_model_version
+    - input_snapshot_id
+    - source_evidence_refs
+    - raw_model_expected_scoring_events
+    - manual_environment_override
+    - final_expected_scoring_events
+    - uncertainty
+    - data_freshness_status
+    - known_limitations
+  permitted_positions: [QB, HB, FB, WR, TE, K, TEAM]
+  required_scoring_event_keys:
+    - passing_touchdowns
+    - rushing_touchdowns
+    - receiving_touchdowns
+    - field_goals_made
+    - extra_points_made
+    - defensive_special_teams_touchdowns
+    - safeties
+    - two_point_conversions
+  manual_environment_override:
+    additive_only: true
+    audited_fields: [owner, reason, timestamp_utc, raw_value, override_value]
+
+hard_rules:
+  - External rankings, ADP, and analyst projections are benchmark-only and prohibited as artifact inputs.
+  - 2025 historical results cannot be represented as 2026 expectation values.
+  - Every player and team must resolve canonically; ambiguity is a blocking error.
+  - Manual overrides are additive and audited; raw model values are preserved.
+  - Missing, stale, post-as-of, hash-mismatched, or unapproved evidence fails closed.
+  - Artifact correction requires a new immutable version; frozen versions cannot be overwritten.
+  - v0.1 cannot include fantasy scoring, PRV, availability, roster fit, recommendation, endpoint, external write, provider retrieval, B-06, or B-07 behavior.

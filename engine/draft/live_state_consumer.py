@@ -31,7 +31,7 @@ DEFAULT_SEAT_ARTIFACT_PATH = (
     _REPOSITORY_ROOT / "contracts" / "draft" / "spamml-2026-draft-seat-assignment-v1.2.yaml"
 )
 DEFAULT_LEAGUE_RULES_PATH = (
-    _REPOSITORY_ROOT / "contracts" / "league_rules" / "spamml-2026-v0.5.yaml"
+    _REPOSITORY_ROOT / "contracts" / "league_rules" / "spamml-2026-v0.6.yaml"
 )
 
 

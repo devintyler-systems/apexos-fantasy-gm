@@ -1,0 +1,51 @@
+{
+  "artifact_id": "apexos-projection-fixture-v01",
+  "artifact_version": "0.1",
+  "created_at_utc": "2026-08-25T00:00:00Z",
+  "as_of_timestamp_utc": "2026-08-25T00:00:00Z",
+  "input_snapshot_id": "AUTO",
+  "repository_commit_sha": "28751c4eb686573c33503bac56138e83fc8fc878",
+  "league_rules_version": "0.6",
+  "canonical_identity_snapshot_id": "snapshot-2026-v01",
+  "frozen": true,
+  "data_freshness_status": "incomplete",
+  "source_manifest": [{
+    "source_id": "fixture-evidence-v01",
+    "source_path": "source_evidence.json",
+    "source_sha256": "402e4e160df81d569e23692144227c64856268dfee631bcf13a94fd6705bfa24",
+    "retrieved_at_utc": "2026-08-25T00:00:00Z",
+    "effective_time_utc": "2026-08-25T00:00:00Z",
+    "allowed_role": "fixture_evidence"
+  }],
+  "known_limitations": ["Fixture-only; no live 2026 player projection artifact exists."],
+  "identity_snapshot": {
+    "canonical_identity_snapshot_id": "snapshot-2026-v01",
+    "teams": [{"canonical_team_id": "team-aaa"}],
+    "players": [{"canonical_player_id": "player-001", "canonical_team_id": "team-aaa", "position": "QB"}],
+    "aliases": []
+  },
+  "projection_rows": [{
+    "canonical_player_id": "player-001",
+    "canonical_team_id": "team-aaa",
+    "position": "QB",
+    "projection_model_version": "fixture-model-v01",
+    "input_snapshot_id": "AUTO",
+    "source_evidence_refs": ["fixture-evidence-v01"],
+    "raw_model_expected_scoring_events": {
+      "passing_touchdowns": 1.0, "rushing_touchdowns": 0.0,
+      "receiving_touchdowns": 0.0, "field_goals_made": 0.0,
+      "extra_points_made": 0.0, "defensive_special_teams_touchdowns": 0.0,
+      "safeties": 0.0, "two_point_conversions": 0.0
+    },
+    "manual_environment_override": null,
+    "final_expected_scoring_events": {
+      "passing_touchdowns": 1.0, "rushing_touchdowns": 0.0,
+      "receiving_touchdowns": 0.0, "field_goals_made": 0.0,
+      "extra_points_made": 0.0, "defensive_special_teams_touchdowns": 0.0,
+      "safeties": 0.0, "two_point_conversions": 0.0
+    },
+    "uncertainty": {"level": "fixture"},
+    "data_freshness_status": "incomplete",
+    "known_limitations": ["Fixture input only."]
+  }]
+}
