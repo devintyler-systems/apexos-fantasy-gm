@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import yaml
 
 import engine.draft.round_order_map as round_order_map
 
@@ -29,7 +30,19 @@ def _configure_rules_directory(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) 
 
 
 def test_current_canonical_rules_return_parsed_contract_version() -> None:
-    assert round_order_map._league_rules_version() == "0.5"
+    assert round_order_map._league_rules_version() == "0.6"
+
+
+def test_v06_delegates_planned_schedule_to_finalized_seat_assignment_only() -> None:
+    rules_path = Path("contracts/league_rules/spamml-2026-v0.6.yaml")
+    rules = yaml.safe_load(rules_path.read_text(encoding="utf-8"))
+
+    assert rules["contract_version"] == "0.6"
+    assert "date_time" not in rules["draft"]
+    assert rules["schedule_authority"]["sole_canonical_planned_timestamp_artifact"] == (
+        "contracts/draft/spamml-2026-draft-seat-assignment-v1.2.yaml"
+    )
+    assert "Manual live events and validated B-05 session state outrank" in rules["schedule_authority"]["precedence"]
 
 
 @pytest.mark.parametrize(

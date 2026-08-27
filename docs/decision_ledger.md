@@ -588,4 +588,20 @@ B-07 remains BLOCKED. No B-07 lookup, xTD artifact, or production projection beh
 
 ---
 
+### Version 3.15 — 2026-08-26
+
+**Change:** Added the ApexOS-owned Player Projection Artifact Foundation v0.1 as a fixture-only, deterministic validation and serialization boundary. The new contract requires frozen metadata, as-of and input-snapshot provenance, SHA-256-attested local evidence, canonical player/team identity, exact scoring-event expectation keys, and additive audited overrides. It rejects rankings, ADP, analyst projections, missing, post-as-of, unapproved, or hash-mismatched evidence; v0.1 validates temporal non-futurity only and does not certify source freshness. Stale or incomplete conditions must be surfaced through data_freshness_status and known_limitations; a separately approved source-specific freshness policy is required before non-fixture 2026 evidence or any live artifact may be authorized. It also rejects ambiguous identity, prohibited decision fields, and frozen-version overwrite.
+
+**Schedule authority calibration:** Added League Rules v0.6 without changing historical v0.5. v0.6 removes the broad contract's duplicate stale timestamp and names `contracts/draft/spamml-2026-draft-seat-assignment-v1.2.yaml` as the sole planned-schedule timestamp authority. Manual live events and validated B-05 session state remain higher precedence. The runtime consumer now binds its broad league-rules reference to v0.6.
+
+**Type:** Structural fixture-foundation and schedule-authority correction.
+
+**Boundary:** This is not a live 2026 player projection artifact. It makes no provider/API call and adds no raw/processed data, B-06, B-07, candidate, endpoint, external-write, scoring, PRV, availability, roster-fit, or recommendation behavior.
+
+**Verification:** PA01–PA13 passed through `tests/acceptance/test_projection_artifact_v0_1.py` (17 passed); live-state consumer regression passed (25 passed); league-rules version parsing passed (8 passed); full acceptance passed (336 passed). The artifact and manifest serializations were byte-identical for identical fixture inputs.
+
+**Highest-leverage next artifact:** Architect-approved, provenance-bearing player-level 2026 evidence snapshot; no live artifact build may begin until separately authorized.
+
+---
+
 (END)

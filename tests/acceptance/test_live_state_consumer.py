@@ -135,7 +135,7 @@ def test_generic_snapshot_and_all_five_access_patterns(tmp_path):
     assert snapshot["on_the_clock_seat"] == 4
     assert snapshot["on_the_clock_manager"] == "Professor FleX"
     assert snapshot["degraded_banner_required"] is False
-    assert snapshot["league_rules_version"] == "0.5"
+    assert snapshot["league_rules_version"] == "0.6"
     assert snapshot["dsa_validator_version"] == "1.2"
     assert snapshot["data_freshness"]["b05_session_age_seconds"] == 0
     assert consumer.current_manager_seat() == 4
