@@ -159,3 +159,25 @@ exact usable resources and operational constraints remain `unknown` until verifi
 **Promotion blocker:** `yfpy` is a convenience wrapper, not an architectural dependency.
 The approved connector contract must bind ApexOS to Yahoo's verified API behavior and
 raw evidence contract, not to the wrapper's model classes or field names.
+
+---
+
+## 6. 2026 Player-Level Evidence Source & Freshness Authorization Gate
+
+`contracts/projections/2026-player-level-evidence-source-freshness-authorization-v0.1.md`
+is the controlling governance gate for any future 2026 player-level evidence
+source. It is documentation-only and does not approve any provider, retrieval,
+live evidence, or live projection artifact.
+
+Existing register entries, including entries marked APPROVED for historical,
+calibration, or separate workflows, are not by themselves a source-specific
+authorization for 2026 player-level evidence. Before use, a source must have a
+separately approved record under the v0.1 contract that proves read-only use,
+an allowed evidence role, SHA-256, parser version, provider/locator,
+retrieval/effective/as-of provenance, U08 resolution, source-specific freshness
+policy, and degraded-mode handling. Ranking, ADP, and analyst-projection roles
+remain benchmark-only.
+
+**Current boundary:** No source is authorized by this section for 2026
+player-level evidence ingest. No provider/API/network retrieval, live evidence,
+or recommendation input is authorized through this register update.
