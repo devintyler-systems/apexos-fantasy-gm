@@ -115,6 +115,12 @@ def test_absolute_source_url_is_an_approved_alternate_locator():
     _build(document)
 
 
+def test_ambiguous_source_locator_fails_closed():
+    document = _document()
+    document["source_manifest"][0]["source_url"] = "https://fixture.apexos.invalid/records/fixture-record-2026-v01"
+    _fails(document, "PA03_SOURCE_LOCATOR_INVALID")
+
+
 def test_pa06_unapproved_role_fails_closed():
     document = _document()
     document["source_manifest"][0]["allowed_role"] = "provider_evidence"
