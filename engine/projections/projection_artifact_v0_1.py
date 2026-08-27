@@ -42,7 +42,10 @@ METADATA_KEYS = frozenset({
     "canonical_identity_snapshot_id", "frozen", "data_freshness_status",
     "source_manifest", "known_limitations", "projection_rows",
 })
-SOURCE_KEYS = frozenset({"source_id", "source_path", "source_sha256", "retrieved_at_utc", "effective_time_utc", "allowed_role"})
+SOURCE_COMMON_KEYS = frozenset({
+    "source_id", "source_path", "source_sha256", "retrieved_at_utc",
+    "effective_time_utc", "allowed_role", "source_provider", "parser_version",
+})
 ROW_KEYS = frozenset({
     "canonical_player_id", "canonical_team_id", "position", "projection_model_version",
     "input_snapshot_id", "source_evidence_refs", "raw_model_expected_scoring_events",
@@ -54,6 +57,8 @@ SAFE_SOURCE_ROLES = frozenset({"fixture_evidence", "apexos_owned_evidence"})
 PROHIBITED_SOURCE_ROLES = frozenset({"external_ranking", "ranking", "adp", "analyst_projection", "analyst-projection"})
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")
+_SOURCE_URL = re.compile(r"^https?://[^/\s?#]+(?:[/?#][^\s]*)?$")
+_VERSIONED_STRING = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*\d[A-Za-z0-9._-]*$")
 
 
 def _fail(code: str, message: str) -> None:
@@ -139,11 +144,28 @@ def validate_source_manifest(document: Mapping[str, Any], base_path: Path) -> No
         _fail("PA03_SOURCE_EVIDENCE_MISSING", "source_manifest must be a non-empty list")
     source_ids: set[str] = set()
     for source in sources:
-        source = _exact_mapping(source, SOURCE_KEYS, "PA03_SOURCE_SCHEMA_INVALID", "source manifest entry")
+        if not isinstance(source, Mapping):
+            _fail("PA03_SOURCE_SCHEMA_INVALID", "source manifest entry must be an object")
+        locator_keys = {key for key in ("source_url", "provider_record_id") if key in source}
+        if not set(source).issubset(SOURCE_COMMON_KEYS | {"source_url", "provider_record_id"}):
+            _fail("PA03_SOURCE_SCHEMA_INVALID", "source manifest entry contains an unrecognized field")
+        if locator_keys not in ({"source_url"}, {"provider_record_id"}):
+            _fail("PA03_SOURCE_LOCATOR_INVALID", "source manifest entry requires exactly one approved source locator")
+        if not isinstance(source.get("source_provider"), str) or not source["source_provider"].strip():
+            _fail("PA03_SOURCE_PROVIDER_INVALID", "source_provider must be a non-empty string")
+        if not isinstance(source.get("parser_version"), str) or not _VERSIONED_STRING.fullmatch(source["parser_version"]):
+            _fail("PA03_PARSER_VERSION_INVALID", "parser_version must be a non-empty versioned string")
+        if SOURCE_COMMON_KEYS - set(source):
+            _fail("PA03_SOURCE_SCHEMA_INVALID", "source manifest entry is missing a required field")
         source_id = source["source_id"]
         if not isinstance(source_id, str) or not source_id or source_id in source_ids:
             _fail("PA03_SOURCE_EVIDENCE_MISSING", "source_id must be non-empty and unique")
         source_ids.add(source_id)
+        if "source_url" in locator_keys:
+            if not isinstance(source["source_url"], str) or not _SOURCE_URL.fullmatch(source["source_url"]):
+                _fail("PA03_SOURCE_LOCATOR_INVALID", "source_url must be an absolute http/https URL")
+        elif not isinstance(source["provider_record_id"], str) or not source["provider_record_id"].strip():
+            _fail("PA03_SOURCE_LOCATOR_INVALID", "provider_record_id must be a non-empty string")
         role = source["allowed_role"]
         if role in PROHIBITED_SOURCE_ROLES:
             _fail("PA07_EXTERNAL_RANKING_INPUT", f"source role {role!r} is benchmark-only")
@@ -151,9 +173,10 @@ def validate_source_manifest(document: Mapping[str, Any], base_path: Path) -> No
             _fail("PA06_SOURCE_ROLE_UNAPPROVED", f"source role {role!r} is not approved for v0.1")
         if not isinstance(source["source_sha256"], str) or not _SHA256.fullmatch(source["source_sha256"]):
             _fail("PA04_SHA256_INVALID", "source_sha256 must be lowercase SHA-256")
-        _timestamp(source["retrieved_at_utc"], "retrieved_at_utc")
+        if _timestamp(source["retrieved_at_utc"], "retrieved_at_utc") > as_of:
+            _fail("PA05_POST_AS_OF_RETRIEVED", "source retrieved_at_utc is after artifact as_of_timestamp_utc")
         if _timestamp(source["effective_time_utc"], "effective_time_utc") > as_of:
-            _fail("PA05_POST_AS_OF_EVIDENCE", "source effective_time_utc is after artifact as_of_timestamp_utc")
+            _fail("PA05_POST_AS_OF_EFFECTIVE", "source effective_time_utc is after artifact as_of_timestamp_utc")
         path = _source_path(base_path, source["source_path"])
         try:
             observed = hashlib.sha256(_canonical_source_bytes(path)).hexdigest()

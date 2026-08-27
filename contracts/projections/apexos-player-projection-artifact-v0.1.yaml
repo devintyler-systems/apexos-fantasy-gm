@@ -30,6 +30,14 @@ source_manifest:
     - retrieved_at_utc
     - effective_time_utc
     - allowed_role
+    - source_provider
+    - parser_version
+  source_locator:
+    exactly_one_required: [source_url, provider_record_id]
+    source_url: absolute http/https URL
+    provider_record_id: non-empty string
+  source_provider: non-empty string
+  parser_version: non-empty versioned string
 
 projection_row:
   required:
@@ -64,6 +72,8 @@ hard_rules:
   - 2025 historical results cannot be represented as 2026 expectation values.
   - Every player and team must resolve canonically; ambiguity is a blocking error.
   - Manual overrides are additive and audited; raw model values are preserved.
-  - Missing, stale, post-as-of, hash-mismatched, or unapproved evidence fails closed.
+  - Missing, post-as-of, hash-mismatched, or unapproved evidence fails closed.
+  - v0.1 validates temporal non-futurity only and does not certify source freshness. Artifact and row data_freshness_status plus known_limitations must surface incomplete or stale conditions.
+  - A separately approved source-specific freshness policy is a hard gate before non-fixture 2026 evidence or a live artifact can be authorized.
   - Artifact correction requires a new immutable version; frozen versions cannot be overwritten.
   - v0.1 cannot include fantasy scoring, PRV, availability, roster fit, recommendation, endpoint, external write, provider retrieval, B-06, or B-07 behavior.

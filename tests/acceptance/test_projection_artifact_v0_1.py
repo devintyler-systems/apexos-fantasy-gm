@@ -30,6 +30,11 @@ def _fails(document: dict, code: str) -> None:
         _build(document)
 
 
+def _replace_locator_with_invalid_url(source: dict) -> None:
+    source.pop("provider_record_id")
+    source["source_url"] = "not-a-url"
+
+
 def test_pa01_valid_fixture_builds_schema_valid_artifact():
     artifact, artifact_bytes, manifest_bytes = _build(_document())
     assert artifact["artifact_version"] == "0.1"
@@ -58,10 +63,56 @@ def test_pa04_hash_mismatch_fails_closed():
     _fails(document, "PA04_SHA256_MISMATCH")
 
 
-def test_pa05_post_as_of_evidence_fails_closed():
+def test_pa05_post_as_of_effective_time_fails_closed():
     document = _document()
     document["source_manifest"][0]["effective_time_utc"] = "2026-08-25T00:00:01Z"
-    _fails(document, "PA05_POST_AS_OF_EVIDENCE")
+    _fails(document, "PA05_POST_AS_OF_EFFECTIVE")
+
+
+def test_pa05_post_as_of_retrieval_time_fails_closed():
+    document = _document()
+    document["source_manifest"][0]["retrieved_at_utc"] = "2026-08-25T00:00:01Z"
+    _fails(document, "PA05_POST_AS_OF_RETRIEVED")
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda source: source.pop("source_provider"),
+    lambda source: source.update(source_provider="   "),
+])
+def test_source_provider_is_required_and_non_empty(mutation):
+    document = _document()
+    mutation(document["source_manifest"][0])
+    _fails(document, "PA03_SOURCE_PROVIDER_INVALID")
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda source: source.pop("provider_record_id"),
+    lambda source: source.update(provider_record_id="   "),
+    _replace_locator_with_invalid_url,
+])
+def test_source_locator_is_required_and_valid(mutation):
+    document = _document()
+    source = document["source_manifest"][0]
+    mutation(source)
+    _fails(document, "PA03_SOURCE_LOCATOR_INVALID")
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda source: source.pop("parser_version"),
+    lambda source: source.update(parser_version="parser"),
+])
+def test_parser_version_is_required_and_versioned(mutation):
+    document = _document()
+    mutation(document["source_manifest"][0])
+    _fails(document, "PA03_PARSER_VERSION_INVALID")
+
+
+def test_absolute_source_url_is_an_approved_alternate_locator():
+    document = _document()
+    source = document["source_manifest"][0]
+    source.pop("provider_record_id")
+    source["source_url"] = "https://fixture.apexos.invalid/records/fixture-record-2026-v01"
+    _build(document)
 
 
 def test_pa06_unapproved_role_fails_closed():
@@ -115,6 +166,8 @@ def test_pa12_module_has_no_b06_b07_import_or_runtime_dependency():
     assert "engine.ingestion" not in source
     assert "b07_baseline" not in source
     assert "engine.contracts.b07" not in source
+    assert "requests" not in source
+    assert "urllib.request" not in source
 
 
 def test_pa13_cli_validate_and_build_are_deterministic_and_tmp_only(tmp_path):

@@ -15,7 +15,10 @@
     "source_sha256": "402e4e160df81d569e23692144227c64856268dfee631bcf13a94fd6705bfa24",
     "retrieved_at_utc": "2026-08-25T00:00:00Z",
     "effective_time_utc": "2026-08-25T00:00:00Z",
-    "allowed_role": "fixture_evidence"
+    "allowed_role": "fixture_evidence",
+    "source_provider": "apexos_fixture",
+    "provider_record_id": "fixture-record-2026-v01",
+    "parser_version": "apexos-fixture-parser-v0.1"
   }],
   "known_limitations": ["Fixture-only; no live 2026 player projection artifact exists."],
   "identity_snapshot": {
