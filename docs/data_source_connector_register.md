@@ -181,3 +181,26 @@ remain benchmark-only.
 **Current boundary:** No source is authorized by this section for 2026
 player-level evidence ingest. No provider/API/network retrieval, live evidence,
 or recommendation input is authorized through this register update.
+
+---
+
+## 7. nflverse Direct GitHub Release Assets — 2026 Player Facts Candidate
+
+`contracts/projections/source-authorizations/nflverse-direct-github-release-assets-2026-player-facts-candidate-v0.1.md`
+records direct GitHub release assets published by nflverse as CANDIDATE ONLY —
+NOT APPROVED FOR USE for historical player/team factual evidence and
+canonical-reference support. It is not a source-specific approval and
+authorizes no provider retrieval, network call, live evidence, or live artifact.
+
+The proposed future access method is read-only direct GitHub release assets
+only. A later source-specific approval package must verify provider terms and
+license, exact fields, provider/locator, auth, rate-limit status, exact
+release/asset identity, local SHA-256, parser version, timestamps, identity
+coverage, freshness policy, fallback, degraded mode, and read/write posture.
+No value for those items is asserted here. Historical or B-06 context does not
+automatically authorize 2026 player-level evidence; rankings, ADP, and analyst
+projections remain benchmark-only.
+
+**Current boundary:** This candidate entry authorizes no provider/API/network
+retrieval, 2026 live roster claim, injury, availability, ranking/ADP/analyst
+input, scoring, PRV, roster-fit, recommendation, or live artifact.

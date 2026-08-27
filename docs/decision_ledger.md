@@ -631,4 +631,31 @@ separately authorized.
 
 ---
 
+### Version 3.17 — 2026-08-27
+
+**Change:** Structural governance decision: League Rules v0.7 resolves U08
+only for SPAMML 2026. SPAMML 2026 is a redraft league with no keepers and no
+dynasty behavior. All other unresolved league-rule items remain unchanged.
+
+**Candidate registration:** Registered nflverse direct GitHub release assets
+for historical player/team factual evidence and canonical-reference support as
+CANDIDATE ONLY — NOT APPROVED FOR USE. Historical or B-06 context does not
+automatically authorize the source for 2026 player-level evidence. A later
+source-specific approval package must verify provider terms, exact fields, and
+a source-specific freshness policy before any separate implementation
+authorization can be considered.
+
+**Boundary:** No live evidence, provider/API/network retrieval, live artifact,
+scoring, PRV, availability, roster-fit, recommendation, endpoint, or external
+write is authorized by this record.
+
+**Type:** Structural governance decision and documentation-contract acceptance
+coverage only.
+
+**Highest-leverage next artifact:** Approved source-specific factual-evidence
+authorization package with verified provider terms, exact fields, and freshness
+policy.
+
+---
+
 (END)

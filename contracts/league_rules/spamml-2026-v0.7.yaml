@@ -1,0 +1,101 @@
+# SPAMML League Rules Contract v0.7
+# v0.6 remains the unmodified historical record. This additive successor
+# resolves U08 without changing the v1.2 planned-schedule authority.
+league_id: spamml-2026
+contract_version: "0.7"
+league_name: SPAMML
+season: 2026
+amends: contracts/league_rules/spamml-2026-v0.6.yaml
+schedule_authority:
+  sole_canonical_planned_timestamp_artifact: contracts/draft/spamml-2026-draft-seat-assignment-v1.2.yaml
+  rule: The v1.2 seat-assignment artifact is the sole canonical SPAMML 2026 planned schedule timestamp authority.
+  precedence: Manual live events and validated B-05 session state outrank planned schedule data.
+platform:
+  primary: custom_manual
+  mirror: fantrax
+  api_sync: none
+league_size: 16
+
+draft:
+  format: non_standard_snake
+  schedule_timestamp_authority: contracts/draft/spamml-2026-draft-seat-assignment-v1.2.yaml
+  draft_position_2026: unknown
+  trading_during_draft: unknown
+  total_picks: 128
+  draft_clock_config:
+    timer_enabled: false
+    timer_seconds: null
+    available_timer_options_seconds: [30, 60, 90, 120]
+    ui_requirement: "League Rules Contract intake must present a timer selector with options: [No Timer, 30 sec, 1 min, 1 min 30 sec, 2 min] whenever a NEW league is configured. SPAMML 2026 has 'No Timer' selected."
+  practical_impact_on_draft_recommendation_engine: "SPAMML 2026 is a live, untimed draft. Pre-computation is a UX convenience, not a hard performance gate."
+
+roster:
+  total_slots: 8
+  bench: 0
+  starters:
+    QB: 1
+    RB1: 1
+    RB2: 1
+    REC1: 1
+    REC2: 1
+    REC3: 1
+    KCK: 1
+    D_O: 1
+  flex_eligibility: none
+  positional_eligibility:
+    QB: [QB]
+    RB1: [HB, FB]
+    RB2: [HB, FB]
+    REC1: [WR, TE]
+    REC2: [WR, TE]
+    REC3: [WR, TE]
+    KCK: [K]
+    D_O: [TEAM]
+
+scoring:
+  passing: {td_pass: 6, two_point_conversion_pass: 2, yards: 0, completions: 0, interceptions: 0}
+  rushing: {td_rush: 6, two_point_conversion_rush: 2, yards: 0, carries: 0}
+  receiving: {td_reception: 6, two_point_conversion_catch: 2, yards: 0, receptions: 0}
+  kicking: {field_goal: 3, pat: 1, missed_fg: 0, missed_pat: 0}
+  defense_special_teams: {defensive_td: 6, safety: 2, special_teams_td: 6, points_allowed_scoring: 0}
+  bonuses: none
+  penalties: none
+
+weekly_prizes:
+  top_offense_prize: {amount_usd: 10, awarded_to: team whose D_O slot (team offense) scores the most real NFL points that week, winner_count: 1}
+  top_defense_prize: {amount_usd: 10, awarded_to: team whose D_O slot (team defense) allows the fewest real NFL points that week, winner_count: 1}
+  single_team_sweep: true
+transactions: {add_drop_cost_usd: 10, waivers: unknown, faab: unknown, trades: unknown, lineup_lock: unknown}
+playoffs: {teams: unknown, schedule: unknown, format: unknown}
+keeper_dynasty: {keeper: none, dynasty: false}
+user_strategy_controls:
+  positional_priority: none
+  d_o_strategy: value_based_no_floor_no_ceiling
+  te_premium: none
+  override_philosophy: trust_the_model
+  convention_flags: {kicker_before_round: 4, d_o_before_round: 7}
+  snooze_capability: enabled
+
+unknown_or_unconfirmed:
+  - {id: U04, field: draft.trading_during_draft, default: unknown, affected_module: draft_state_manager, risk: LOW, owner: Devin, decision_deadline: before_draft_ui_build}
+  - {id: U05, field: scoring.missed_fg, default: 0, affected_module: kicker_projection_model, risk: LOW, owner: Devin, decision_deadline: before_scoring_engine_build}
+  - {id: U06, field: transactions.waivers, default: unknown, affected_module: phase2_waiver_optimizer, risk: MEDIUM for Phase 2, owner: Devin, decision_deadline: before_phase2_build}
+  - {id: U07, field: playoffs.teams, default: unknown, affected_module: phase2_schedule_model, risk: LOW for draft MVP, owner: Devin, decision_deadline: before_phase2_build}
+  - {id: U09, field: weekly_prizes.winner_count, default: 1_winner, affected_module: d_o_prize_ev_model, risk: LOW, owner: Devin, decision_deadline: before_phase2_build}
+
+resolved_in_prior_versions:
+  - {id: U03, field: draft.pick_timer, resolution: "CONFIRMED untimed for SPAMML 2026 (v0.3).", resolved_date: 2026-08-10}
+resolved_by_separate_artifact:
+  - id: U01
+    field: draft.draft_position_2026
+    resolution: "Professor FleX seat 4 is canonically resolved by the finalized v1.2 seat-assignment artifact."
+    resolved_date: 2026-08-25
+resolved_by_this_version:
+  - id: U08
+    field: keeper_dynasty
+    resolution: "SPAMML 2026 is a redraft league with no keepers and no dynasty behavior."
+    resolved_date: 2026-08-27
+known_limitations:
+  - Planned schedule data never establishes live-draft status.
+  - Manual live events and validated B-05 session state outrank planned schedule data.
+  - No platform API or external write is authorized.

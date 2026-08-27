@@ -30,7 +30,7 @@ def _configure_rules_directory(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) 
 
 
 def test_current_canonical_rules_return_parsed_contract_version() -> None:
-    assert round_order_map._league_rules_version() == "0.6"
+    assert round_order_map._league_rules_version() == "0.7"
 
 
 def test_v06_delegates_planned_schedule_to_finalized_seat_assignment_only() -> None:
