@@ -2,6 +2,27 @@
 
 ## Version History
 
+### Version 3.18 — 2026-08-27
+
+**Change:** Resolved the Draft Operations MVP operating-guidance structural conflict identified during the canonical-clone readiness assessment. Added `docs/runbooks/draft-operations-mvp-degraded-mode-runbook-v1.1.md` as the governing live-draft degraded-mode procedure for Draft Operations MVP. The v1.1 successor is manual-entry-first and defines planned schedule visibility, manual-live > validated B-05 > planned schedule authority, additive correction, canonical identity safety without source lookup, visible degraded mode, roster/draft-state visibility, auditability, and post-draft reconciliation.
+
+The legacy `docs/runbooks/live-draft-degraded-mode-runbook-v1.0.md` remains byte-preserved and is designated non-governing for Draft Operations MVP only. Its recommendation, projection, scoring, PRV, replacement-value, availability, roster-fit, optimizer, provider-retrieval, player-source, and related decision-system procedures are deferred to a future separately approved Projection-Backed MVP operating artifact.
+
+This is a documentation and governance change only. It changes no runtime engine behavior, League Rules content, B-05 implementation, source authorization, source access, player-data storage, canonical identity behavior, projection artifact, scoring engine, PRV behavior, availability behavior, roster-fit behavior, optimizer behavior, recommendation behavior, endpoint behavior, test suite, workflow, or external-write capability.
+
+**Type:** Structural
+
+**Impact on build sequence:**
+- Draft Operations MVP now has one scope-consistent governing degraded-mode procedure.
+- Manual pick entry, additive correction, schedule visibility, manual/B-05/planned state precedence, identity safety, and fail-closed operational behavior remain the active MVP scope.
+- Player recommendation, ranking, ADP, analyst projection, projection, scoring, PRV, replacement value, availability, roster fit, optimizer, provider retrieval, player-source lookup, player-data persistence, and external-write behavior remain out of scope.
+- The runtime League Rules default-path v0.6/v0.7 discrepancy remains unresolved and is not changed by this documentation-only entry.
+- No provider retrieval, source persistence, identity mapping validation, implementation, branch, commit, pull request, GitHub write, or merge is implied by the architecture decision itself.
+
+**Highest-leverage next artifact:** Draft Operations MVP Test-Safety and Runtime Conformance Plan v0.1 — define the minimal isolated test-execution exception and runtime evidence needed to assess B-05/manual-entry/correction/live-state behavior against the v1.1 runbook without source access, repository mutation, or recommendation-scope expansion.
+
+***
+
 ### Version 3.6 — 2026-08-23
 **Change:** Approved B-07 xTD Lookup Table Contract Resolution Addendum v0.1 as the structural resolution of B-07’s contract blockers. B-07 uses regular-season-only 2023–2025 PBP data, applies count-weighted 0.17 / 0.33 / 0.50 seasonal decay, defines deterministic rush-attempt and pass-target eligibility, requires immutable B-06 v0.2 revision provenance, and establishes low-confidence propagation, immutable artifact behavior, a live/controlled-data generation gate, and a Brier-score feature-promotion gate. B-06 v0.2 remains controlling; B-06 v0.3 is not adopted without independent Evidence & Release Reviewer PASS and a subsequent Decision Ledger entry.
 
