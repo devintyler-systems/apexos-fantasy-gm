@@ -2,6 +2,32 @@
 
 ## Version History
 
+### Version 3.19 — 2026-08-29
+
+**Change:** Added Mandatory Canonical-Baseline Gate v1.0 to the Execution
+Authority and Escalation Protocol. Before repository-dependent work, Codex must
+fetch canonical `origin/main`, verify the approved inspection worktree path is
+clean, confirm the canonical origin URL, require `HEAD == origin/main`, and
+require an ahead/behind result of `0 0`. Only then may Codex create an
+explicitly authorized task-specific branch/worktree. Before every later write,
+Codex must re-fetch `origin/main`, verify the approved task context and
+authorized-path scope, and stop for Architect approval if canonical main has
+drifted.
+
+**Type:** Structural governance clarification.
+
+**Impact on build sequence:**
+- Future implementation handoffs begin from a verified canonical baseline and
+  continue under explicit task-base drift control.
+- The gate does not alter runtime behavior, contracts, League Rules, source
+  authority, provider access, player data, configuration, tests, workflows,
+  external-write capability, or GitHub branch state.
+- No historical preservation checkout is implied to be mutable or suitable as
+  an implementation baseline.
+
+**Highest-leverage next artifact:** Independent review of the Mandatory
+Canonical-Baseline Gate v1.0 evidence package before any commit or pull request.
+
 ### Version 3.18 — 2026-08-27
 
 **Change:** Resolved the Draft Operations MVP operating-guidance structural conflict identified during the canonical-clone readiness assessment. Added `docs/runbooks/draft-operations-mvp-degraded-mode-runbook-v1.1.md` as the governing live-draft degraded-mode procedure for Draft Operations MVP. The v1.1 successor is manual-entry-first and defines planned schedule visibility, manual-live > validated B-05 > planned schedule authority, additive correction, canonical identity safety without source lookup, visible degraded mode, roster/draft-state visibility, auditability, and post-draft reconciliation.
