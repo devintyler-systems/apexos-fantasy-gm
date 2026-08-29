@@ -89,6 +89,42 @@ If a release gate requires related test and CI evidence changes, deliver them in
 
 No agent may state that tests passed, a PR was opened, a commit exists, or CI retained evidence unless the claim is supported by terminal output, GitHub evidence, or an immutable artifact.
 
+### Rule EAP-07 — Mandatory Canonical-Baseline Gate
+
+Before Codex begins repository-dependent work, it must establish and report a
+canonical baseline in the task-approved local inspection worktree:
+
+1. Fetch `origin main --prune`.
+2. Confirm the inspection-worktree path is the task-approved path and the
+   worktree is clean.
+3. Confirm `origin` resolves to the approved canonical repository.
+4. Confirm `HEAD` equals `origin/main`.
+5. Confirm `git rev-list --left-right --count HEAD...origin/main` returns `0 0`.
+6. Record the verified canonical SHA and commit subject in the handoff evidence.
+
+Only after this gate passes may Codex create an explicitly authorized
+task-specific worktree and branch from that verified SHA.
+
+Before every later repository write in the task-specific worktree, Codex must
+fetch `origin main --prune`, report the task worktree path, branch, `HEAD`,
+fresh `origin/main`, ahead/behind count, modified tracked paths, staged paths,
+and untracked paths, and confirm that:
+
+1. `origin/main` still equals the task-approved canonical base SHA; or
+2. the Architect has explicitly approved the reported newer `origin/main` SHA
+   as the new task baseline.
+
+Codex must stop with `BLOCKED` before staging, editing, running tests,
+committing, pushing, opening a pull request, or accessing external data sources
+when an inspection baseline is stale, diverged, dirty, non-canonical, or
+path-mismatched; when a task worktree is dirty outside authorized paths; when
+the active branch/worktree is not the approved task context; or when canonical
+`origin/main` has drifted without explicit Architect approval.
+
+This gate governs local repository state only. It does not authorize production
+behavior, provider access, player-data access, configuration changes, external
+writes, or GitHub actions.
+
 ## 5. Required Architect-to-Codex handoff
 
 Before Codex begins, Architect produces one complete handoff with all fields below. Missing fields are an Architect defect, not an invitation for Codex to guess.
