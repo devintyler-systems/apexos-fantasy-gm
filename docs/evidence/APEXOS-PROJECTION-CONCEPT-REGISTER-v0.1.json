@@ -1,0 +1,57 @@
+{
+  "register_id": "APEXOS-PROJECTION-CONCEPT-REGISTER-v0.1",
+  "scope": "Read-only visual extraction from supplied ApexOS and Fantrax screenshots.",
+  "sources": [
+    {
+      "filename": "ApexOS_Projections.png",
+      "role": "ApexOS SPAMML 2026 Fantrax Draft Board rendered view"
+    },
+    {
+      "filename": "FantraxProjections.png",
+      "role": "Fantrax provider projection-list rendered view"
+    }
+  ],
+  "concepts": [
+    {"id":"PCR-01","name":"projection_source_mode","source":"ApexOS","observed":"DEGRADED SOURCE MODE; user-provided local snapshot; manual live-state entry required; FPts not event-decomposable."},
+    {"id":"PCR-02","name":"player_identity","source":"both","observed":"Player name; Fantrax also shows position and team."},
+    {"id":"PCR-03","name":"raw_position_and_normalized_pool","source":"both","observed":"Fantrax visibly shows QB; ApexOS visibly shows QB pool."},
+    {"id":"PCR-04","name":"provider_rank","source":"both","fantrax_field":"Rk","apexos_field":"RkOv","observed":"Visible QB ranks align."},
+    {"id":"PCR-05","name":"provider_projected_points","source":"both","fantrax_field":"FPTs","apexos_field":"FPts","observed":"Visible QB point values align; no event decomposition is claimed."},
+    {"id":"PCR-06","name":"projected_points_per_game","source":"Fantrax","field":"FP/G","apexos_decision_input_observed":false},
+    {"id":"PCR-07","name":"adp_market_context","source":"both","field":"ADP","observed":"Displayed in both; Josh Allen differs 18.3 versus 18.8; ApexOS display/context only."},
+    {"id":"PCR-08","name":"bye_week","source":"Fantrax","field":"Bye"},
+    {"id":"PCR-09","name":"opponent_schedule_context","source":"Fantrax","field":"Opp","observed":"Opponent, parenthetical rank, and game time visible; no ApexOS decision use observed."},
+    {"id":"PCR-10","name":"provider_status","source":"Fantrax","field":"Std","observed":"Visible value FA; not equated to ApexOS manual availability."},
+    {"id":"PCR-11","name":"unresolved_provider_percentages","source":"Fantrax","fields":["%D","Ros","+/-"],"confidence":"label-only; semantics unresolved"},
+    {"id":"PCR-12","name":"ui_affordances","source":"Fantrax","observed":"Star and people icons; no calculation semantics inferred."},
+    {"id":"PCR-13","name":"planned_draft_context","source":"ApexOS","observed":"Current manual pick 4; next planned Professor FleX pick 29."},
+    {"id":"PCR-14","name":"recommendation","source":"ApexOS","observed":"Josh Allen (QB); separate from rank and FPts."},
+    {"id":"PCR-15","name":"replacement_anchor_score","source":"ApexOS","observed":"Visible QB anchor 169.2."},
+    {"id":"PCR-16","name":"generic_replacement_value","source":"ApexOS","formula":"max(0, provider_points - replacement_anchor_score)","observed":"Josh Allen: 72."},
+    {"id":"PCR-17","name":"remaining_slot_scarcity_component","source":"ApexOS","observed":"Visible QB value 0.05555555555555555."},
+    {"id":"PCR-18","name":"valid_roster_fit_component","source":"ApexOS","observed":"Visible QB value 1."},
+    {"id":"PCR-19","name":"early_position_suppression_penalty","source":"ApexOS","observed":"Visible zero for QB; K/D_O explanatory suppression rules shown."},
+    {"id":"PCR-20","name":"recommended_pick_value","source":"ApexOS","observed":"Reconciled decision score; Josh Allen 123.45555555555553."},
+    {"id":"PCR-21","name":"manual_availability","source":"ApexOS","observed":"Local/in-memory only; not live-platform validated; discarded on reload."},
+    {"id":"PCR-22","name":"offline_artifact_boundary","source":"ApexOS","observed":"No network, API, storage, current provider sync, or automatic draft action."}
+  ],
+  "observed_mappings": [
+    {"fantrax":"Name","apexos":"Player","relationship":"same visible QB identities"},
+    {"fantrax":"Rk","apexos":"RkOv","relationship":"same visible QB rank sequence"},
+    {"fantrax":"FPTs","apexos":"FPts","relationship":"same visible QB values"},
+    {"fantrax":"ADP","apexos":"ADP","relationship":"displayed by both; differing visible values; context only in ApexOS"},
+    {"fantrax":"QB-team text","apexos":"Pool","relationship":"ApexOS reduces visible raw QB position to QB pool"},
+    {"fantrax":null,"apexos":["Anchor score","Marginal replacement value","Scarcity component","Roster-fit component","Suppression penalty","Reconciled value"],"relationship":"ApexOS decision-layer derivations not visible in Fantrax source view"}
+  ],
+  "example": {
+    "player": "Josh Allen",
+    "fantrax": {"position_team":"QB-BUF","rank":1,"fpts":241.2,"adp":18.3},
+    "apexos": {"pool":"QB","provider_rank":1,"fpts":241.2,"adp":18.8,"replacement_anchor_score":169.2,"generic_replacement_value":72.0,"scarcity_component":0.05555555555555555,"roster_fit_component":1.0,"suppression_penalty":0.0,"recommended_pick_value":123.45555555555553}
+  },
+  "non_claims": [
+    "No provider methodology or scoring-event decomposition is inferred.",
+    "No meaning is assigned to Fantrax %D, Ros, or +/- beyond visible labels.",
+    "No Fantrax status, opponent, or percentage field is asserted to feed ApexOS decision math.",
+    "No screenshot establishes live provider synchronization, platform state, or data freshness."
+  ]
+}
