@@ -1,0 +1,14 @@
+{
+  "fixture_scope": "synthetic raw evidence only",
+  "contains_player_specific_values": false,
+  "contains_projection_outputs": false,
+  "invalid_timestamp": "2025-01-01T00:00:00",
+  "hash_mismatch": "0000000000000000000000000000000000000000000000000000000000000000",
+  "byte_count_mismatch": 1,
+  "fixture_files": [
+    "valid-play_by_play_2024.parquet",
+    "missing-schema-play_by_play_2024.parquet",
+    "identity-null-play_by_play_2024.parquet",
+    "malformed-play_by_play_2024.parquet"
+  ]
+}
