@@ -63,7 +63,15 @@ The retained snapshot is the exact first HTTPS response body. No normalization,
 paraphrase, redaction, reformatting, selective excerpt, or source merge was
 performed.
 
-Verification command:
+Executed verification (Windows PowerShell):
+
+    Get-FileHash -Algorithm SHA256 docs/evidence/nflverse-play-by-play-upstream-documentation-snapshot-v0.1.txt
+
+The PowerShell-calculated SHA-256 digest was exactly
+`fed29e04b0035254874cee213649ec0e3159bea916d1b7464f422cdb30708b5f`.
+
+Optional cross-platform reproduction command (not available or executed in the
+Windows evidence-collection environment):
 
     sha256sum -c docs/evidence/nflverse-play-by-play-upstream-documentation-snapshot-v0.1.sha256
 
