@@ -19,23 +19,59 @@ _DEPENDENCY_NAMES = {
     "pipfile",
     "pipfile.lock",
 }
-_HISTORICAL_PARTS = {
+_GOVERNANCE_OR_TEST_PARTS = {"contracts", "docs", "tests"}
+_HISTORICAL_EVIDENCE_PARTS = {
     "audit",
     "audits",
-    "contracts",
-    "fixtures",
     "evidence",
+    "fixtures",
     "migration",
     "migrations",
     "review",
     "reviews",
 }
-_PERMITTED_CONTEXT = re.compile(
+_PACKAGE_SUBJECT = (
+    r"(?<![A-Za-z0-9_])"
+    + re.escape(_PROHIBITED_TERM)
+    + r"(?![A-Za-z0-9_])"
+)
+_EXPLICIT_NEGATIVE_EVIDENCE = re.compile(
+    _PACKAGE_SUBJECT
+    + r"[`'\"]?\s+(?:(?:is|remains)\s+)?(?:prohibited|rejected)\b"
+    + r"|"
+    + _PACKAGE_SUBJECT
+    + r"[`'\"]?\s+must\s+not\s+be\s+used\b",
+    re.IGNORECASE,
+)
+_PERMITTED_GOVERNANCE_CONTEXT = re.compile(
     r"\b(prohibit(?:ed|ion)?|must\s+be\s+absent|must\s+not|"
     r"historical|formerly|former|supersed(?:e|ed|es)|negative\s+(?:test|fixture)|"
     r"migrat(?:e|ed|ion)|remov(?:e|ed|al)|zero\s+[^\r\n]*references)\b"
     r"|\bno\b[^\r\n]{0,12}"
     + re.escape(_PROHIBITED_TERM),
+    re.IGNORECASE,
+)
+_REGISTER_ASSERTION_EVIDENCE = re.compile(
+    r"^\s*assert\s+['\"][^'\"]*"
+    + re.escape(_PROHIBITED_TERM)
+    + r"[^'\"]*['\"]\s+in\s+register\s*$",
+    re.IGNORECASE,
+)
+_ACTIVE_USE_SYNTAX = re.compile(
+    r"^\s*(?:from\s+"
+    + re.escape(_PROHIBITED_TERM)
+    + r"\s+import\b|import\s+"
+    + re.escape(_PROHIBITED_TERM)
+    + r"\b)"
+    + r"|\b(?:__import__|import_module)\s*\([^\n]*"
+    + re.escape(_PROHIBITED_TERM)
+    + r"\b"
+    + r"|\b(?:python\s+-m|pip\s+install)\s+"
+    + re.escape(_PROHIBITED_TERM)
+    + r"\b"
+    + r"|\bsubprocess\.[A-Za-z_]+\([^\n]*"
+    + re.escape(_PROHIBITED_TERM)
+    + r"\b",
     re.IGNORECASE,
 )
 
@@ -71,7 +107,8 @@ def scan_prohibited_active_use(root: Path) -> tuple[ActiveUseViolation, ...]:
                 continue
             context_start = max(0, line_number - 3)
             context_end = min(len(lines), line_number + 2)
-            if _is_permitted_evidence(relative, "\n".join(lines[context_start:context_end])):
+            context = "\n".join(lines[context_start:context_end])
+            if _is_permitted_evidence(relative, line, context):
                 continue
             violations.append(ActiveUseViolation(relative, line_number, line.strip()))
     return tuple(violations)
@@ -92,11 +129,18 @@ def _is_scanned_file(path: Path) -> bool:
     return bool(parts & {"docs", ".github"}) and path.suffix.lower() in {".md", ".txt"}
 
 
-def _is_permitted_evidence(path: Path, line: str) -> bool:
+def _is_permitted_evidence(path: Path, line: str, context: str) -> bool:
+    """Permit only explicit negative package assertions in governance/test text."""
+
     parts = {part.lower() for part in path.parts}
-    name = path.name.lower()
-    if parts & _HISTORICAL_PARTS:
+    if _ACTIVE_USE_SYNTAX.search(line):
+        return False
+    if parts & _GOVERNANCE_OR_TEST_PARTS and (
+        _EXPLICIT_NEGATIVE_EVIDENCE.search(line)
+        or _PERMITTED_GOVERNANCE_CONTEXT.search(context)
+        or ("tests" in parts and _REGISTER_ASSERTION_EVIDENCE.search(line))
+    ):
         return True
-    if any(marker in name for marker in ("ledger", "addendum", "prohibition")):
+    if path.name.lower() == "decision_ledger.md":
         return True
-    return _PERMITTED_CONTEXT.search(line) is not None
+    return bool(parts & _HISTORICAL_EVIDENCE_PARTS)
