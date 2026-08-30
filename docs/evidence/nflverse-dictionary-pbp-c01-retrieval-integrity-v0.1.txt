@@ -1,0 +1,23 @@
+APEXOS NFLVERSE DICTIONARY PBP C-01 RETRIEVAL INTEGRITY v0.1
+
+Raw retrieval URL: https://raw.githubusercontent.com/nflverse/nflreadr/d072c08492067b578f27e562b6cc9c9e3b8589c3/data-raw/dictionary_pbp.csv
+Immutable Git commit pin: d072c08492067b578f27e562b6cc9c9e3b8589c3
+Retrieval mechanism: curl.exe HTTPS GET with binary output, HTTPS-only protocol, TLS 1.2, no redirects, and no credentials.
+Response content type observed: text/plain; charset=utf-8
+
+First retrieval timestamp (UTC): 2026-08-30T11:59:46.5243170Z
+First binary byte count: 39127
+First SHA-256: 137f3c1ae4794e2a1a4bc55ac543d807d36c6c3c24c8088e0489dd7a5c156f33
+
+Committed Git blob materialization: staged blob 2ef5a47b3c5e30079b4cd52f3659a2d5c91e106c was materialized outside the repository with git cat-file blob.
+Committed blob binary byte count: 39127
+Committed blob SHA-256: 137f3c1ae4794e2a1a4bc55ac543d807d36c6c3c24c8088e0489dd7a5c156f33
+
+Second retrieval timestamp (UTC): 2026-08-30T11:59:46.7540422Z
+Second binary byte count: 39127
+Second SHA-256: 137f3c1ae4794e2a1a4bc55ac543d807d36c6c3c24c8088e0489dd7a5c156f33
+Binary byte-count and SHA-256 equality result: MATCH
+
+Execution environment: Windows PowerShell; system Git core.autocrlf was enabled (true).
+Platform hash command: Get-FileHash -Algorithm SHA256 <binary downloaded response or byte-preserved Git blob materialization>
+Platform hash output: SHA256 137F3C1AE4794E2A1A4BC55AC543D807D36C6C3C24C8088E0489DD7A5C156F33
