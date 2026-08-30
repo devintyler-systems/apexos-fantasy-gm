@@ -392,43 +392,273 @@ def test_inconsistent_existing_manifest_returns_snapshot_conflict(tmp_path: Path
     assert second.degraded_mode is True
 
 
+def _snapshot_paths(root: Path, body: bytes) -> tuple[Path, Path, Path]:
+    snapshot_id = raw_evidence._snapshot_id(_request(body), hashlib.sha256(body).hexdigest())
+    return (
+        root / "raw" / snapshot_id / ASSET_NAME,
+        root / "quarantine" / f"{snapshot_id}.jsonl",
+        root / "manifests" / f"{snapshot_id}.json",
+    )
+
+
 def _lock_path(root: Path, body: bytes) -> Path:
     snapshot_id = raw_evidence._snapshot_id(_request(body), hashlib.sha256(body).hexdigest())
     return root / ".publication-locks" / f"{snapshot_id}.lock"
 
 
-def _write_lock(path: Path, body: bytes, acquired_at: str) -> None:
+def _write_lock(
+    path: Path,
+    body: bytes,
+    acquired_at: str,
+    **overrides: object,
+) -> bytes:
+    owner = {
+        "lock_protocol_version": "nflverse-raw-evidence-lock-v0.1",
+        "snapshot_id": path.stem,
+        "attempt_id": "test-owner",
+        "acquired_at_timestamp": acquired_at,
+        "process_id": 1,
+        "host_identifier": "test-host",
+        "raw_sha256": hashlib.sha256(body).hexdigest(),
+        "asset_name": ASSET_NAME,
+        "source_id": "nflverse_direct_github_release_assets",
+    }
+    owner.update(overrides)
     path.mkdir(parents=True)
-    path.joinpath("owner.json").write_text(
-        json.dumps(
-            {
-                "lock_protocol_version": "nflverse-raw-evidence-lock-v0.1",
-                "snapshot_id": path.stem,
-                "attempt_id": "test-owner",
-                "acquired_at_timestamp": acquired_at,
-                "process_id": 1,
-                "host_identifier": "test-host",
-                "raw_sha256": hashlib.sha256(body).hexdigest(),
-                "asset_name": ASSET_NAME,
-                "source_id": "nflverse_direct_github_release_assets",
-            }
-        ),
-        encoding="utf-8",
-    )
+    owner_path = path / "owner.json"
+    owner_path.write_text(json.dumps(owner), encoding="utf-8")
+    return owner_path.read_bytes()
 
 
-def test_active_lock_fails_closed_and_expired_orphan_lock_recovers(tmp_path: Path) -> None:
+def test_active_matching_lock_fails_closed_without_final_evidence(tmp_path: Path) -> None:
     body = _bytes("valid-play_by_play_2024.parquet")
     root = tmp_path / "evidence"
-    active = _lock_path(root, body)
-    _write_lock(active, body, AS_OF)
+    lock_path = _lock_path(root, body)
+    original_owner = _write_lock(lock_path, body, AS_OF)
+
     blocked, _ = _capture(tmp_path, body)
+
     assert blocked.reason_codes == ("SNAPSHOT_LOCK_UNAVAILABLE",)
-    assert active.is_dir()
-    active.joinpath("owner.json").write_text(active.joinpath("owner.json").read_text(encoding="utf-8").replace(AS_OF, "2024-01-01T00:00:00Z"), encoding="utf-8")
+    assert blocked.degraded_mode is True
+    assert lock_path.joinpath("owner.json").read_bytes() == original_owner
+    assert not any(path.exists() for path in _snapshot_paths(root, body))
+
+
+def test_expired_matching_orphan_lock_is_reclaimed_into_complete_snapshot(
+    tmp_path: Path,
+) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    root = tmp_path / "evidence"
+    lock_path = _lock_path(root, body)
+    _write_lock(lock_path, body, "2024-01-01T00:00:00Z")
+
     recovered, _ = _capture(tmp_path, body)
+
     assert recovered.status == "success"
-    assert not active.exists()
+    assert recovered.manifest_path is not None
+    assert not lock_path.exists()
+    raw_path, quarantine_path, manifest_path = _snapshot_paths(root, body)
+    assert raw_path.read_bytes() == body
+    assert quarantine_path.is_file()
+    assert json.loads(manifest_path.read_text(encoding="utf-8"))["snapshot_id"] == recovered.snapshot_id
+
+
+def test_expired_lock_with_complete_equivalent_snapshot_is_idempotent_and_preserved(
+    tmp_path: Path,
+) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    first, _ = _capture(tmp_path, body)
+    root = tmp_path / "evidence"
+    raw_path, quarantine_path, manifest_path = _snapshot_paths(root, body)
+    raw_before = raw_path.read_bytes()
+    quarantine_before = quarantine_path.read_bytes()
+    manifest_before = manifest_path.read_bytes()
+    lock_path = _lock_path(root, body)
+    owner_before = _write_lock(lock_path, body, "2024-01-01T00:00:00Z")
+
+    result, _ = _capture(tmp_path, body)
+
+    assert result.status == "success_idempotent"
+    assert result.snapshot_id == first.snapshot_id
+    assert raw_path.read_bytes() == raw_before
+    assert quarantine_path.read_bytes() == quarantine_before
+    assert manifest_path.read_bytes() == manifest_before
+    assert lock_path.joinpath("owner.json").read_bytes() == owner_before
+
+
+@pytest.mark.parametrize("partial_state", ["raw_only", "raw_quarantine", "manifest_only", "manifest_missing_payload"])
+def test_expired_lock_with_partial_final_evidence_fails_closed(
+    tmp_path: Path, partial_state: str
+) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    root = tmp_path / "evidence"
+    raw_path, quarantine_path, manifest_path = _snapshot_paths(root, body)
+    if partial_state in {"raw_only", "raw_quarantine"}:
+        raw_path.parent.mkdir(parents=True)
+        raw_path.write_bytes(body)
+    if partial_state == "raw_quarantine":
+        quarantine_path.parent.mkdir(parents=True)
+        quarantine_path.write_bytes(b"")
+    if partial_state in {"manifest_only", "manifest_missing_payload"}:
+        manifest_path.parent.mkdir(parents=True)
+        manifest_path.write_text("{}", encoding="utf-8")
+    if partial_state == "manifest_missing_payload":
+        raw_path.parent.mkdir(parents=True)
+        raw_path.write_bytes(body)
+    lock_path = _lock_path(root, body)
+    owner_before = _write_lock(lock_path, body, "2024-01-01T00:00:00Z")
+    final_before = {
+        path: path.read_bytes() for path in (raw_path, quarantine_path, manifest_path) if path.exists()
+    }
+
+    result, _ = _capture(tmp_path, body)
+
+    assert result.reason_codes == ("SNAPSHOT_CONFLICT",)
+    assert result.degraded_mode is True
+    assert lock_path.joinpath("owner.json").read_bytes() == owner_before
+    assert {path: path.read_bytes() for path in final_before} == final_before
+
+
+@pytest.mark.parametrize("conflict", ["raw", "quarantine", "lineage"])
+def test_expired_lock_with_conflicting_complete_evidence_fails_closed(
+    tmp_path: Path, conflict: str
+) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    first, _ = _capture(tmp_path, body)
+    root = tmp_path / "evidence"
+    raw_path, quarantine_path, manifest_path = _snapshot_paths(root, body)
+    if conflict == "raw":
+        raw_path.write_bytes(b"conflicting-raw")
+    elif conflict == "quarantine":
+        quarantine_path.write_bytes(b'{"conflicting":true}\n')
+    else:
+        manifest = _manifest(first)
+        manifest["source_contract_version"] = "conflicting-lineage"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    lock_path = _lock_path(root, body)
+    owner_before = _write_lock(lock_path, body, "2024-01-01T00:00:00Z")
+    final_before = {
+        path: path.read_bytes() for path in (raw_path, quarantine_path, manifest_path)
+    }
+
+    result, _ = _capture(tmp_path, body)
+
+    assert result.reason_codes == ("SNAPSHOT_CONFLICT",)
+    assert result.degraded_mode is True
+    assert lock_path.joinpath("owner.json").read_bytes() == owner_before
+    assert {path: path.read_bytes() for path in final_before} == final_before
+
+
+@pytest.mark.parametrize("owner_state", ["invalid_json", "unreadable"])
+def test_malformed_or_unreadable_owner_metadata_fails_closed(
+    tmp_path: Path, owner_state: str
+) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    root = tmp_path / "evidence"
+    lock_path = _lock_path(root, body)
+    _write_lock(lock_path, body, "2024-01-01T00:00:00Z")
+    owner_path = lock_path / "owner.json"
+    if owner_state == "invalid_json":
+        owner_path.write_bytes(b"not-json")
+    else:
+        owner_path.unlink()
+        owner_path.mkdir()
+
+    result, _ = _capture(tmp_path, body)
+
+    assert result.reason_codes == ("SNAPSHOT_LOCK_UNAVAILABLE",)
+    assert result.degraded_mode is True
+    assert owner_path.exists()
+    assert not any(path.exists() for path in _snapshot_paths(root, body))
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "reason_code"),
+    [
+        ("snapshot_id", "foreign-snapshot", "SNAPSHOT_LOCK_UNAVAILABLE"),
+        ("asset_name", "foreign.parquet", "SNAPSHOT_CONFLICT"),
+        ("source_id", "foreign-source", "SNAPSHOT_LOCK_UNAVAILABLE"),
+        ("raw_sha256", "0" * 64, "SNAPSHOT_CONFLICT"),
+    ],
+)
+def test_foreign_or_hash_mismatched_owner_metadata_fails_closed(
+    tmp_path: Path, field: str, value: str, reason_code: str
+) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    root = tmp_path / "evidence"
+    lock_path = _lock_path(root, body)
+    owner_before = _write_lock(lock_path, body, "2024-01-01T00:00:00Z", **{field: value})
+
+    result, _ = _capture(tmp_path, body)
+
+    assert result.reason_codes == (reason_code,)
+    assert result.degraded_mode is True
+    assert lock_path.joinpath("owner.json").read_bytes() == owner_before
+    assert not any(path.exists() for path in _snapshot_paths(root, body))
+
+
+@pytest.mark.parametrize("acquired_at", ["not-a-time", "2025-01-02T00:00:00Z"])
+def test_invalid_or_future_dated_owner_timestamp_fails_closed(
+    tmp_path: Path, acquired_at: str
+) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    root = tmp_path / "evidence"
+    lock_path = _lock_path(root, body)
+    owner_before = _write_lock(lock_path, body, acquired_at)
+
+    result, _ = _capture(tmp_path, body)
+
+    assert result.reason_codes == ("SNAPSHOT_LOCK_UNAVAILABLE",)
+    assert result.degraded_mode is True
+    assert lock_path.joinpath("owner.json").read_bytes() == owner_before
+    assert not any(path.exists() for path in _snapshot_paths(root, body))
+
+
+def test_owner_replacement_during_reclaim_preserves_replacement_lock(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    root = tmp_path / "evidence"
+    lock_path = _lock_path(root, body)
+    _write_lock(lock_path, body, "2024-01-01T00:00:00Z")
+
+    def replace_owner(path: Path) -> None:
+        owner_path = path / "owner.json"
+        owner = json.loads(owner_path.read_text(encoding="utf-8"))
+        owner["attempt_id"] = "replacement-owner"
+        owner["acquired_at_timestamp"] = AS_OF
+        owner_path.unlink()
+        owner_path.write_text(json.dumps(owner), encoding="utf-8")
+
+    monkeypatch.setattr(raw_evidence, "_before_stale_lock_reclaim", replace_owner)
+    result, _ = _capture(tmp_path, body)
+
+    assert result.reason_codes == ("SNAPSHOT_LOCK_UNAVAILABLE",)
+    assert json.loads((lock_path / "owner.json").read_text(encoding="utf-8"))["attempt_id"] == "replacement-owner"
+    assert not any(path.exists() for path in _snapshot_paths(root, body))
+
+
+def test_owner_replacement_during_release_is_not_removed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    root = tmp_path / "evidence"
+    lock_path = _lock_path(root, body)
+    real_publish = raw_evidence._publish_snapshot_under_lock
+
+    def publish_then_replace(**kwargs: object) -> None:
+        real_publish(**kwargs)
+        owner_path = lock_path / "owner.json"
+        owner = json.loads(owner_path.read_text(encoding="utf-8"))
+        owner["attempt_id"] = "replacement-owner"
+        owner_path.write_text(json.dumps(owner), encoding="utf-8")
+
+    monkeypatch.setattr(raw_evidence, "_publish_snapshot_under_lock", publish_then_replace)
+    result, _ = _capture(tmp_path, body)
+
+    assert result.status == "success"
+    assert json.loads((lock_path / "owner.json").read_text(encoding="utf-8"))["attempt_id"] == "replacement-owner"
+    assert all(path.is_file() for path in _snapshot_paths(root, body))
 
 
 @pytest.mark.parametrize(
@@ -620,6 +850,11 @@ def test_required_reason_code_vocabulary_is_complete() -> None:
         "FIXTURE_MODE_NOT_PRODUCTION",
         "SNAPSHOT_LOCK_UNAVAILABLE",
     }
+    runbook = Path(
+        "contracts/ingestion/nflverse-raw-evidence-capture-runbook-v0.1.md"
+    ).read_text(encoding="utf-8")
+    assert "SNAPSHOT_LOCK_UNAVAILABLE" in runbook
+    assert "cannot be safely acquired or reclaimed" in runbook
 
 
 def test_implementation_has_no_prohibited_access_or_decision_logic() -> None:

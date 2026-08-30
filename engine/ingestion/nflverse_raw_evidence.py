@@ -631,7 +631,9 @@ def _publish_snapshot(
                 quarantine_bytes=quarantine_bytes,
             )
         except CaptureFailure:
-            if lock_path.is_dir():
+            if _lock_is_recent_matching(
+                lock_path, snapshot_id, asset_name, raw_sha256, clock
+            ):
                 time.sleep(_PUBLICATION_LOCK_DELAY_SECONDS)
                 continue
             raise
@@ -641,7 +643,19 @@ def _publish_snapshot(
             lock_path.parent.mkdir(parents=True, exist_ok=True)
             lock_path.mkdir()
         except FileExistsError:
-            if _reclaim_stale_lock(lock_path, snapshot_id, asset_name, raw_sha256, clock, raw_path, manifest_path, quarantine_path, raw_bytes, manifest, quarantine_bytes):
+            if _reclaim_stale_lock(
+                lock_path,
+                snapshot_id,
+                asset_name,
+                raw_sha256,
+                clock,
+                raw_path,
+                manifest_path,
+                quarantine_path,
+                raw_bytes,
+                manifest,
+                quarantine_bytes,
+            ):
                 continue
             time.sleep(_PUBLICATION_LOCK_DELAY_SECONDS)
             continue
@@ -684,13 +698,53 @@ def _publish_snapshot(
     )
 
 
-def _write_lock_owner(lock_path: Path, snapshot_id: str, attempt_id: str, asset_name: str, raw_sha256: str, clock: Callable[[], datetime]) -> None:
-    owner = {"lock_protocol_version": _LOCK_PROTOCOL_VERSION, "snapshot_id": snapshot_id, "attempt_id": attempt_id, "acquired_at_timestamp": _format_utc(clock()), "process_id": os.getpid(), "host_identifier": socket.gethostname(), "raw_sha256": raw_sha256, "asset_name": asset_name, "source_id": SOURCE_ID}
-    with (lock_path / "owner.json").open("xb") as stream:
-        stream.write(_json_bytes(owner)); stream.flush(); os.fsync(stream.fileno())
+def _write_lock_owner(
+    lock_path: Path,
+    snapshot_id: str,
+    attempt_id: str,
+    asset_name: str,
+    raw_sha256: str,
+    clock: Callable[[], datetime],
+) -> None:
+    owner = {
+        "lock_protocol_version": _LOCK_PROTOCOL_VERSION,
+        "snapshot_id": snapshot_id,
+        "attempt_id": attempt_id,
+        "acquired_at_timestamp": _format_utc(clock()),
+        "process_id": os.getpid(),
+        "host_identifier": socket.gethostname(),
+        "raw_sha256": raw_sha256,
+        "asset_name": asset_name,
+        "source_id": SOURCE_ID,
+    }
+    owner_path = lock_path / "owner.json"
+    try:
+        with owner_path.open("xb") as stream:
+            stream.write(_json_bytes(owner))
+            stream.flush()
+            os.fsync(stream.fileno())
+    except OSError:
+        if not owner_path.exists():
+            try:
+                lock_path.rmdir()
+            except OSError:
+                pass
+        raise
 
 
-def _reclaim_stale_lock(lock_path: Path, snapshot_id: str, asset_name: str, raw_sha256: str, clock: Callable[[], datetime], raw_path: Path, manifest_path: Path, quarantine_path: Path, raw_bytes: bytes, manifest: dict[str, Any], quarantine_bytes: bytes) -> bool:
+def _reclaim_stale_lock(
+    lock_path: Path,
+    snapshot_id: str,
+    asset_name: str,
+    raw_sha256: str,
+    clock: Callable[[], datetime],
+    raw_path: Path,
+    manifest_path: Path,
+    quarantine_path: Path,
+    raw_bytes: bytes,
+    manifest: dict[str, Any],
+    quarantine_bytes: bytes,
+) -> bool:
     owner_path = lock_path / "owner.json"
     try:
         owner_bytes = owner_path.read_bytes(); owner = json.loads(owner_bytes)
@@ -698,9 +752,33 @@ def _reclaim_stale_lock(lock_path: Path, snapshot_id: str, asset_name: str, raw_
     except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError, CaptureFailure):
         return False
     now = clock().astimezone(UTC)
-    if (owner.get("lock_protocol_version") != _LOCK_PROTOCOL_VERSION or owner.get("snapshot_id") != snapshot_id or owner.get("source_id") != SOURCE_ID or owner.get("asset_name") != asset_name or owner.get("raw_sha256") != raw_sha256 or now <= acquired or (now - acquired).total_seconds() <= _LOCK_STALE_AFTER_SECONDS):
+    if (
+        owner.get("lock_protocol_version") != _LOCK_PROTOCOL_VERSION
+        or owner.get("snapshot_id") != snapshot_id
+        or owner.get("source_id") != SOURCE_ID
+        or now <= acquired
+        or (now - acquired).total_seconds() <= _LOCK_STALE_AFTER_SECONDS
+    ):
         return False
-    _existing_equivalent_manifest(raw_path=raw_path, manifest_path=manifest_path, quarantine_path=quarantine_path, raw_bytes=raw_bytes, manifest=manifest, quarantine_bytes=quarantine_bytes)
+    if owner.get("asset_name") != asset_name or owner.get("raw_sha256") != raw_sha256:
+        raise CaptureFailure(
+            "SNAPSHOT_CONFLICT", "Stale lock metadata conflicts with the capture."
+        )
+    if _existing_equivalent_manifest(
+        raw_path=raw_path,
+        manifest_path=manifest_path,
+        quarantine_path=quarantine_path,
+        raw_bytes=raw_bytes,
+        manifest=manifest,
+        quarantine_bytes=quarantine_bytes,
+    ) is not None:
+        return False
+    _before_stale_lock_reclaim(lock_path)
+    try:
+        if owner_path.read_bytes() != owner_bytes:
+            return False
+    except OSError:
+        return False
     claim = lock_path.with_name(f"{lock_path.name}.reclaim-{secrets.token_urlsafe(12)}")
     try:
         lock_path.rename(claim)
@@ -710,6 +788,33 @@ def _reclaim_stale_lock(lock_path: Path, snapshot_id: str, asset_name: str, raw_
         return True
     except OSError:
         return False
+
+
+def _lock_is_recent_matching(
+    lock_path: Path,
+    snapshot_id: str,
+    asset_name: str,
+    raw_sha256: str,
+    clock: Callable[[], datetime],
+) -> bool:
+    try:
+        owner = json.loads((lock_path / "owner.json").read_text(encoding="utf-8"))
+        acquired = _parse_rfc3339_utc(owner["acquired_at_timestamp"])
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError, CaptureFailure):
+        return False
+    return (
+        owner.get("lock_protocol_version") == _LOCK_PROTOCOL_VERSION
+        and owner.get("snapshot_id") == snapshot_id
+        and owner.get("source_id") == SOURCE_ID
+        and owner.get("asset_name") == asset_name
+        and owner.get("raw_sha256") == raw_sha256
+        and 0 <= (clock().astimezone(UTC) - acquired).total_seconds()
+        <= _LOCK_STALE_AFTER_SECONDS
+    )
+
+
+def _before_stale_lock_reclaim(lock_path: Path) -> None:
+    """Deterministic test seam before a stale lock is atomically claimed."""
 
 
 def _release_lock(lock_path: Path, attempt_id: str) -> None:

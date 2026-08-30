@@ -80,13 +80,20 @@ ID, host identifier, raw SHA-256, asset name, and source ID. PID and hostname
 are diagnostic only; neither proves liveness or permits lock deletion.
 
 A lock is eligible for recovery only after 300 seconds under the injected UTC
-clock, with valid matching owner metadata and no incomplete or conflicting
-final evidence. Active, malformed, unreadable, future-dated, ambiguous, or
-unreclaimable locks return `SNAPSHOT_LOCK_UNAVAILABLE` in visible degraded
-mode. Operators must not manually remove lock directories or final evidence;
-preserve the owner metadata and reason code for review. Recovery never changes
-the selected asset, retries a source, invokes a provider fallback, or permits
-an external write.
+clock, with valid matching owner metadata and no final raw, quarantine, or
+manifest evidence. Reclamation requires atomic ownership transfer and
+owner-byte revalidation. An expired lock with complete equivalent
+manifest-bearing evidence returns idempotent success without replacing final
+evidence; partial or conflicting evidence returns `SNAPSHOT_CONFLICT`.
+
+`SNAPSHOT_LOCK_UNAVAILABLE` means a publication lock exists but cannot be safely acquired or reclaimed because it is active, recent, unreadable,
+malformed, future-dated, foreign, changed during verification, or otherwise
+owner-ambiguous. The safe operator action is to preserve the lock directory,
+owner metadata, reason code, and any final evidence; do not manually delete or
+overwrite them; investigate and retry only after the documented stale-lock
+protocol can evaluate the state. Recovery never changes the selected asset,
+retries a source, invokes a provider fallback, permits a live-current claim,
+or permits an external write.
 
 ## Manifest and provenance contents
 
@@ -150,6 +157,7 @@ CANONICAL_IDENTITY_UNRESOLVED
 SOURCE_FRESHNESS_UNKNOWN
 PROVIDER_CONTAMINATION_DETECTED
 FIXTURE_MODE_NOT_PRODUCTION
+SNAPSHOT_LOCK_UNAVAILABLE
 ```
 
 There is no provider projection or provider fallback. Failed evidence never
