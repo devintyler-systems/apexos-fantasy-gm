@@ -51,6 +51,27 @@ fully written and synchronized before create-only publication. The manifest
 is the final completion marker. Existing evidence is verified for idempotency
 and is never overwritten; inconsistent evidence returns `SNAPSHOT_CONFLICT`.
 
+### Cross-platform immutable publication
+
+Final snapshot publication uses a bounded, cross-platform create-only
+publication lock and does not depend on hard-link behavior. Raw bytes and
+quarantine output publish before the manifest; the manifest publishes last and
+is the only completion marker. Concurrent identical captures converge to one
+complete immutable snapshot. A non-winning caller validates that complete set
+and returns idempotent success without rewriting its raw bytes.
+
+Incomplete, unreadable, or inconsistent final evidence fails closed with
+`SNAPSHOT_CONFLICT`; no final evidence is overwritten. On any failure, only
+temporary files created by the current caller may be cleaned. A caller never
+deletes unverified final evidence that could belong to another publisher.
+Publication lock acquisition uses a deterministic bounded retry of 20 attempts
+with a 10-millisecond delay. Retries never alter asset identity, bytes, hash,
+timestamps, lineage, or source selection.
+
+Native Windows reproduction evidence is still required before production
+operational-capture authorization if this environment-specific incident has not
+been exercised on a native Windows operational-capture environment.
+
 ## Manifest and provenance contents
 
 Every successful manifest contains snapshot and source IDs, source URL,

@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
+from threading import Barrier
 
 import pytest
 
@@ -17,6 +19,7 @@ from engine.ingestion.nflverse_raw_evidence import (
     NflverseAssetRequest,
     capture_nflverse_raw_evidence,
 )
+import engine.ingestion.nflverse_raw_evidence as raw_evidence
 from tools import capture_nflverse_raw_evidence as capture_cli
 
 FIXTURE_ROOT = Path("tests/fixtures/nflverse_raw_evidence")
@@ -285,6 +288,93 @@ def test_snapshot_id_is_deterministic_and_idempotent_without_rewrite(
     assert second.status == "success_idempotent"
     assert second.snapshot_id == first.snapshot_id == third.snapshot_id
     assert raw_path.stat().st_mtime_ns == original_mtime
+
+
+def test_concurrent_identical_captures_converge_to_one_complete_snapshot(tmp_path: Path) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    barrier = Barrier(2)
+
+    class SynchronizedTransport(FixtureTransport):
+        def fetch(self, url: str) -> HttpFetchResponse:
+            barrier.wait(timeout=5)
+            return super().fetch(url)
+
+    def capture_once():
+        return capture_nflverse_raw_evidence(
+            _request(body),
+            tmp_path / "evidence",
+            SynchronizedTransport(body),
+            clock=FIXED_CLOCK,
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = [future.result() for future in (executor.submit(capture_once), executor.submit(capture_once))]
+
+    assert {result.status for result in results} <= {"success", "success_idempotent"}
+    assert len({result.snapshot_id for result in results}) == 1
+    raw_paths = {result.raw_asset_path for result in results}
+    manifest_paths = {result.manifest_path for result in results}
+    quarantine_paths = {result.quarantine_path for result in results}
+    assert len(raw_paths) == len(manifest_paths) == len(quarantine_paths) == 1
+    published_raw = Path(next(iter(raw_paths)))
+    original_mtime = published_raw.stat().st_mtime_ns
+    assert published_raw.read_bytes() == body
+    assert _manifest(results[0])["raw_sha256"] == hashlib.sha256(body).hexdigest()
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        repeated = [future.result() for future in (executor.submit(capture_once), executor.submit(capture_once))]
+    assert {result.status for result in repeated} == {"success_idempotent"}
+    assert published_raw.stat().st_mtime_ns == original_mtime
+
+
+def test_partial_or_conflicting_final_snapshot_fails_closed_without_replacement(tmp_path: Path) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    first, _ = _capture(tmp_path, body)
+    assert first.raw_asset_path is not None
+    assert first.manifest_path is not None
+    raw_path = Path(first.raw_asset_path)
+    manifest_path = Path(first.manifest_path)
+    raw_path.write_bytes(b"conflicting-final-evidence")
+
+    conflict, _ = _capture(tmp_path, body)
+
+    assert conflict.reason_codes == ("SNAPSHOT_CONFLICT",)
+    assert conflict.degraded_mode is True
+    assert raw_path.read_bytes() == b"conflicting-final-evidence"
+    manifest_path.unlink()
+    partial, _ = _capture(tmp_path, body)
+    assert partial.reason_codes == ("SNAPSHOT_CONFLICT",)
+    assert partial.degraded_mode is True
+    assert raw_path.read_bytes() == b"conflicting-final-evidence"
+
+
+def test_mid_publication_failure_never_returns_success_or_deletes_final_evidence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    real_publish = raw_evidence._publish_create_only
+    calls = 0
+
+    def fail_after_raw(temporary: Path, final: Path) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("controlled quarantine publication failure")
+        real_publish(temporary, final)
+
+    monkeypatch.setattr(raw_evidence, "_publish_create_only", fail_after_raw)
+    failed, _ = _capture(tmp_path, body)
+
+    assert failed.reason_codes == ("FILESYSTEM_WRITE_FAILED",)
+    assert failed.degraded_mode is True
+    raw_root = tmp_path / "evidence" / "raw"
+    assert next(raw_root.rglob(ASSET_NAME)).read_bytes() == body
+    assert not list((tmp_path / "evidence" / "manifests").glob("*.json"))
+    assert not list((tmp_path / "evidence").rglob(".capture-*.tmp"))
+
+
+def test_final_snapshot_publication_has_no_os_link_dependency() -> None:
+    source = Path("engine/ingestion/nflverse_raw_evidence.py").read_text(encoding="utf-8")
+    assert "os.link" not in source
 
 
 def test_inconsistent_existing_manifest_returns_snapshot_conflict(tmp_path: Path) -> None:

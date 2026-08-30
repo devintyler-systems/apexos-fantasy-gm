@@ -12,6 +12,7 @@ import json
 import os
 import re
 import tempfile
+import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
@@ -69,6 +70,8 @@ _RFC3339_UTC_RE = re.compile(
     r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|\+00:00)$"
 )
 _CANONICAL_RELEASE_PATH_PREFIX = "/nflverse/nflverse-data/releases/download/pbp/"
+_PUBLICATION_LOCK_ATTEMPTS = 20
+_PUBLICATION_LOCK_DELAY_SECONDS = 0.01
 
 
 @dataclass(frozen=True)
@@ -317,30 +320,30 @@ def capture_nflverse_raw_evidence(
     manifest_bytes = _json_bytes(manifest)
 
     try:
-        idempotent_manifest = _existing_equivalent_manifest(
-            raw_path=raw_path,
-            manifest_path=manifest_path,
-            quarantine_path=quarantine_path,
-            raw_bytes=raw_bytes,
-            manifest=manifest,
-            quarantine_bytes=quarantine_bytes,
-        )
-        if idempotent_manifest is not None:
-            return _success_result(
-                status="success_idempotent",
-                manifest=idempotent_manifest,
-                raw_path=raw_path,
-                manifest_path=manifest_path,
-                quarantine_path=quarantine_path,
-            )
-        _publish_snapshot(
+        if _publish_snapshot(
             raw_path=raw_path,
             manifest_path=manifest_path,
             quarantine_path=quarantine_path,
             raw_bytes=raw_bytes,
             manifest_bytes=manifest_bytes,
             quarantine_bytes=quarantine_bytes,
-        )
+            manifest=manifest,
+        ):
+            return _success_result(
+                status="success_idempotent",
+                manifest=_existing_equivalent_manifest(
+                    raw_path=raw_path,
+                    manifest_path=manifest_path,
+                    quarantine_path=quarantine_path,
+                    raw_bytes=raw_bytes,
+                    manifest=manifest,
+                    quarantine_bytes=quarantine_bytes,
+                )
+                or manifest,
+                raw_path=raw_path,
+                manifest_path=manifest_path,
+                quarantine_path=quarantine_path,
+            )
     except CaptureFailure as exc:
         return _failed(exc.reason_code, exc.limitation)
     except OSError as exc:
@@ -593,9 +596,87 @@ def _publish_snapshot(
     raw_bytes: bytes,
     manifest_bytes: bytes,
     quarantine_bytes: bytes,
+    manifest: dict[str, Any],
+) -> bool:
+    """Publish one complete snapshot set without overwriting final evidence.
+
+    Returns ``True`` only when another caller's complete equivalent snapshot
+    was validated. A manifest is the completion marker; partial final paths
+    fail closed and are never removed by this caller.
+    """
+
+    lock_path = manifest_path.parent.parent / ".publication-locks" / f"{manifest_path.stem}.lock"
+    for _ in range(_PUBLICATION_LOCK_ATTEMPTS):
+        try:
+            existing = _existing_equivalent_manifest(
+                raw_path=raw_path,
+                manifest_path=manifest_path,
+                quarantine_path=quarantine_path,
+                raw_bytes=raw_bytes,
+                manifest=manifest,
+                quarantine_bytes=quarantine_bytes,
+            )
+        except CaptureFailure:
+            if lock_path.is_dir():
+                time.sleep(_PUBLICATION_LOCK_DELAY_SECONDS)
+                continue
+            raise
+        if existing is not None:
+            return True
+        try:
+            lock_path.parent.mkdir(parents=True, exist_ok=True)
+            lock_path.mkdir()
+        except FileExistsError:
+            time.sleep(_PUBLICATION_LOCK_DELAY_SECONDS)
+            continue
+        try:
+            existing = _existing_equivalent_manifest(
+                raw_path=raw_path,
+                manifest_path=manifest_path,
+                quarantine_path=quarantine_path,
+                raw_bytes=raw_bytes,
+                manifest=manifest,
+                quarantine_bytes=quarantine_bytes,
+            )
+            if existing is not None:
+                return True
+            _publish_snapshot_under_lock(
+                raw_path=raw_path,
+                manifest_path=manifest_path,
+                quarantine_path=quarantine_path,
+                raw_bytes=raw_bytes,
+                manifest_bytes=manifest_bytes,
+                quarantine_bytes=quarantine_bytes,
+            )
+            if _existing_equivalent_manifest(
+                raw_path=raw_path,
+                manifest_path=manifest_path,
+                quarantine_path=quarantine_path,
+                raw_bytes=raw_bytes,
+                manifest=manifest,
+                quarantine_bytes=quarantine_bytes,
+            ) is None:
+                raise CaptureFailure(
+                    "FILESYSTEM_WRITE_FAILED", "Published snapshot did not validate as complete."
+                )
+            return False
+        finally:
+            lock_path.rmdir()
+    raise CaptureFailure(
+        "SNAPSHOT_CONFLICT", "Timed out waiting for a complete snapshot publication."
+    )
+
+
+def _publish_snapshot_under_lock(
+    *,
+    raw_path: Path,
+    manifest_path: Path,
+    quarantine_path: Path,
+    raw_bytes: bytes,
+    manifest_bytes: bytes,
+    quarantine_bytes: bytes,
 ) -> None:
     temporary_paths: list[Path] = []
-    published_paths: list[Path] = []
     try:
         raw_temp = _write_temp(raw_path.parent, raw_bytes)
         quarantine_temp = _write_temp(quarantine_path.parent, quarantine_bytes)
@@ -606,21 +687,25 @@ def _publish_snapshot(
             (quarantine_temp, quarantine_path),
             (manifest_temp, manifest_path),
         ):
-            try:
-                os.link(temporary, final)
-            except FileExistsError as exc:
-                raise CaptureFailure(
-                    "SNAPSHOT_CONFLICT",
-                    "Snapshot destination appeared during atomic publication.",
-                ) from exc
-            published_paths.append(final)
-    except Exception:
-        for path in reversed(published_paths):
-            path.unlink(missing_ok=True)
-        raise
+            _publish_create_only(temporary, final)
     finally:
         for path in temporary_paths:
             path.unlink(missing_ok=True)
+
+
+def _publish_create_only(temporary: Path, final: Path) -> None:
+    """Copy a durable temporary payload into a new final path without replacement."""
+
+    try:
+        with temporary.open("rb") as source, final.open("xb") as destination:
+            while block := source.read(1024 * 1024):
+                destination.write(block)
+            destination.flush()
+            os.fsync(destination.fileno())
+    except FileExistsError as exc:
+        raise CaptureFailure(
+            "SNAPSHOT_CONFLICT", "Snapshot destination appeared during publication."
+        ) from exc
 
 
 def _write_temp(parent: Path, payload: bytes) -> Path:
