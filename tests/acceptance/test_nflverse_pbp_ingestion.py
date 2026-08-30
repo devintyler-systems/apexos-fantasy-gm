@@ -725,32 +725,59 @@ def test_ac14_failed_refresh_returns_exact_stale_cached_outcome(tmp_path: Path) 
     assert evidence["prior_valid_revision_sha256"] == success.revision_sha256
 
 
-def test_ac15_active_use_scan_rejects_use_and_permits_evidence_contexts(
+def test_ac15_active_use_scan_rejects_use_and_permits_explicit_negative_evidence(
     tmp_path: Path,
 ) -> None:
     term = "nfl_" + "data_py"
     root = tmp_path / "scan"
     (root / "engine").mkdir(parents=True)
     (root / "docs").mkdir()
-    (root / "contracts").mkdir()
-    (root / "engine" / "bad.py").write_text(f"import {term}\n", encoding="utf-8")
+    (root / "tests").mkdir()
+    (root / "engine" / "import.py").write_text(f"import {term}\n", encoding="utf-8")
+    (root / "engine" / "from_import.py").write_text(
+        f"from {term} import load_pbp\n", encoding="utf-8"
+    )
+    (root / "engine" / "dynamic_import.py").write_text(
+        f"__import__({term!r})\n", encoding="utf-8"
+    )
+    (root / "engine" / "subprocess.py").write_text(
+        f"subprocess.run(['python', '-m', {term!r}])\n", encoding="utf-8"
+    )
+    (root / "scripts.sh").write_text(f"python -m {term}\n", encoding="utf-8")
     (root / "pyproject.toml").write_text(
-        f'dependencies = ["{term}"]\n', encoding="utf-8"
+        f'dependencies = ["{term}==1.0"]\n', encoding="utf-8"
     )
-    (root / "docs" / "builder.md").write_text(f"pip install {term}\n", encoding="utf-8")
-    (root / "docs" / "decision_ledger.md").write_text(
-        f"Historically {term} was used.\n", encoding="utf-8"
+    (root / "docs" / "install.md").write_text(f"pip install {term}\n", encoding="utf-8")
+    (root / "docs" / "operator.md").write_text(
+        f"Use {term} to retrieve play-by-play data.\n", encoding="utf-8"
     )
-    (root / "contracts" / "prohibition.md").write_text(
-        f"{term} is prohibited.\n", encoding="utf-8"
+    (root / "tests" / "not_governance.py").write_text(f"package = {term!r}\n", encoding="utf-8")
+    (root / "tests" / "governance_evidence.py").write_text(
+        "\n".join(
+            (
+                "Direct GitHub release-asset access only; `nfl_data_py` rejected.",
+                "`nfl_data_py` is prohibited.",
+                "`nfl_data_py` is rejected.",
+                "`nfl_data_py` must not be used.",
+                "`nfl_data_py` remains prohibited.",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
     )
 
     violations = scan_prohibited_active_use(root)
 
     assert {violation.path.as_posix() for violation in violations} == {
-        "docs/builder.md",
-        "engine/bad.py",
+        "docs/install.md",
+        "docs/operator.md",
+        "engine/dynamic_import.py",
+        "engine/from_import.py",
+        "engine/import.py",
+        "engine/subprocess.py",
         "pyproject.toml",
+        "scripts.sh",
+        "tests/not_governance.py",
     }
 
 
