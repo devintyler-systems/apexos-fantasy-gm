@@ -11,6 +11,8 @@ import hashlib
 import json
 import os
 import re
+import secrets
+import socket
 import tempfile
 import time
 from collections.abc import Callable
@@ -50,6 +52,7 @@ REQUIRED_REASON_CODES = frozenset(
         "SOURCE_FRESHNESS_UNKNOWN",
         "PROVIDER_CONTAMINATION_DETECTED",
         "FIXTURE_MODE_NOT_PRODUCTION",
+        "SNAPSHOT_LOCK_UNAVAILABLE",
     }
 )
 IDENTITY_COLUMNS = {
@@ -72,6 +75,8 @@ _RFC3339_UTC_RE = re.compile(
 _CANONICAL_RELEASE_PATH_PREFIX = "/nflverse/nflverse-data/releases/download/pbp/"
 _PUBLICATION_LOCK_ATTEMPTS = 20
 _PUBLICATION_LOCK_DELAY_SECONDS = 0.01
+_LOCK_STALE_AFTER_SECONDS = 300
+_LOCK_PROTOCOL_VERSION = "nflverse-raw-evidence-lock-v0.1"
 
 
 @dataclass(frozen=True)
@@ -328,6 +333,10 @@ def capture_nflverse_raw_evidence(
             manifest_bytes=manifest_bytes,
             quarantine_bytes=quarantine_bytes,
             manifest=manifest,
+            snapshot_id=snapshot_id,
+            asset_name=request.asset_name,
+            raw_sha256=raw_sha256,
+            clock=clock,
         ):
             return _success_result(
                 status="success_idempotent",
@@ -597,6 +606,10 @@ def _publish_snapshot(
     manifest_bytes: bytes,
     quarantine_bytes: bytes,
     manifest: dict[str, Any],
+    snapshot_id: str,
+    asset_name: str,
+    raw_sha256: str,
+    clock: Callable[[], datetime],
 ) -> bool:
     """Publish one complete snapshot set without overwriting final evidence.
 
@@ -605,7 +618,8 @@ def _publish_snapshot(
     fail closed and are never removed by this caller.
     """
 
-    lock_path = manifest_path.parent.parent / ".publication-locks" / f"{manifest_path.stem}.lock"
+    lock_path = manifest_path.parent.parent / ".publication-locks" / f"{snapshot_id}.lock"
+    attempt_id = secrets.token_urlsafe(24)
     for _ in range(_PUBLICATION_LOCK_ATTEMPTS):
         try:
             existing = _existing_equivalent_manifest(
@@ -627,9 +641,12 @@ def _publish_snapshot(
             lock_path.parent.mkdir(parents=True, exist_ok=True)
             lock_path.mkdir()
         except FileExistsError:
+            if _reclaim_stale_lock(lock_path, snapshot_id, asset_name, raw_sha256, clock, raw_path, manifest_path, quarantine_path, raw_bytes, manifest, quarantine_bytes):
+                continue
             time.sleep(_PUBLICATION_LOCK_DELAY_SECONDS)
             continue
         try:
+            _write_lock_owner(lock_path, snapshot_id, attempt_id, asset_name, raw_sha256, clock)
             existing = _existing_equivalent_manifest(
                 raw_path=raw_path,
                 manifest_path=manifest_path,
@@ -661,10 +678,48 @@ def _publish_snapshot(
                 )
             return False
         finally:
-            lock_path.rmdir()
+            _release_lock(lock_path, attempt_id)
     raise CaptureFailure(
-        "SNAPSHOT_CONFLICT", "Timed out waiting for a complete snapshot publication."
+        "SNAPSHOT_LOCK_UNAVAILABLE", "Snapshot publication lock is active or ambiguous."
     )
+
+
+def _write_lock_owner(lock_path: Path, snapshot_id: str, attempt_id: str, asset_name: str, raw_sha256: str, clock: Callable[[], datetime]) -> None:
+    owner = {"lock_protocol_version": _LOCK_PROTOCOL_VERSION, "snapshot_id": snapshot_id, "attempt_id": attempt_id, "acquired_at_timestamp": _format_utc(clock()), "process_id": os.getpid(), "host_identifier": socket.gethostname(), "raw_sha256": raw_sha256, "asset_name": asset_name, "source_id": SOURCE_ID}
+    with (lock_path / "owner.json").open("xb") as stream:
+        stream.write(_json_bytes(owner)); stream.flush(); os.fsync(stream.fileno())
+
+
+def _reclaim_stale_lock(lock_path: Path, snapshot_id: str, asset_name: str, raw_sha256: str, clock: Callable[[], datetime], raw_path: Path, manifest_path: Path, quarantine_path: Path, raw_bytes: bytes, manifest: dict[str, Any], quarantine_bytes: bytes) -> bool:
+    owner_path = lock_path / "owner.json"
+    try:
+        owner_bytes = owner_path.read_bytes(); owner = json.loads(owner_bytes)
+        acquired = _parse_rfc3339_utc(owner["acquired_at_timestamp"])
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError, CaptureFailure):
+        return False
+    now = clock().astimezone(UTC)
+    if (owner.get("lock_protocol_version") != _LOCK_PROTOCOL_VERSION or owner.get("snapshot_id") != snapshot_id or owner.get("source_id") != SOURCE_ID or owner.get("asset_name") != asset_name or owner.get("raw_sha256") != raw_sha256 or now <= acquired or (now - acquired).total_seconds() <= _LOCK_STALE_AFTER_SECONDS):
+        return False
+    _existing_equivalent_manifest(raw_path=raw_path, manifest_path=manifest_path, quarantine_path=quarantine_path, raw_bytes=raw_bytes, manifest=manifest, quarantine_bytes=quarantine_bytes)
+    claim = lock_path.with_name(f"{lock_path.name}.reclaim-{secrets.token_urlsafe(12)}")
+    try:
+        lock_path.rename(claim)
+        if (claim / "owner.json").read_bytes() != owner_bytes:
+            return False
+        (claim / "owner.json").unlink(); claim.rmdir()
+        return True
+    except OSError:
+        return False
+
+
+def _release_lock(lock_path: Path, attempt_id: str) -> None:
+    try:
+        owner_path = lock_path / "owner.json"
+        if json.loads(owner_path.read_text(encoding="utf-8")).get("attempt_id") != attempt_id:
+            return
+        owner_path.unlink(); lock_path.rmdir()
+    except (OSError, json.JSONDecodeError):
+        return
 
 
 def _publish_snapshot_under_lock(

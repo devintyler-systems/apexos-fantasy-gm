@@ -72,6 +72,22 @@ Native Windows reproduction evidence is still required before production
 operational-capture authorization if this environment-specific incident has not
 been exercised on a native Windows operational-capture environment.
 
+#### Stale Lock Recovery and Diagnostics
+
+Each publication lock contains create-only `owner.json` metadata: lock protocol
+version, snapshot ID, unique attempt ID, RFC3339 UTC acquisition time, process
+ID, host identifier, raw SHA-256, asset name, and source ID. PID and hostname
+are diagnostic only; neither proves liveness or permits lock deletion.
+
+A lock is eligible for recovery only after 300 seconds under the injected UTC
+clock, with valid matching owner metadata and no incomplete or conflicting
+final evidence. Active, malformed, unreadable, future-dated, ambiguous, or
+unreclaimable locks return `SNAPSHOT_LOCK_UNAVAILABLE` in visible degraded
+mode. Operators must not manually remove lock directories or final evidence;
+preserve the owner metadata and reason code for review. Recovery never changes
+the selected asset, retries a source, invokes a provider fallback, or permits
+an external write.
+
 ## Manifest and provenance contents
 
 Every successful manifest contains snapshot and source IDs, source URL,

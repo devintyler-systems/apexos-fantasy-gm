@@ -392,6 +392,45 @@ def test_inconsistent_existing_manifest_returns_snapshot_conflict(tmp_path: Path
     assert second.degraded_mode is True
 
 
+def _lock_path(root: Path, body: bytes) -> Path:
+    snapshot_id = raw_evidence._snapshot_id(_request(body), hashlib.sha256(body).hexdigest())
+    return root / ".publication-locks" / f"{snapshot_id}.lock"
+
+
+def _write_lock(path: Path, body: bytes, acquired_at: str) -> None:
+    path.mkdir(parents=True)
+    path.joinpath("owner.json").write_text(
+        json.dumps(
+            {
+                "lock_protocol_version": "nflverse-raw-evidence-lock-v0.1",
+                "snapshot_id": path.stem,
+                "attempt_id": "test-owner",
+                "acquired_at_timestamp": acquired_at,
+                "process_id": 1,
+                "host_identifier": "test-host",
+                "raw_sha256": hashlib.sha256(body).hexdigest(),
+                "asset_name": ASSET_NAME,
+                "source_id": "nflverse_direct_github_release_assets",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_active_lock_fails_closed_and_expired_orphan_lock_recovers(tmp_path: Path) -> None:
+    body = _bytes("valid-play_by_play_2024.parquet")
+    root = tmp_path / "evidence"
+    active = _lock_path(root, body)
+    _write_lock(active, body, AS_OF)
+    blocked, _ = _capture(tmp_path, body)
+    assert blocked.reason_codes == ("SNAPSHOT_LOCK_UNAVAILABLE",)
+    assert active.is_dir()
+    active.joinpath("owner.json").write_text(active.joinpath("owner.json").read_text(encoding="utf-8").replace(AS_OF, "2024-01-01T00:00:00Z"), encoding="utf-8")
+    recovered, _ = _capture(tmp_path, body)
+    assert recovered.status == "success"
+    assert not active.exists()
+
+
 @pytest.mark.parametrize(
     ("changes", "reason_code"),
     [
@@ -579,6 +618,7 @@ def test_required_reason_code_vocabulary_is_complete() -> None:
         "SOURCE_FRESHNESS_UNKNOWN",
         "PROVIDER_CONTAMINATION_DETECTED",
         "FIXTURE_MODE_NOT_PRODUCTION",
+        "SNAPSHOT_LOCK_UNAVAILABLE",
     }
 
 
