@@ -11,7 +11,7 @@
 | Change type | Structural |
 | Dependencies | `contracts/projections/apexos-projection-feature-and-score-lineage-contract-v0.1.md`; `contracts/projections/apexos-projection-source-authorization-register-v0.1.md`; `contracts/ingestion/nflverse-play-by-play-ingestion-contract-v0.2.md`; `docs/data_source_connector_register.md`; `docs/decision_ledger.md` |
 | Superseded artifact | `contracts/projections/source-authorizations/nflverse-direct-github-release-assets-2026-player-facts-candidate-v0.1.md` |
-| Obsolete paired test | `tests/acceptance/test_u08_nflverse_candidate_evidence_authorization_v0_1.py` |
+| Successor regression test path | `tests/acceptance/test_u08_nflverse_candidate_evidence_authorization_v0_1.py` |
 | Current authority | `contracts/projections/apexos-projection-source-authorization-register-v0.1.md` |
 | Implementation authorization | None. This artifact reconciles documentation authority only. It does not authorize retrieval, ingestion, parsing, storage, feature use, model development, scoring, projection artifacts, recommendations, or external writes. |
 
@@ -22,10 +22,11 @@ authorization artifact is superseded as an active source-authority record.
 The canonical authority for future nflverse evidence evaluation is
 `contracts/projections/apexos-projection-source-authorization-register-v0.1.md`.
 
-**Design decision:** The paired legacy acceptance test is obsolete because
-it validates the existence and candidate-only status of a superseded
-document, rather than the authoritative source-governance boundary. It must
-be removed with the superseded candidate artifact.
+**Design decision:** The paired legacy acceptance test remains at its existing
+path and is replaced with successor regression coverage. The successor
+coverage preserves the active U08 and schedule-authority boundaries while
+validating the canonical source-governance boundary instead of the superseded
+candidate document.
 
 **Confirmed evidence:** The superseded artifact is explicitly labeled
 `CANDIDATE ONLY — NOT APPROVED FOR USE`. The canonical v0.1 register
@@ -48,11 +49,13 @@ authority_resolution:
 
   paired_legacy_test:
     path: "tests/acceptance/test_u08_nflverse_candidate_evidence_authorization_v0_1.py"
-    disposition: "obsolete_and_removed"
+    superseded_prior_disposition: "obsolete_and_removed"
+    superseded_prior_disposition_note: "Historical label retained for audit only; the test path remains active with successor regression coverage."
+    disposition: "retained_and_replaced_with_successor_regression_coverage"
     reason:
-      - "The test validates the removed candidate document rather than the canonical source register."
-      - "Retaining the test would preserve a false operational dependency on a superseded authority artifact."
-      - "This removal does not waive future implementation acceptance tests."
+      - "The prior test content validated the removed candidate document rather than the canonical source register."
+      - "Successor coverage preserves the active U08 and schedule-authority assertions while shifting source-authority checks to the canonical source register."
+      - "This replacement does not waive future implementation acceptance tests."
 
   canonical_current_authority:
     path: "contracts/projections/apexos-projection-source-authorization-register-v0.1.md"
@@ -75,10 +78,10 @@ authority_resolution:
 
 **Ruling:** `SUPERSESSION`, not compatibility.
 
-The legacy candidate record and its paired test do not remain a compatible
-co-authority path. The canonical source register supplies the sole
-repository-level source authorization boundary for future nflverse
-evaluation.
+The legacy candidate record does not remain a compatible co-authority path.
+The paired test path remains active with successor regression coverage, while
+the canonical source register supplies the sole repository-level source
+authorization boundary for future nflverse evaluation.
 
 This supersession does not broaden the current source authorization. It
 preserves all boundaries of the canonical register:
@@ -96,7 +99,8 @@ preserves all boundaries of the canonical register:
 
 ## Required Future Acceptance Coverage
 
-The removal of the legacy candidate-document test creates no waiver.
+The replacement of the legacy candidate-document assertions with successor
+regression coverage creates no waiver.
 
 Before any nflverse retrieval or ingestion implementation can be approved,
 the implementation handoff must require new acceptance coverage against the
@@ -123,8 +127,8 @@ canonical source register and ingestion contract for:
 
 - Resolve the authoritative relationship between the legacy candidate
   artifact and the canonical Projection Source Authorization Register v0.1.
-- Remove the superseded candidate artifact and its paired obsolete
-  documentation-contract test.
+- Remove the superseded candidate artifact and replace the paired test content
+  with successor regression coverage under its existing path.
 - Preserve an explicit, versioned decision record explaining the
   supersession and the required future implementation coverage.
 
@@ -148,7 +152,7 @@ canonical source register and ingestion contract for:
 | ID | Assumption | Affected module | Risk | Owner | Decision deadline |
 |---|---|---|---|---|---|
 | A-RECON-001 | The canonical v0.1 Projection Source Authorization Register is the sole current repository-level source authority for nflverse evidence evaluation. | Future source and ingestion work | P0 if legacy candidate material is treated as co-authority. | ApexOS Architect | Immediate and ongoing. |
-| A-RECON-002 | Removing the candidate-document test does not remove required future ingestion acceptance coverage. | Future ingestion test suite | P0 if legacy-document removal is misread as a test waiver. | ApexOS Architect / Builder | Before ingestion implementation. |
+| A-RECON-002 | Replacing the candidate-document assertions with successor regression coverage does not remove required future ingestion acceptance coverage. | Future ingestion test suite | P0 if candidate supersession is misread as a test waiver. | ApexOS Architect / Builder | Before ingestion implementation. |
 | A-RECON-003 | No extraction, ingestion, feature, projection, scoring, or recommendation behavior is authorized by this reconciliation. | Projection program | P0 if documentation reconciliation becomes implicit implementation approval. | ApexOS Architect | Immediate and ongoing. |
 | A-RECON-004 | The exact field scope, source rights, asset availability, schema semantics, freshness policy, and retention design remain separately gated. | Source ingestion and feature promotion | P1 if source access is mistaken for complete operational approval. | ApexOS Architect | Before implementation. |
 
@@ -156,7 +160,10 @@ canonical source register and ingestion contract for:
 
 - Exactly one new reconciliation record is added.
 - The legacy candidate artifact is deleted.
-- The exact paired legacy candidate-document acceptance test is deleted.
+- The exact paired test path is retained and replaced with successor
+  regression coverage.
+- The final diff contains one added reconciliation record, one deleted
+  candidate artifact, and one modified successor regression test.
 - No other paths change.
 - The reconciliation ruling is explicitly `SUPERSESSION`, not
   compatibility.
@@ -187,7 +194,8 @@ coverage, degraded behavior, and provider-contamination prevention.
 ## Change Log
 
 - `v0.1` — Structural reconciliation. Supersedes and removes the legacy
-  candidate-only nflverse player-facts authorization artifact and its paired
-  obsolete document-specific test. Establishes the merged Projection Source
-  Authorization Register v0.1 as the sole repository-level authority for
-  bounded nflverse evidence evaluation.
+  candidate-only nflverse player-facts authorization artifact while retaining
+  the paired test path and migrating regression coverage to the canonical
+  authority. Establishes the merged Projection Source Authorization Register
+  v0.1 as the sole repository-level authority for bounded nflverse evidence
+  evaluation.
