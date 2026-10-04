@@ -53,7 +53,7 @@ def describe(L):
                 players=" | ".join(f"{sd.pos[i] if False else pool.pos[i]} {pool.player[i]} ({pool.team[i]}) ${pool.salary[i]}" for i in sorted(L,key=lambda i:["QB","RB","WR","TE","DST"].index(pool.pos[i]))),
                 stack=("QB+"+"/".join(sorted({pool.player[i].split()[-1] for i in L if pool.pos[i] in("WR","TE") and pool.team[i]==pool.team[[j for j in L if pool.pos[j]=="QB"][0]]}))) )
 # 1) cash: max mean
-cash=solve(pool["mean"].values); print("CASH",describe(cash))
+cash=solve(pool["mean"].values); print("CASH",{k:v for k,v in describe(cash).items() if k in ("mean","p50","p90","p95","stack")})   # lineup detail goes to the CSVs, not stdout
 # 2) best stack lineups by game (QB + pass catcher + bring-back), mean objective
 stk=[]
 for g in pool.game.unique():
@@ -80,7 +80,7 @@ cs=describe(cash); pd.DataFrame([dict(type="cash (max mean)",**cs)]+[dict(type=f
 expo=pd.Series({pool.player[i]:c/len(chosen) for i,c in cnt.items()}).sort_values(ascending=False); expo.round(2).to_csv(D+f"dfs_classic_gpp_exposure_{MODE}.csv",header=["exposure"])
 print("\nGPP set:",len(chosen),"lineups; mean of means %.1f, mean P95 %.1f; max exposure %.2f"%(np.mean([d['mean'] for _,d in chosen]),np.mean([d['p95'] for _,d in chosen]),expo.max()))
 print(expo.head(10).round(2).to_dict())
-for g,L in stk[:2]: print("STACK",g,{k:(round(v,1) if isinstance(v,float) else v) for k,v in describe(L).items() if k in("salary","mean","p90","stack")})
+for g,L in stk[:2]: print("STACK",g,{k:(round(v,1) if isinstance(v,float) else v) for k,v in describe(L).items() if k in("mean","p90","stack")})
 # value plays
 med=pool.groupby("pos").value_per_1k.median().to_dict(); v=pool[(pool.pos!="DST")&(pool.salary<=6500)].sort_values("value_per_1k",ascending=False).head(12); print("\nVALUE (pts per $1k, slate median by pos %s)"%{k:round(x,2) for k,x in med.items()}); print(v[["player","pos","team","salary","mean","value_per_1k"]].round(2).to_string(index=False))
 print("\nTOP of pool by mean:"); print(pool.sort_values("mean",ascending=False).head(14)[["player","pos","team","salary","mean","p90","dk_status"]].round(1).to_string(index=False))
