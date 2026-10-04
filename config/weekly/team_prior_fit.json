@@ -1,0 +1,8 @@
+{
+ "lo": 8,
+ "ld": 16,
+ "ret_off": 0.4,
+ "ret_def": 0.25,
+ "hfa": 1.0,
+ "market_weight": 1.0
+}

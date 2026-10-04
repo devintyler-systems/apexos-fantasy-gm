@@ -1,0 +1,12 @@
+contract: weekly_grading
+contract_version: "0.1"
+inputs: [frozen run directory, nflverse stats_player_week, snap_counts, games]
+join_key: [normalized player name, nflverse team code]
+scope: only players with a recorded snap in a FINAL game
+outputs: [grade.json, grade_players.csv]
+metrics:
+  per_market: [n, mae, bias, p25_p75_coverage]     # markets: rec_yds, rec, rush_yds, pass_yds, pass_cmp, pass_td
+  anytime_td: [n, brier, log_loss, sum_projected, actual_scorers]
+  team_points: [n_games, rmse, total_bias, winner_hit_rate]
+comparability: definitions mirror engine/weekly/compare_bt.py so live and backtest numbers are comparable.
+promotion_rule: a model or calibration change is promoted only if the multi-season week 4-12 backtest beats the current baseline on rec_yds MAE, rec MAE and TD log loss without worsening team RMSE.

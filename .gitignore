@@ -31,3 +31,7 @@ htmlcov/
 .vscode/
 .idea/
 .review-evidence/
+
+# Weekly engine working data (frozen runs under runs/weekly/ ARE committed)
+var/
+inputs/

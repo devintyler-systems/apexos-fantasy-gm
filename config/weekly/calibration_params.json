@@ -1,0 +1,14 @@
+{
+ "qb_share": 0.93,
+ "qb_td": 0.95,
+ "team_ypc": 1.0,
+ "other_tgt": 0.025,
+ "other_car": 0.02,
+ "_note": "set from 2023-25 week 4-12 backtests (calibrate_bt.py / team volume check)",
+ "share_mult": {
+  "car_RB": 1.22,
+  "tgt_TE": 1.17,
+  "tgt_RB": 1.05,
+  "tgt_WR": 1.05
+ }
+}

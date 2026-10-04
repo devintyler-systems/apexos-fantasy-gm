@@ -1,0 +1,14 @@
+# Book-lines input (pricing/edges only; never read by projection stages)
+contract: weekly_props_lines
+contract_version: "2.0"
+file: props_lines.csv
+columns: [book, game_id, team, opp, player, position, market, side, line, odds_american, as_of_utc, is_alt]
+types:
+  game_id: "<season>W<WW>_<AWAY>_<HOME>"
+  side: [over, under, yes]
+  as_of_utc: "iso8601 Z (convert vendor-local timestamps; the Week 4 workbook was Pacific)"
+  is_alt: [0, 1]
+rules:
+  - Team codes follow nflverse convention.
+  - Rows that cannot be matched to an nflverse identity are written to props_lines_rejected.csv with a reason, never dropped silently.
+  - Never invent lines.

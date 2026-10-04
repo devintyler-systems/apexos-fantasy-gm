@@ -1,0 +1,25 @@
+# Weekly run manifest contract. Written by engine/weekly/manifest.py into runs/weekly/<run_id>/manifest.json
+contract: weekly_run_manifest
+contract_version: "0.1"
+status: ACTIVE_WEEKLY_ONLY
+scope: weekly props + DFS projections (not the draft engine)
+immutability: a frozen run directory is never overwritten; grading adds grade.json and grade_players.csv only.
+required_fields:
+  schema: "weekly_run_manifest/0.1"
+  run_id: "<season>_w<WW>_<track>_<UTC yyyymmddThhmmssZ>"
+  season: int
+  week: int
+  track: [model, market]      # model = ridge ratings + weather only; market = nflverse spread/total as team-points prior
+  as_of_utc: iso8601 Z
+  engine_version: str
+  git_sha: str
+  versions: {python: str}
+  env: "all APEX_* environment knobs (APEX_DK_SALARIES path excluded)"
+  inputs_sha256: "sha256 of every nflverse parquet in the cache and every config/weekly file used"
+  artifacts: "name -> {rows, sha256}"
+  uses_future_information: false
+frozen_artifacts: [projections.csv, rankings_raw.csv, w4_game_environment.csv, w4_team_environment.csv, w4_team_totals.csv, w4_td_markets.csv]
+rules:
+  - A run must be frozen BEFORE kickoff of the earliest game it contains to count as a forward projection.
+  - Post-hoc freezes must say so in notes and are excluded from forward-accuracy reporting.
+  - No book lines, odds, or DK salaries are read by the projection stages (run_all .. build_projection_tables).

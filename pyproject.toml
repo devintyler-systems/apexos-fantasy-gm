@@ -18,6 +18,19 @@ dependencies = [
 dev = [
     "pytest",
 ]
+weekly = [
+    "pandas>=3.0,<4",
+    "numpy>=2.2,<3",
+    "scipy>=1.14,<2",
+    "pulp>=3.0,<4",
+    "openpyxl>=3.1",
+    "lxml>=5",
+    "pdfplumber>=0.11",
+    "requests>=2.31",
+]
+
+[project.scripts]
+apex-weekly = "engine.weekly.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["engine*"]
