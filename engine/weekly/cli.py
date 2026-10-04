@@ -73,9 +73,9 @@ def cmd_run(a):
 
 def cmd_freeze(a):
     from manifest import freeze
-    from paths import OUT
+    from paths import OUT, DELIV
     out = a.out or (OUT.rstrip("/") + "_" + a.track)
-    print(freeze(a.season, a.week, a.track, out_dir=out, notes=a.notes))
+    print(freeze(a.season, a.week, a.track, out_dir=out, notes=a.notes, deliv_dir=DELIV.rstrip("/") + "_" + a.track))
     return 0
 
 

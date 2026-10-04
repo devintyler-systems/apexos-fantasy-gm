@@ -45,7 +45,32 @@ def build_inj():
     o = pd.DataFrame(dict(player=i.full_name, pos=i.position, team=i.team, injury=i.report_primary_injury.fillna(i.practice_primary_injury), practice=i.ps, game_status=i.report_status, nkey=i.full_name.map(norm_name)))
     o["p_active"] = [p_active(a, b, c) for a, b, c in zip(i.rs, i.ps, i.pg)]
     o["injury_week"] = int(i.week.max())
-    return o.reset_index(drop=True)
+    return _apply_roster_out(o, int(i.week.max())).reset_index(drop=True)
+_ROSTER_OUT = {"RES": "Reserve (IR/PUP/NFI)", "CUT": "Released", "RET": "Retired", "EXE": "Exempt list"}
+def _apply_roster_out(o, week):
+    """Players whose nflverse roster status is RES/CUT/RET/EXE cannot play, whatever the injury report says
+    (Week 4 2026: British Brooks went on IR the morning of the games while the report still listed him; Odell Beckham Jr. was released).
+    Only used when the roster snapshot for that week is a full roster (current season); historical roster files are sparse, so backtests are unchanged."""
+    try:
+        r = pd.read_parquet(N + f"roster_{SEASON}.parquet"); r = r[(r.game_type == "REG") & (r.week == week)]
+    except Exception:
+        return o
+    if len(r) < 1000:
+        return o
+    r = r[r.position.isin(["QB", "RB", "FB", "WR", "TE"])].copy()
+    r["nkey"] = r.full_name.map(norm_name); r["team"] = r.team.map(tm)
+    live = set(zip(r[r.status.isin(["ACT", "DEV", "INA"])].nkey, r[r.status.isin(["ACT", "DEV", "INA"])].team))     # same player re-signed by the same team stays live
+    r = r[r.status.isin(_ROSTER_OUT) & ~pd.Series([(a, b) in live for a, b in zip(r.nkey, r.team)], index=r.index)]
+    why = dict(zip(zip(r.nkey, r.team), r.status.map(_ROSTER_OUT)))
+    hit = pd.Series([(a, b) in why for a, b in zip(o.nkey, o.team)], index=o.index)
+    o.loc[hit, "p_active"] = 0.0
+    o.loc[hit, "game_status"] = "Out"
+    o.loc[hit, "injury"] = [why[(a, b)] for a, b in zip(o.nkey[hit], o.team[hit])]
+    seen = set(zip(o.nkey, o.team)); add = r[[(a, b) not in seen for a, b in zip(r.nkey, r.team)]]
+    if len(add):
+        o = pd.concat([o, pd.DataFrame(dict(player=add.full_name.values, pos=add.position.values, team=add.team.values, injury=add.status.map(_ROSTER_OUT).values,
+                                            practice="None", game_status="Out", nkey=add.nkey.values, p_active=0.0, injury_week=week))], ignore_index=True)
+    return o
 def _qb_fix(o):
     dq = _DC_QB[_DC_QB.pos_rank == 1][["team", "nkey"]].drop_duplicates()
     ks = set(zip(dq.team, dq.nkey))

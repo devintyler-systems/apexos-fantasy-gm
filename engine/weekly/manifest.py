@@ -53,7 +53,7 @@ def run_id(season, week, track, as_of):
     return f"{season}_w{int(week):02d}_{track}_{as_of.strftime('%Y%m%dT%H%M%SZ')}"
 
 
-def freeze(season, week, track, out_dir=None, runs_dir=None, as_of=None, notes=""):
+def freeze(season, week, track, out_dir=None, runs_dir=None, as_of=None, notes="", deliv_dir=None):
     """Copy a finished run's outputs into an immutable run directory and write manifest.json."""
     out_dir = out_dir or OUT
     runs_dir = runs_dir or RUNS
@@ -76,6 +76,13 @@ def freeze(season, week, track, out_dir=None, runs_dir=None, as_of=None, notes="
             with open(src, "rb") as a, open(os.path.join(dest, name), "wb") as b:
                 b.write(a.read())
             artifacts[name] = {"rows": int(sum(1 for _ in open(src, encoding="utf-8", errors="ignore")) - 1)}
+    if deliv_dir:      # DFS lineups (the raw DK salary file and the salary pool are never frozen/committed)
+        for name in (f"dfs_classic_gpp_lineups_{track}.csv", f"dfs_classic_cash_and_stacks_{track}.csv"):
+            src = os.path.join(deliv_dir, name)
+            if os.path.exists(src):
+                with open(src, "rb") as a, open(os.path.join(dest, name), "wb") as b:
+                    b.write(a.read())
+                artifacts[name] = {"rows": int(sum(1 for _ in open(src, encoding="utf-8", errors="ignore")) - 1)}
     if "projections.csv" not in artifacts:
         raise RuntimeError("no projections found in out_dir; run the pipeline before freezing")
     for name, meta in artifacts.items():
