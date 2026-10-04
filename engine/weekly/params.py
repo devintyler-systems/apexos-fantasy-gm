@@ -359,7 +359,7 @@ def qb_list(team):
     dq = _DC_QB[_DC_QB.team == team].set_index("nkey").pos_rank
     q["depth"] = q.nkey.map(dq).fillna(99)
     q1 = q[q.depth == q.depth.min()] if (q.depth < 99).any() else q.sort_values("Att", ascending=False).head(1)
-    q = pd.concat([q1.head(1), q.drop(q1.head(1).index).sort_values("Att", ascending=False)])      # QB1 from the depth chart; fill-ins ranked by attempts
+    q = pd.concat([q1.head(1), q.drop(q1.head(1).index).sort_values(["depth", "Att"], ascending=[True, False])])      # QB1 from the depth chart; fill-ins by depth-chart rank, then attempts (a Week 4 audit showed attempts alone picked Keenum over depth-chart QB2 Bagent)
     q = q.merge(INJ[INJ.team == team][["nkey", "p_active", "game_status", "practice", "injury"]],
                 left_on=q.player.map(norm_name), right_on="nkey", how="left").drop(columns=["key_0"], errors="ignore")
     q["p_active"] = q.p_active.fillna(1.0)
