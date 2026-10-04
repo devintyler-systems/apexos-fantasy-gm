@@ -65,3 +65,19 @@ def test_starting_qb_follows_the_depth_chart_when_qb1_is_out(tmp_path):
         assert top == order[0], (team, order[:3], top)
         checked += 1
     assert checked >= 20
+
+
+@pytest.mark.skipif(not CACHE or not os.path.exists(os.path.join(CACHE or "", "games.parquet")), reason="no nflverse cache")
+def test_manual_out_override_removes_the_player_and_is_frozen(tmp_path):
+    def run(out, extra=None):
+        env = dict(os.environ, APEX_NFLV=CACHE, APEX_OUT=str(out), APEX_ENV="market", APEX_NS="1000", **(extra or {}))
+        r = subprocess.run([sys.executable, "run_all.py"], cwd=WEEKLY, env=env, capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr[-2000:]
+        return pd.read_pickle(os.path.join(out, "rank_raw.pkl"))
+    base = run(tmp_path / "a")
+    pick = base[(base.pos == "WR") & (base.p_active > 0.9) & (~base.game.str.contains("@") | True)].sort_values("ev_pts", ascending=False).iloc[0]
+    csv = tmp_path / "manual.csv"
+    csv.write_text("player,team,pos,source,as_of_utc,note\n%s,%s,WR,test,2026-01-01T00:00:00Z,test\n" % (pick.player, pick.team))
+    after = run(tmp_path / "b", {"APEX_MANUAL_OUT": str(csv)})
+    row = after[(after.player == pick.player) & (after.team == pick.team)]
+    assert row.empty or float(row.p_active.iloc[0]) == 0.0

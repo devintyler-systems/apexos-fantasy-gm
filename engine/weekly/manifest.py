@@ -83,6 +83,11 @@ def freeze(season, week, track, out_dir=None, runs_dir=None, as_of=None, notes="
                 with open(src, "rb") as a, open(os.path.join(dest, name), "wb") as b:
                     b.write(a.read())
                 artifacts[name] = {"rows": int(sum(1 for _ in open(src, encoding="utf-8", errors="ignore")) - 1)}
+    mo = os.environ.get("APEX_MANUAL_OUT")
+    if mo and os.path.exists(mo):        # confirmed-inactive overrides travel with the run
+        with open(mo, "rb") as a, open(os.path.join(dest, "manual_overrides.csv"), "wb") as b:
+            b.write(a.read())
+        artifacts["manual_overrides.csv"] = {"rows": int(sum(1 for _ in open(mo, encoding="utf-8", errors="ignore")) - 1)}
     if "projections.csv" not in artifacts:
         raise RuntimeError("no projections found in out_dir; run the pipeline before freezing")
     for name, meta in artifacts.items():
@@ -103,7 +108,7 @@ def freeze(season, week, track, out_dir=None, runs_dir=None, as_of=None, notes="
         "engine_version": ENGINE_VERSION,
         "git_sha": _git_sha(),
         "versions": _versions(),
-        "env": {k: v for k, v in sorted(os.environ.items()) if k.startswith("APEX_") and k != "APEX_DK_SALARIES"},
+        "env": {k: v for k, v in sorted(os.environ.items()) if k.startswith("APEX_") and k not in ("APEX_DK_SALARIES", "APEX_MANUAL_OUT")},
         "inputs_sha256": inputs,
         "artifacts": artifacts,
         "uses_future_information": False,
