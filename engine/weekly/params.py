@@ -45,7 +45,23 @@ def build_inj():
     o = pd.DataFrame(dict(player=i.full_name, pos=i.position, team=i.team, injury=i.report_primary_injury.fillna(i.practice_primary_injury), practice=i.ps, game_status=i.report_status, nkey=i.full_name.map(norm_name)))
     o["p_active"] = [p_active(a, b, c) for a, b, c in zip(i.rs, i.ps, i.pg)]
     o["injury_week"] = int(i.week.max())
-    return _apply_roster_out(o, int(i.week.max())).reset_index(drop=True)
+    return _apply_manual_out(_apply_roster_out(o, int(i.week.max()))).reset_index(drop=True)
+def _apply_manual_out(o):
+    """Operator-supplied confirmed inactives (APEX_MANUAL_OUT=<csv: player,team,source,as_of_utc,note>). The file is frozen with the run, so every override is visible and auditable."""
+    path = os.environ.get("APEX_MANUAL_OUT")
+    if not path or not os.path.exists(path):
+        return o
+    m = pd.read_csv(path, keep_default_na=False); m["nkey"] = m.player.map(norm_name); m["team"] = m.team.map(lambda t: tm.get(t, t)) if hasattr(tm, "get") else m.team
+    key = set(zip(m.nkey, m.team)); why = {(a, b): c for a, b, c in zip(m.nkey, m.team, m.source)}
+    hit = pd.Series([(a, b) in key for a, b in zip(o.nkey, o.team)], index=o.index)
+    o.loc[hit, "p_active"] = 0.0; o.loc[hit, "game_status"] = "Out"
+    o.loc[hit, "injury"] = ["Manual override (" + why[(a, b)] + ")" for a, b in zip(o.nkey[hit], o.team[hit])]
+    seen = set(zip(o.nkey, o.team)); add = m[[(a, b) not in seen for a, b in zip(m.nkey, m.team)]]
+    if len(add):
+        o = pd.concat([o, pd.DataFrame(dict(player=add.player.values, pos=add.get("pos", pd.Series("", index=add.index)).values, team=add.team.values,
+                                            injury=("Manual override (" + add.source + ")").values, practice="None", game_status="Out", nkey=add.nkey.values, p_active=0.0,
+                                            injury_week=int(o.injury_week.max()) if len(o) else 0))], ignore_index=True)
+    return o
 _ROSTER_OUT = {"RES": "Reserve (IR/PUP/NFI)", "CUT": "Released", "RET": "Retired", "EXE": "Exempt list"}
 def _apply_roster_out(o, week):
     """Players whose nflverse roster status is RES/CUT/RET/EXE cannot play, whatever the injury report says
@@ -359,7 +375,7 @@ def qb_list(team):
     dq = _DC_QB[_DC_QB.team == team].set_index("nkey").pos_rank
     q["depth"] = q.nkey.map(dq).fillna(99)
     q1 = q[q.depth == q.depth.min()] if (q.depth < 99).any() else q.sort_values("Att", ascending=False).head(1)
-    q = pd.concat([q1.head(1), q.drop(q1.head(1).index).sort_values("Att", ascending=False)])      # QB1 from the depth chart; fill-ins ranked by attempts
+    q = pd.concat([q1.head(1), q.drop(q1.head(1).index).sort_values(["depth", "Att"], ascending=[True, False])])      # QB1 from the depth chart; fill-ins by depth-chart rank, then attempts (a Week 4 audit showed attempts alone picked Keenum over depth-chart QB2 Bagent)
     q = q.merge(INJ[INJ.team == team][["nkey", "p_active", "game_status", "practice", "injury"]],
                 left_on=q.player.map(norm_name), right_on="nkey", how="left").drop(columns=["key_0"], errors="ignore")
     q["p_active"] = q.p_active.fillna(1.0)
