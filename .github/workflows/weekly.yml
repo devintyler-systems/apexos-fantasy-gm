@@ -1,0 +1,90 @@
+name: Weekly engine
+
+on:
+  pull_request:
+    paths:
+      - "engine/weekly/**"
+      - "tests/weekly/**"
+      - "contracts/weekly/**"
+      - "config/weekly/**"
+      - ".github/workflows/weekly.yml"
+      - "pyproject.toml"
+  workflow_dispatch:
+    inputs:
+      season: {description: "Season", default: "2026", required: true}
+      week: {description: "Target week (blank = next unplayed)", required: false}
+      track: {description: "model | market | both", default: "both", required: true}
+  schedule:
+    - cron: "17 14 * * 3"   # Wed 14:17 UTC  midweek run
+    - cron: "17 20 * * 6"   # Sat 20:17 UTC  injuries, depth charts, lines
+    - cron: "47 16 * * 0"   # Sun 16:47 UTC  pre-window rerun
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev,weekly]"
+      - name: Weekly unit and invariant tests
+        run: python -m pytest tests/weekly -m "not integration"
+
+  integration:
+    needs: unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      APEX_SEASON: ${{ github.event.inputs.season || '2026' }}
+      APEX_NFLV: ${{ github.workspace }}/var/nflverse
+      APEX_INTEGRATION_NFLV: ${{ github.workspace }}/var/nflverse
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev,weekly]"
+      - name: Restore nflverse cache (closed seasons)
+        uses: actions/cache@v4
+        with:
+          path: var/nflverse
+          key: nflverse-hist-v1
+      - name: Fetch nflverse (current season always refreshed)
+        run: python -m engine.weekly.cli fetch --season "$APEX_SEASON"
+      - name: Integration test (full sim on live data)
+        run: python -m pytest tests/weekly -m integration
+      - name: Weekly run (both tracks) and freeze
+        if: github.event_name != 'pull_request'
+        run: |
+          python -m engine.weekly.cli run --season "$APEX_SEASON" ${{ github.event.inputs.week && format('--week {0}', github.event.inputs.week) || '' }} --track "${{ github.event.inputs.track || 'both' }}"
+          WEEK=$(python - <<'PY'
+          import pandas as pd, os
+          g = pd.read_parquet(os.environ["APEX_NFLV"] + "/games.parquet")
+          g = g[(g.season == int(os.environ["APEX_SEASON"])) & (g.game_type == "REG")]
+          print(int(g[g.home_score.isna()].week.min()))
+          PY
+          )
+          for T in model market; do
+            [ -d "var/out_$T" ] && python -m engine.weekly.cli freeze --season "$APEX_SEASON" --week "${{ github.event.inputs.week || '$WEEK' }}" --track $T --notes "scheduled/dispatch run ${{ github.run_id }}"
+          done
+      - name: Upload frozen runs and deliverables
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-${{ github.run_id }}
+          path: |
+            runs/weekly/
+            var/deliverables_*/
+          retention-days: 30

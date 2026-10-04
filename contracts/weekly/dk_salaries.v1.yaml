@@ -1,0 +1,13 @@
+contract: weekly_dk_salaries
+contract_version: "1.0"
+file: DKSalaries_classic.csv (supplied by the operator each week; path via APEX_DK_SALARIES; never committed)
+scoring_classic:
+  pass: {yd: 0.04, td: 4, int: -1, bonus_300yd: 3}
+  rush: {yd: 0.1, td: 6, bonus_100yd: 3}
+  rec: {rec: 1, yd: 0.1, td: 6, bonus_100yd: 3}
+  fumble_lost: -1
+  dst: {sack: 1, int: 2, fumble_recovery: 2, td: 6, safety: 2, points_allowed: {0: 10, 1-6: 7, 7-13: 4, 14-20: 1, 21-27: 0, 28-34: -1, 35+: -4}}
+roster_classic: [QB, RB, RB, WR, WR, WR, TE, FLEX, DST]
+salary_cap: 50000
+availability_rule: the NFL injury report and the model's availability govern; a blank DK status never overrides an NFL OUT.
+showdown: not implemented
