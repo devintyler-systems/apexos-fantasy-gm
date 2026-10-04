@@ -1,0 +1,119 @@
+{
+ "artifacts": {
+  "dfs_classic_cash_and_stacks_market.csv": {
+   "rows": 5,
+   "sha256": "74a60234a2904083c7ae961624fd303501eacf2ab4ae4e6251fc6da25e70586e"
+  },
+  "dfs_classic_gpp_lineups_market.csv": {
+   "rows": 20,
+   "sha256": "f10483b0f93e781c5cdbdcc82b19034bba161179b0d944480b4e0a3db6bb44ec"
+  },
+  "projections.csv": {
+   "rows": 407,
+   "sha256": "e206d7b35bc6e1905e2edffeab54190f2a87102b1a4bd3afce7835f22f59aee1"
+  },
+  "rankings_raw.csv": {
+   "rows": 511,
+   "sha256": "8f0ae84ca3f5b5384bfc79005b28fa0d6440ff6165d16228a402995c7badec26"
+  },
+  "w4_game_environment.csv": {
+   "rows": 16,
+   "sha256": "9b4ecb93d1e2789b2e742b26e4eb10954815cddafc66c0e20086858c92f18ea3"
+  },
+  "w4_injury_adjustments.csv": {
+   "rows": 182,
+   "sha256": "67750f559defc6fb9d5efb278033c3986cf6667e15749844d2c3b36ac66b4604"
+  },
+  "w4_td_markets.csv": {
+   "rows": 1456,
+   "sha256": "ca4541248d4eb307744ffa948f4b5f1b2486ec45f7952a351dcd7ee1bc25b751"
+  },
+  "w4_team_environment.csv": {
+   "rows": 32,
+   "sha256": "6f633724726e2486200b039e92c2343ab8208b173fd88bb3df2fbe5ee7027833"
+  },
+  "w4_team_totals.csv": {
+   "rows": 32,
+   "sha256": "6af37a39178f65c8bc23e6d17b4c53691933b7b8a0b19a1e4354325568183070"
+  }
+ },
+ "as_of_utc": "2026-10-04T01:15:54Z",
+ "engine_version": "weekly-0.1.0",
+ "env": {},
+ "git_sha": "1333356966a21e44b2f81e82335232673b345f0e",
+ "inputs_sha256": {
+  "advstats_week_def_2023.parquet": "857941121910635489c6bcb10fa023f7c04c6afd75974d975e14f8afc07be352",
+  "advstats_week_def_2024.parquet": "13261d480979aee8f63f09c2dfbd383e0bb8970b2f7bd83dde6b1e217ae0d3e9",
+  "advstats_week_def_2025.parquet": "a1224b47bd23840a9c0e072d6ed91dd0298777fd53570290b273080975bdb7ea",
+  "advstats_week_def_2026.parquet": "a6c659aaadb580d14adbcdf757292f3a6522fb9491cbd0a6762786d0b87ff15b",
+  "advstats_week_pass_2023.parquet": "20eef8dbe8982befacdc1f7db0301f323580209bfb891850444a8d749895ab41",
+  "advstats_week_pass_2024.parquet": "39c6ee888479630fd147188f5302fedc7d03ad682d2ee45016f4e04a259e8395",
+  "advstats_week_pass_2025.parquet": "9752d5201209e80a8c5b1388f9030fa370a990b84328e46555241ec40913c8a3",
+  "advstats_week_pass_2026.parquet": "792b28bf7abc21aa9a6cb991216cec286bc7cac24e7169b7c7e5717a4af61536",
+  "advstats_week_rec_2023.parquet": "7ed7a0d9e1b8e77810c9679836a01bee0e8965b472e3cec594393b211e46c21d",
+  "advstats_week_rec_2024.parquet": "6dfac12d7c8b7a75361931a34a55a4f022718f89150689bcfcffd6f5d2d7f671",
+  "advstats_week_rec_2025.parquet": "b4fcae8322c17b021283cba924a35f6452b831a2959c4adb2c357866b8975b97",
+  "advstats_week_rec_2026.parquet": "172e1dd3440cad93c63787c1561123b0a4205b7be2bdf7332ebf383a850afd55",
+  "advstats_week_rush_2023.parquet": "c2832394c58d1c63318d6451b4442d1b4f43d8124f09852635a266ac4b04e161",
+  "advstats_week_rush_2024.parquet": "1ebd2420054b61d6fc73843571fed8770adbb77069ab7f75462715900dd67718",
+  "advstats_week_rush_2025.parquet": "898b688a2ff17e09157d9fcd9c0f84bed3987ccba0da49579fe406f5f5cfc364",
+  "advstats_week_rush_2026.parquet": "0bb2b9c15bf045f9411596ac63be816e2f32d6817aae4054027bc2761a0f2ae6",
+  "config/availability_by_status.csv": "eaa50c4335e75c3996d988e3870e3066da9538cd22f6d921e13c514c28236ae5",
+  "config/availability_by_status_pos.csv": "31dc0aad1802cf988e4a9edeec23444a204f1797664bdc5450f39b3d30a35beb",
+  "config/calibration.json": "3fb59f82534d0c4dafba47ab2a75ac0d75bed0a8574dd9c75decd75aad3d455c",
+  "config/calibration_params.json": "b8c824d269e9b8ac293907833fe826c19e301b83b876f31fea12b1d7993549e7",
+  "config/opportunity_fit.json": "a2df21bc434a89ddcf51713bac218b781b29a2d0d32430f753640c7473294bf7",
+  "config/player_prior_fit.json": "8f8b74b106bdd30fd143a36ffde150ace6865ee64c8996aaf4d52c65bd4117fd",
+  "config/team_prior_fit.json": "f386a1224b09b908c67ce3fa1a05afca4afe8108d15d735a082073a66cbafa52",
+  "config/weather_effects.json": "dab0556b87424d094866d3555dce76b71c9076c277a4983d5f3b31ec270c7143",
+  "depth_charts_2023.parquet": "44dbf02554d4a8a783f52d53b3c66ede8cc9886097518c56c7e1069f5e2d18ff",
+  "depth_charts_2024.parquet": "2b5e72fa37f6a498238da30d619cd5d2fe883ffbfdbaaf637301893ad6c22097",
+  "depth_charts_2025.parquet": "14f74185b3c2c48df234ced284ba3596bda3333d0b2a8df40841f68cd34539fa",
+  "depth_charts_2026.parquet": "75ad1a3fae7686f79aff84d9ac0375db5bbc1c35441eb595bb41ae6e4641aaf4",
+  "dk_salaries": "1cabf6c7b644a44be4a71feeb20d18de1f876f14a8b271379f738bb36620c4f2",
+  "ftn_charting_2023.parquet": "162f0f48a8fca23f86a334c78e27f8daa7443e6b383beada0416b65c593b2c0e",
+  "ftn_charting_2024.parquet": "9396c95effac1a81cc30efcf9c4c87ab89855548ae605404318ae949d4356119",
+  "ftn_charting_2025.parquet": "2ee4b11962f4c91d426e0edeca5bbded078616ce0efab0710aa2b40b4cfad898",
+  "ftn_charting_2026.parquet": "679ac565b8da823af74ac58766446e3c71fa3ccb3299b2f6b98981a93059d21a",
+  "games.parquet": "39497943c03bb484bdd1044f3d3a17aec39be9723c0c17d8dc4725d3ceeb138f",
+  "injuries_2023.parquet": "5d8d881aabd613c3172231b33ac0b4397b3f383498f5e4509c31f3c77c3402a3",
+  "injuries_2024.parquet": "7ebabbba930a70bc7e4d257c7c41ca8708f147a4cdd4100956abcfbaf70f7fc1",
+  "injuries_2025.parquet": "c7637c2f6347194426a8582a984aac82a6bf8ab06af72cdd96666a2e0733ab24",
+  "injuries_2026.parquet": "0d1ff127705c932b52ad4719f330cc314cfa2ef968d2abe426c5f6bc0f03228f",
+  "play_by_play_2023.parquet": "bd3484731408def6b0ec93225bba2bd7b2c65769ca707a2b9444d891abdc6776",
+  "play_by_play_2024.parquet": "3fd2896bc0b911b615142d2f1fabae54a4bbba5ab7b73b28187b118ef8af6a3b",
+  "play_by_play_2025.parquet": "c6ecedd6d678cc37ed316b23ef84ee1ec6abb69c514bb11868a7ebd5a367df29",
+  "play_by_play_2026.parquet": "04940a1423c994d730f5f157197568d71bfe9b8ae29c439fe4a0fb7efbbb5319",
+  "players.parquet": "dff3a4ca222d4e2f1a55343aedf5407db0fb8fabb338af25c75b3867431f38cd",
+  "roster_2023.parquet": "66dcb7d0e203c41b49e997b93eb55ed77bcc960e5dd0774b7e2426a87cef3c90",
+  "roster_2024.parquet": "bd38dbe785728c6b4ddc0b56b7d4fee69a8337595db3b631528d284253c04aaf",
+  "roster_2025.parquet": "902904a0500f066f02ef23f7857e3db35060517e50ffcfe36cc1bc5c6d230f70",
+  "roster_2026.parquet": "239c858a46352c864bcec921b932c0bc9623cefbd6e43bf8e64bfe0549bbd02c",
+  "snap_counts_2023.parquet": "97873cab365dfb39286bc1de3ac772fa4b51f09cce52ae5f8317e006cc007f62",
+  "snap_counts_2024.parquet": "9ec66a0c755939b329d4eba3f90e716bb874b5a6544f325ba220f003991ff99f",
+  "snap_counts_2025.parquet": "47220218fecda7af7ee5b0272a8ecce7c1bfb1f4e1f0a2c8c90047571728ce20",
+  "snap_counts_2026.parquet": "fae0627d81f4ffa1802263ac0fad1a29f5c1986d5749a711bde7c50651498273",
+  "stats_player_week_2023.parquet": "ac776fbd7c9fefdb4069b72304f4c5fa05ae417acd49f6e4e27be14b9d7a4bbc",
+  "stats_player_week_2024.parquet": "847569d194ca3d96b5efcf91e6eac5e18780fc47568a713fd545a82d29d155c1",
+  "stats_player_week_2025.parquet": "2a461becaa9adb3c93a3074a3a31f1e960162a50163371a2d34e28393b5fff10",
+  "stats_player_week_2026.parquet": "6aa1e84123ac1d9e8933d0a3e34d9b4a77664abbe002adca0603ca48ab3e091a",
+  "stats_team_week_2023.parquet": "a155e2a9cb2a6bff1b254f747a33603c43aa5a1117c26d203b44e5bfb83339b1",
+  "stats_team_week_2024.parquet": "c95aca86417589edb34b5001c11ba4bab869394fd3d51e475ff0958dda1669fc",
+  "stats_team_week_2025.parquet": "ec168d98ebbcb0d14d1049ba690e55a629fe6e4f00aaa8a700c309d9dad6d34d",
+  "stats_team_week_2026.parquet": "b3ac3a468625aa2a8dedd9092b99910adfd78ff8ed3d4d135acc885e48800e43"
+ },
+ "notes": "Forward freeze before earliest remaining kickoff (IND@WAS 2026-10-04 09:30 ET). PIT@CLE already final when frozen: excluded from forward grading. Roster-RES availability fix applied. Official inactives not yet available. DK status conflicts: Odell Beckham Jr (DK OUT, not on NFL report), British Brooks (DK IR, on report).",
+ "run_id": "2026_w04_market_20261004T011554Z",
+ "schema": "weekly_run_manifest/0.1",
+ "season": 2026,
+ "track": "market",
+ "uses_future_information": false,
+ "versions": {
+  "numpy": "2.4.6",
+  "pandas": "3.0.6",
+  "pulp": "3.3.2",
+  "python": "3.11.15",
+  "scipy": "1.17.1"
+ },
+ "week": 4
+}

@@ -45,7 +45,21 @@ def build_inj():
     o = pd.DataFrame(dict(player=i.full_name, pos=i.position, team=i.team, injury=i.report_primary_injury.fillna(i.practice_primary_injury), practice=i.ps, game_status=i.report_status, nkey=i.full_name.map(norm_name)))
     o["p_active"] = [p_active(a, b, c) for a, b, c in zip(i.rs, i.ps, i.pg)]
     o["injury_week"] = int(i.week.max())
+    o = pd.concat([o, _reserve_rows(int(i.week.max()), set(o.nkey) )], ignore_index=True)
     return o.reset_index(drop=True)
+def _reserve_rows(week, seen):
+    """Players on roster status RES (IR/PUP/NFI) are not on the injury report but cannot play: p_active 0.
+    Only used when the roster snapshot for that week is a full roster (current season); historical roster files are sparse, so backtests are unchanged."""
+    try:
+        r = pd.read_parquet(N + f"roster_{SEASON}.parquet"); r = r[(r.game_type == "REG") & (r.week == week)]
+    except Exception:
+        return pd.DataFrame()
+    if len(r) < 1000:
+        return pd.DataFrame()
+    r = r[(r.status == "RES") & r.position.isin(["QB", "RB", "FB", "WR", "TE"])].copy()
+    r["nkey"] = r.full_name.map(norm_name); r["team"] = r.team.map(tm); r = r[~r.nkey.isin(seen)]
+    return pd.DataFrame(dict(player=r.full_name.values, pos=r.position.values, team=r.team.values, injury="Reserve (IR/PUP/NFI)", practice="None", game_status="Out",
+                             nkey=r.nkey.values, p_active=0.0, injury_week=week))
 def _qb_fix(o):
     dq = _DC_QB[_DC_QB.pos_rank == 1][["team", "nkey"]].drop_duplicates()
     ks = set(zip(dq.team, dq.nkey))

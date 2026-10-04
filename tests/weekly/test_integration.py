@@ -22,3 +22,21 @@ def test_run_all_produces_sane_projections(tmp_path):
     env2 = pd.read_csv(tmp_path / "w4_game_environment.csv")
     assert env2.home_win_prob.between(0.02, 0.98).all()
     assert env2.total_mean.between(25, 75).all()
+
+
+@pytest.mark.skipif(not CACHE or not os.path.exists(os.path.join(CACHE or "", "roster_2026.parquet")), reason="no nflverse cache")
+def test_reserve_list_players_are_never_projected_active(tmp_path):
+    env = dict(os.environ, APEX_NFLV=CACHE, APEX_OUT=str(tmp_path), APEX_ENV="market", APEX_NS="1000")
+    r = subprocess.run([sys.executable, "run_all.py"], cwd=WEEKLY, env=env, capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[-2000:]
+    ro = pd.read_parquet(os.path.join(CACHE, "roster_2026.parquet"))
+    ro = ro[(ro.game_type == "REG") & (ro.week == ro.week.max())]
+    if len(ro) < 1000:
+        pytest.skip("roster snapshot is not a full roster")
+    res = set(ro[(ro.status == "RES") & ro.position.isin(["QB", "RB", "FB", "WR", "TE"])].full_name)
+    inj = pd.read_parquet(os.path.join(CACHE, "injuries_2026.parquet"))
+    on_report = set(inj[(inj.game_type == "REG") & (inj.week == inj.week.max())].full_name)   # a listed player may be activated off IR; the report governs
+    res = res - on_report
+    pa = pd.read_pickle(tmp_path / "rank_raw.pkl")
+    bad = pa[pa.player.isin(res) & (pa.p_active > 0.01)]
+    assert bad.empty, bad[["player", "team", "p_active"]].to_string()
