@@ -1,1 +1,8 @@
 contracts/projections/b07_v0_1_contract.yaml text eol=lf
+
+# SPAMML authority files are digest-pinned in engine/draft/spamml_configuration.py. The pinned SHA-256 values
+# were computed over CRLF bytes (Windows checkout). Git stores LF; force CRLF in every working tree so the
+# attested bytes are identical on Windows, Linux and CI. File contents in git are unchanged.
+contracts/league_rules/spamml-2026-v0.7.yaml text eol=crlf
+contracts/draft/spamml-2026-draft-seat-assignment-v1.2.yaml text eol=crlf
+contracts/draft/spamml-2026-round-order-map-v1.0.yaml text eol=crlf
