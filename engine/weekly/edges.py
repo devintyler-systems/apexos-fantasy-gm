@@ -2,7 +2,7 @@
 from paths import OUT, NFLV, DELIV, CONF
 import numpy as np, pandas as pd, datetime as dt
 import run_all as R
-from params import SCHED, norm_name
+from params import SCHED, norm_name, is_neutral
 O=OUT
 NOW=pd.Timestamp(dt.datetime.now(dt.timezone.utc)).tz_localize(None)
 L=pd.read_csv(O+"props_lines.csv"); L["as_of"]=pd.to_datetime(L.as_of_utc).dt.tz_localize(None)
