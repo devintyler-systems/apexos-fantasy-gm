@@ -8,6 +8,13 @@ from paths import OUT, NFLV, DELIV, CONF
 import numpy as np, pandas as pd, json
 from params import *
 CAL = json.load(open(CONF+"calibration_params.json"))
+# Team-volume dispersion and target-share cap. APEX_VOLFILE overrides the file (used by the backtests to compare variants).
+# Defaults reproduce the pre-2026-10-05 behaviour so an absent file changes nothing.
+import os as _os
+VOL = dict(plays_sd=4.0, pr_margin_slope=0.0022, pr_extra_sd=0.0, pr_cap=0.08, plays_lo=42, plays_hi=85, tgt_share_cap=0.0)
+_vf = _os.environ.get("APEX_VOLFILE", CONF + "volume_params.json")
+if _os.path.exists(_vf):
+    VOL.update({k: v for k, v in json.load(open(_vf)).items() if not k.startswith("_")})
 
 NS = 20000
 SEED = 20261004
@@ -100,8 +107,9 @@ def sim_game(away, home, neutral, rng, ns=NS):
         M = (H["pts"] - A["pts"]) if s["home"] else (A["pts"] - H["pts"])
         s["M"] = M
         s["z"] = 0.8 * (s["e"] / .12) + 0.6 * rng.normal(size=ns)
-        pr = np.clip(s["P"]["pr"] + 0.0022 * (-M), s["P"]["pr"] - .08, s["P"]["pr"] + .08)
-        plays = np.clip(rng.normal(s["plays"] * (1 + 0.03 * g), 4.0), 42, 85).round().astype(int)
+        extra = rng.normal(0.0, VOL["pr_extra_sd"], ns) if VOL["pr_extra_sd"] > 0 else 0.0     # play-calling noise beyond the binomial
+        pr = np.clip(s["P"]["pr"] + VOL["pr_margin_slope"] * (-M) + extra, s["P"]["pr"] - VOL["pr_cap"], s["P"]["pr"] + VOL["pr_cap"])
+        plays = np.clip(rng.normal(s["plays"] * (1 + 0.03 * g), VOL["plays_sd"]), VOL["plays_lo"], VOL["plays_hi"]).round().astype(int)
         db = rng.binomial(plays, np.clip(pr, .35, .78))
         sk = rng.binomial(db, np.clip(s["sk"] * s["qm"] ** -1, .01, .2))
         att = db - sk
@@ -144,6 +152,18 @@ def play_side(rng, t, sd, ns):
     hair = np.ones(K + 1)
     for i, r in rec.iterrows():
         if r.p_active < 1.0 and r.game_status in ("Questionable", "Doubtful"): hair[i] = 0.93
+    if VOL["tgt_share_cap"] > 0:      # cap each pass catcher's EXPECTED share (given he plays); vacated targets spill to the others
+        capv = float(VOL["tgt_share_cap"]); w0 = base_sh.copy()
+        for _ in range(8):
+            W = w0[None, :] * act * hair[None, :]; W = W / np.maximum(W.sum(axis=1, keepdims=True), 1e-12)
+            over = False
+            for k in range(K):
+                a_k = act[:, k]
+                if a_k.sum() == 0: continue
+                m_k = float(W[a_k, k].mean())
+                if m_k > capv * 1.005: w0[k] *= capv / m_k; over = True
+            if not over: break
+        sh = w0 / w0.sum()
     G = rng.gamma(np.maximum(ALPHA_T * sh, 1e-3)[None, :], 1.0, size=(ns, K + 1))
     wts = G * act * hair[None, :]
     wts = wts / wts.sum(axis=1, keepdims=True)
