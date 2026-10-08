@@ -103,9 +103,9 @@ def freeze(season, week, track, out_dir=None, runs_dir=None, as_of=None, notes="
     dk = os.environ.get("APEX_DK_SALARIES")
     if dk and os.path.exists(dk):
         inputs["dk_salaries"] = sha256(dk)
-    od = os.environ.get("APEX_ODDS_XLSX")
-    if od and os.path.exists(od):
-        inputs["odds_xlsx"] = sha256(od)
+    for i_, od in enumerate((os.environ.get("APEX_ODDS_XLSX") or "").split(os.pathsep)):      # one or more odds workbooks (hash only; never committed)
+        if od and os.path.exists(od):
+            inputs["odds_xlsx" if i_ == 0 else f"odds_xlsx_{i_}"] = sha256(od)
     man = {
         "schema": SCHEMA,
         "run_id": rid,

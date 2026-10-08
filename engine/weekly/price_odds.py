@@ -11,14 +11,16 @@ from params import SCHED, norm_name, is_neutral, TARGET_WEEK
 from load import FULL2ABBR
 
 TZ_OFFSET_H = 7        # sheet timestamps are US Pacific (PDT): TNF commence 17:15 == 8:15 PM ET kickoff
-MK = {"player_receptions": "rec", "player_pass_completions": "pass_cmp", "player_pass_attempts": "pass_att", "player_rush_attempts": "rush_att", "player_1st_td": "first_td"}
+MK = {"player_receptions": "rec", "player_pass_completions": "pass_cmp", "player_pass_attempts": "pass_att", "player_rush_attempts": "rush_att", "player_1st_td": "first_td",
+      "player_anytime_td": "anytime_td", "player_pass_yds": "pass_yds", "player_reception_yds": "rec_yds", "player_rush_yds": "rush_yds"}
+ONE_SIDED = ("first_td", "anytime_td")
 SD = {"Over": "over", "Under": "under", "Yes": "yes"}
 NAME_ALIAS = {"zonovan knight": "bam knight", "drew ogletree": "andrew ogletree"}      # book name -> nflverse name (verified to exist in the Week 5 sim)
 STALE_H = 6
 imp = lambda a: np.where(np.asarray(a, float) < 0, -np.asarray(a, float) / (-np.asarray(a, float) + 100), 100 / (np.asarray(a, float) + 100))
 payout = lambda a: np.where(np.asarray(a, float) < 0, 100 / (-np.asarray(a, float)), np.asarray(a, float) / 100)
 
-raw = pd.read_excel(os.environ["APEX_ODDS_XLSX"])
+raw = pd.concat([pd.read_excel(f).assign(src_file=os.path.basename(f)) for f in os.environ["APEX_ODDS_XLSX"].split(os.pathsep)], ignore_index=True)      # several workbooks: os.pathsep-separated
 raw["as_of_utc"] = raw.last_update + pd.Timedelta(hours=TZ_OFFSET_H)
 raw["commence_utc"] = raw.commence_time + pd.Timedelta(hours=TZ_OFFSET_H)
 raw["home"] = raw.home_team.map(FULL2ABBR); raw["away"] = raw.away_team.map(FULL2ABBR)
@@ -75,8 +77,9 @@ for (a, h), d in R_.items():
         if pl["p_active"] < 0.03 or m.sum() < 200:
             unmatched.append(dict(game=f"{a}@{h}", player=grp.description.iloc[0], market=mk, rows=len(grp), reason=f"p_active {pl['p_active']:.2f} (projected out/inactive)")); continue
         opp = h if team == a else a
-        if mk == "first_td":
-            tdc = pl["rush_td"] + pl["rec_td"]; pm = float((tdc[m] / Ttot[m]).mean())
+        if mk in ONE_SIDED:
+            tdc = pl["rush_td"] + pl["rec_td"]      # passing TDs do not count for anytime/first TD
+            pm = float((tdc[m] / Ttot[m]).mean()) if mk == "first_td" else float((tdc[m] >= 1).mean())
             for r in grp.itertuples():
                 nv = float(imp(r.price)) * 0.90
                 out.append(dict(game=f"{a}@{h}", player=r.description, team=team, opp=opp, market=mk, side="yes", line=np.nan, book=r.bookmaker, odds=r.price, model_p=pm, novig_p=nv,
@@ -99,9 +102,10 @@ for (a, h), d in R_.items():
                 out.append(dict(game=f"{a}@{h}", player=r.description, team=team, opp=opp, market=mk, side=r.side, line=line, book=r.bookmaker, odds=r.price, model_p=pm, novig_p=nv,
                                 novig_method=meth, p_active=pl["p_active"], as_of=r.as_of_utc,
                                 ev=(po if r.side == "over" else pu) * float(payout(r.price)) - (pu if r.side == "over" else po)))
-E = pd.DataFrame(out)
-E["imp_vig_in"] = imp(E.odds)
-ft = E.market == "first_td"
+E = pd.DataFrame(out, columns=["game", "player", "team", "opp", "market", "side", "line", "book", "odds", "model_p", "novig_p", "novig_method", "p_active", "as_of", "ev"])
+E["as_of"] = pd.to_datetime(E.as_of)
+E["imp_vig_in"] = imp(E.odds) if len(E) else []
+ft = E.market == "first_td"      # only first TD forms a (near) complete field that can be normalized
 tot = E[ft].groupby(["game", "book"]).imp_vig_in.transform("sum")
 E["novig_p_ceiling"] = np.nan
 E.loc[ft, "novig_p_ceiling"] = E.loc[ft, "imp_vig_in"] / tot      # listed field forced to sum to 1: an UPPER bound (unlisted players also take probability)
@@ -110,10 +114,10 @@ E["ev"] = E.ev.where(E.ev.notna(), E.model_p * payout(E.odds) - (1 - E.model_p))
 E["age_h"] = (NOW - E.as_of).dt.total_seconds() / 3600; E["stale"] = E.age_h > STALE_H
 n_stale = int(E.stale.sum()); E = E[~E.stale].copy()      # stale lines are excluded, not just flagged
 E["is_main_line"] = False
-for k_, g_ in E[E.market != "first_td"].groupby(["game", "player", "market"]): E.loc[g_.index[g_.line == g_.line.mode().iloc[0]], "is_main_line"] = True
+for k_, g_ in (E[~E.market.isin(ONE_SIDED)].groupby(["game", "player", "market"]) if len(E) else []): E.loc[g_.index[g_.line == g_.line.mode().iloc[0]], "is_main_line"] = True
 E["model_gt_85_suppress"] = (E.model_p > 0.85) | (E.model_p < 0.15)
 E["model_gap_flag"] = E.edge.abs() > 0.15
-bias = E[E.side.isin(["over", "yes"])].groupby("market").edge.median()
+bias = E[E.side.isin(["over", "yes"])].groupby("market").edge.median() if len(E) else pd.Series(dtype=float)
 E["bias_offset"] = E.market.map(bias)
 E["edge_bias_centered"] = np.where(E.side.isin(["over", "yes"]), E.edge - E.bias_offset, E.edge + E.bias_offset)
 # names say what they are: model minus book, diagnostic only. No row here is an edge or a pick (postmortem P0 #2); never rank by these.
@@ -139,5 +143,5 @@ pp[cols].rename(columns={"bookmaker": "book", "description": "player", "market_v
 rej_wk.assign(reject="not a Week %d game on the schedule" % TARGET_WEEK)[["game_id", "bookmaker", "away_team", "home_team", "market", "commence_utc", "reject"]].to_csv(O + "props_lines_rejected.csv", index=False)
 print(f"odds rows {len(raw)}, in week {len(p)}, not week {len(rej_wk)}, player-market rows priced {len(E)}, unmatched player-markets {len(unmatched)}")
 print("book names", n_books, "independent feeds by market", n_feeds, "| stale excluded", n_stale, "| aliases", len(alias_log), "| no-book-line players", len(nb))
-print("snapshot as_of range", E.as_of.min(), E.as_of.max(), "| max age h", round(E.age_h.max(), 2), "| stale rows", int(E.stale.sum()))
+print("snapshot as_of range", E.as_of.min() if len(E) else None, E.as_of.max() if len(E) else None, "| max age h", round(E.age_h.max(), 2) if len(E) else None, "| stale excluded", n_stale)
 print("market bias offsets", bias.round(3).to_dict())
