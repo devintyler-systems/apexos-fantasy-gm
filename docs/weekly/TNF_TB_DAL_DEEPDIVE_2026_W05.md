@@ -391,7 +391,7 @@ Two-plus passing-TD parlays cannot be compared to the books because the files ha
 - **Showdown.** The ceiling lineup built for the $300K contest is in `SHOWDOWN_TB_DAL_2026_W05.md`.
 - **Everything here is model output on a snapshot.** Book lines were stamped 22:10 to 22:42Z, so they are about an hour old as of 23:35Z and have likely moved. Confidence in the model's numbers is a reliability index, not a hit probability, and no single-prop probability above 85% is shown.
 
-## Non-TD props: best bets and parlays (added 23:50Z)
+## Non-TD props: best bets and parlays (added 23:39Z)
 
 **Screen:** model vs book at the main line, centered on the model's known low bias on counts and yardage (diagnostic only, never a calibration), checked against each player's 2026 Weeks 1 to 4 games versus the line, with role flags. Ten props pass. Eight are TB pass-catcher overs that all depend on TB's passing volume, where the sim (34 attempts) and the books (28.5) disagree most, so they are one correlated bet, not eight.
 
