@@ -16,7 +16,7 @@ MK = {"player_receptions": "rec", "player_pass_completions": "pass_cmp", "player
 ONE_SIDED = ("first_td", "anytime_td")
 SD = {"Over": "over", "Under": "under", "Yes": "yes"}
 NAME_ALIAS = {"zonovan knight": "bam knight", "drew ogletree": "andrew ogletree"}      # book name -> nflverse name (verified to exist in the Week 5 sim)
-STALE_H = 6
+STALE_H = 2        # lines move fast into kickoff; anything older than 2 hours is excluded, and odds_meta records minutes to the first kickoff
 imp = lambda a: np.where(np.asarray(a, float) < 0, -np.asarray(a, float) / (-np.asarray(a, float) + 100), 100 / (np.asarray(a, float) + 100))
 payout = lambda a: np.where(np.asarray(a, float) < 0, 100 / (-np.asarray(a, float)), np.asarray(a, float) / 100)
 
@@ -114,7 +114,10 @@ E["ev"] = E.ev.where(E.ev.notna(), E.model_p * payout(E.odds) - (1 - E.model_p))
 E["age_h"] = (NOW - E.as_of).dt.total_seconds() / 3600; E["stale"] = E.age_h > STALE_H
 n_stale = int(E.stale.sum()); E = E[~E.stale].copy()      # stale lines are excluded, not just flagged
 E["is_main_line"] = False
-for k_, g_ in (E[~E.market.isin(ONE_SIDED)].groupby(["game", "player", "market"]) if len(E) else []): E.loc[g_.index[g_.line == g_.line.mode().iloc[0]], "is_main_line"] = True
+for k_, g_ in (E[~E.market.isin(ONE_SIDED)].groupby(["game", "player", "market"]) if len(E) else []):
+    sc = g_.groupby("line").agg(feeds=("book", "nunique"), off=("novig_p", lambda x: abs(x.mean() - 0.5)))      # main line = most feeds; ties go to the line priced closest to even
+    best = sc.sort_values(["feeds", "off"], ascending=[False, True]).index[0]
+    E.loc[g_.index[g_.line == best], "is_main_line"] = True
 E["model_gt_85_suppress"] = (E.model_p > 0.85) | (E.model_p < 0.15)
 E["model_gap_flag"] = E.edge.abs() > 0.15
 bias = E[E.side.isin(["over", "yes"])].groupby("market").edge.median() if len(E) else pd.Series(dtype=float)
@@ -125,7 +128,7 @@ E = E.rename(columns={"edge": "gap_model_minus_novig", "ev": "ev_if_model_right_
 E.to_csv(O + "edges_all_rows.csv", index=False)
 pd.DataFrame(unmatched).to_csv(O + "odds_unmatched_names.csv", index=False)
 pd.DataFrame(alias_log).drop_duplicates().to_csv(O + "odds_name_aliases.csv", index=False)
-pd.DataFrame([dict(pricing_now_utc=NOW.strftime("%Y-%m-%dT%H:%M:%SZ"), snapshot_min=str(E.as_of.min()), snapshot_max=str(E.as_of.max()), book_names=n_books, independent_feeds_by_market=str(n_feeds),
+pd.DataFrame([dict(pricing_now_utc=NOW.strftime("%Y-%m-%dT%H:%M:%SZ"), minutes_to_first_kickoff=round((raw[raw.in_week].commence_utc.min() - NOW).total_seconds() / 60, 1), snapshot_min=str(E.as_of.min()), snapshot_max=str(E.as_of.max()), book_names=n_books, independent_feeds_by_market=str(n_feeds),
                    stale_rows_excluded=n_stale, odds_rows=len(raw), rows_in_week=len(p), rows_not_week=len(rej_wk), tz_offset_h=TZ_OFFSET_H)]).to_csv(O + "odds_meta.csv", index=False)
 # players the model projects with a real role but NO book lists any prop for (book-vs-report conflict candidates)
 listed = set(p.loc[p.market.isin(MK), "description"].map(norm_name))
