@@ -1,0 +1,177 @@
+game,player,market,rows,reason
+TB@DAL,Camden Brown,anytime_td,5,no projected player with this name in either team
+TB@DAL,Camden Brown,first_td,4,no projected player with this name in either team
+TB@DAL,Dallas Cowboys D/ST,anytime_td,3,no projected player with this name in either team
+TB@DAL,Dallas Cowboys D/ST,first_td,3,no projected player with this name in either team
+TB@DAL,Dallas Cowboys Defense,anytime_td,1,no projected player with this name in either team
+TB@DAL,No Touchdown,first_td,2,no projected player with this name in either team
+TB@DAL,Tampa Bay Buccaneers D/ST,anytime_td,3,no projected player with this name in either team
+TB@DAL,Tampa Bay Buccaneers D/ST,first_td,3,no projected player with this name in either team
+TB@DAL,Tampa Bay Buccaneers Defense,anytime_td,1,no projected player with this name in either team
+PHI@JAX,CJ Williams,anytime_td,5,no projected player with this name in either team
+PHI@JAX,CJ Williams,first_td,4,no projected player with this name in either team
+PHI@JAX,Dameon Pierce,anytime_td,5,no projected player with this name in either team
+PHI@JAX,Dameon Pierce,first_td,3,no projected player with this name in either team
+PHI@JAX,Elijah Moore,anytime_td,5,no projected player with this name in either team
+PHI@JAX,Elijah Moore,first_td,5,no projected player with this name in either team
+PHI@JAX,Jacksonville Jaguars D/ST,anytime_td,3,no projected player with this name in either team
+PHI@JAX,Jacksonville Jaguars D/ST,first_td,3,no projected player with this name in either team
+PHI@JAX,Jacksonville Jaguars Defense,anytime_td,1,no projected player with this name in either team
+PHI@JAX,Josiah Deguara,anytime_td,4,no projected player with this name in either team
+PHI@JAX,Josiah Deguara,first_td,3,no projected player with this name in either team
+PHI@JAX,No Touchdown,first_td,3,no projected player with this name in either team
+PHI@JAX,Philadelphia Eagles D/ST,anytime_td,3,no projected player with this name in either team
+PHI@JAX,Philadelphia Eagles D/ST,first_td,3,no projected player with this name in either team
+PHI@JAX,Philadelphia Eagles Defense,anytime_td,1,no projected player with this name in either team
+PHI@JAX,Tanner Koziol,anytime_td,6,no projected player with this name in either team
+PHI@JAX,Tanner Koziol,first_td,5,no projected player with this name in either team
+PHI@JAX,Travis Hunter,anytime_td,5,no projected player with this name in either team
+PHI@JAX,Travis Hunter,first_td,4,no projected player with this name in either team
+CHI@GB,Chicago Bears D/ST,anytime_td,3,no projected player with this name in either team
+CHI@GB,Chicago Bears D/ST,first_td,3,no projected player with this name in either team
+CHI@GB,Chicago Bears Defense,anytime_td,1,no projected player with this name in either team
+CHI@GB,Green Bay Packers D/ST,anytime_td,3,no projected player with this name in either team
+CHI@GB,Green Bay Packers D/ST,first_td,3,no projected player with this name in either team
+CHI@GB,Green Bay Packers Defense,anytime_td,1,no projected player with this name in either team
+CHI@GB,Josh Whyle,anytime_td,5,no projected player with this name in either team
+CHI@GB,Josh Whyle,first_td,2,no projected player with this name in either team
+CHI@GB,No Touchdown,first_td,3,no projected player with this name in either team
+CHI@GB,Tyson Bagent,anytime_td,6,no projected player with this name in either team
+CHI@GB,Tyson Bagent,first_td,6,no projected player with this name in either team
+CHI@GB,Tyson Bagent,pass_att,17,no projected player with this name in either team
+CHI@GB,Tyson Bagent,pass_cmp,16,no projected player with this name in either team
+CHI@GB,Tyson Bagent,pass_yds,12,no projected player with this name in either team
+CHI@GB,Tyson Bagent,rush_att,2,no projected player with this name in either team
+CHI@GB,Tyson Bagent,rush_yds,10,no projected player with this name in either team
+CIN@MIA,Cincinnati Bengals D/ST,anytime_td,1,no projected player with this name in either team
+CIN@MIA,Cincinnati Bengals Defense,anytime_td,1,no projected player with this name in either team
+CIN@MIA,Jack Endries,anytime_td,5,no projected player with this name in either team
+CIN@MIA,Jack Endries,first_td,3,no projected player with this name in either team
+CIN@MIA,Justin Joly,anytime_td,5,no projected player with this name in either team
+CIN@MIA,Justin Joly,first_td,3,no projected player with this name in either team
+CIN@MIA,Miami Dolphins D/ST,anytime_td,1,no projected player with this name in either team
+CIN@MIA,Miami Dolphins Defense,anytime_td,1,no projected player with this name in either team
+CIN@MIA,No Touchdown,first_td,2,no projected player with this name in either team
+CIN@MIA,Seydou Traore,anytime_td,6,no projected player with this name in either team
+CIN@MIA,Seydou Traore,first_td,3,no projected player with this name in either team
+LV@NE,Dont'e Thornton Jr.,anytime_td,2,no projected player with this name in either team
+LV@NE,Dont'e Thornton Jr.,first_td,2,no projected player with this name in either team
+LV@NE,Las Vegas Raiders D/ST,anytime_td,3,no projected player with this name in either team
+LV@NE,Las Vegas Raiders D/ST,first_td,3,no projected player with this name in either team
+LV@NE,Las Vegas Raiders Defense,anytime_td,1,no projected player with this name in either team
+LV@NE,New England Patriots D/ST,anytime_td,3,no projected player with this name in either team
+LV@NE,New England Patriots D/ST,first_td,3,no projected player with this name in either team
+LV@NE,New England Patriots Defense,anytime_td,1,no projected player with this name in either team
+LV@NE,No Touchdown,first_td,3,no projected player with this name in either team
+LV@NE,Tanner Arkin,anytime_td,5,no projected player with this name in either team
+LV@NE,Tanner Arkin,first_td,4,no projected player with this name in either team
+MIN@NO,Minnesota Vikings D/ST,anytime_td,3,no projected player with this name in either team
+MIN@NO,Minnesota Vikings D/ST,first_td,2,no projected player with this name in either team
+MIN@NO,Minnesota Vikings Defense,anytime_td,1,no projected player with this name in either team
+MIN@NO,New Orleans Saints D/ST,anytime_td,3,no projected player with this name in either team
+MIN@NO,New Orleans Saints D/ST,first_td,2,no projected player with this name in either team
+MIN@NO,New Orleans Saints Defense,anytime_td,1,no projected player with this name in either team
+MIN@NO,No Touchdown,first_td,2,no projected player with this name in either team
+CLE@NYJ,Cleveland Browns D/ST,anytime_td,3,no projected player with this name in either team
+CLE@NYJ,Cleveland Browns D/ST,first_td,3,no projected player with this name in either team
+CLE@NYJ,Cleveland Browns Defense,anytime_td,1,no projected player with this name in either team
+CLE@NYJ,New York Jets D/ST,anytime_td,3,no projected player with this name in either team
+CLE@NYJ,New York Jets D/ST,first_td,3,no projected player with this name in either team
+CLE@NYJ,New York Jets Defense,anytime_td,1,no projected player with this name in either team
+CLE@NYJ,No Touchdown,first_td,3,no projected player with this name in either team
+IND@PIT,Darius Slayton,anytime_td,4,no projected player with this name in either team
+IND@PIT,Darius Slayton,first_td,2,no projected player with this name in either team
+IND@PIT,DJ Giddens,anytime_td,5,no projected player with this name in either team
+IND@PIT,DJ Giddens,first_td,3,no projected player with this name in either team
+IND@PIT,Indianapolis Colts D/ST,anytime_td,3,no projected player with this name in either team
+IND@PIT,Indianapolis Colts D/ST,first_td,2,no projected player with this name in either team
+IND@PIT,Indianapolis Colts Defense,anytime_td,1,no projected player with this name in either team
+IND@PIT,No Touchdown,first_td,2,no projected player with this name in either team
+IND@PIT,Pittsburgh Steelers D/ST,anytime_td,3,no projected player with this name in either team
+IND@PIT,Pittsburgh Steelers D/ST,first_td,2,no projected player with this name in either team
+IND@PIT,Pittsburgh Steelers Defense,anytime_td,1,no projected player with this name in either team
+HOU@TEN,Dare Ogunbowale,anytime_td,5,no projected player with this name in either team
+HOU@TEN,Dare Ogunbowale,first_td,3,no projected player with this name in either team
+HOU@TEN,David Martin-Robinson,anytime_td,5,no projected player with this name in either team
+HOU@TEN,David Martin-Robinson,first_td,2,no projected player with this name in either team
+HOU@TEN,Houston Texans D/ST,anytime_td,3,no projected player with this name in either team
+HOU@TEN,Houston Texans D/ST,first_td,3,no projected player with this name in either team
+HOU@TEN,Houston Texans Defense,anytime_td,1,no projected player with this name in either team
+HOU@TEN,Kylen Granson,anytime_td,4,no projected player with this name in either team
+HOU@TEN,Kylen Granson,first_td,2,no projected player with this name in either team
+HOU@TEN,Michael Carter,anytime_td,3,no projected player with this name in either team
+HOU@TEN,Michael Carter,first_td,2,no projected player with this name in either team
+HOU@TEN,No Touchdown,first_td,3,no projected player with this name in either team
+HOU@TEN,Tennessee Titans D/ST,anytime_td,3,no projected player with this name in either team
+HOU@TEN,Tennessee Titans D/ST,first_td,3,no projected player with this name in either team
+HOU@TEN,Tennessee Titans Defense,anytime_td,1,no projected player with this name in either team
+NYG@WAS,Dalen Cambre,anytime_td,1,no projected player with this name in either team
+NYG@WAS,Dalen Cambre,first_td,1,no projected player with this name in either team
+NYG@WAS,New York Giants D/ST,anytime_td,1,no projected player with this name in either team
+NYG@WAS,New York Giants Defense,anytime_td,1,no projected player with this name in either team
+NYG@WAS,No Touchdown,first_td,2,no projected player with this name in either team
+NYG@WAS,Thomas Fidone,anytime_td,5,no projected player with this name in either team
+NYG@WAS,Thomas Fidone,first_td,3,no projected player with this name in either team
+NYG@WAS,Washington Commanders D/ST,anytime_td,1,no projected player with this name in either team
+NYG@WAS,Washington Commanders Defense,anytime_td,1,no projected player with this name in either team
+DEN@LAC,Dallen Bentley,anytime_td,5,no projected player with this name in either team
+DEN@LAC,Dallen Bentley,first_td,3,no projected player with this name in either team
+DEN@LAC,Denver Broncos D/ST,anytime_td,3,no projected player with this name in either team
+DEN@LAC,Denver Broncos D/ST,first_td,3,no projected player with this name in either team
+DEN@LAC,Denver Broncos Defense,anytime_td,1,no projected player with this name in either team
+DEN@LAC,Los Angeles Chargers D/ST,anytime_td,3,no projected player with this name in either team
+DEN@LAC,Los Angeles Chargers D/ST,first_td,3,no projected player with this name in either team
+DEN@LAC,Los Angeles Chargers Defense,anytime_td,1,no projected player with this name in either team
+DEN@LAC,No Touchdown,first_td,3,no projected player with this name in either team
+DET@ARI,Arizona Cardinals D/ST,anytime_td,3,no projected player with this name in either team
+DET@ARI,Arizona Cardinals D/ST,first_td,3,no projected player with this name in either team
+DET@ARI,Arizona Cardinals Defense,anytime_td,1,no projected player with this name in either team
+DET@ARI,Detroit Lions D/ST,anytime_td,3,no projected player with this name in either team
+DET@ARI,Detroit Lions D/ST,first_td,3,no projected player with this name in either team
+DET@ARI,Detroit Lions Defense,anytime_td,1,no projected player with this name in either team
+DET@ARI,No Touchdown,first_td,3,no projected player with this name in either team
+DET@ARI,Reggie Virgil,anytime_td,5,no projected player with this name in either team
+DET@ARI,Reggie Virgil,first_td,3,no projected player with this name in either team
+DET@ARI,Teagan Quitoriano,anytime_td,6,no projected player with this name in either team
+DET@ARI,Teagan Quitoriano,first_td,3,no projected player with this name in either team
+DET@ARI,Tyler Conklin,anytime_td,5,no projected player with this name in either team
+DET@ARI,Tyler Conklin,first_td,3,no projected player with this name in either team
+SF@SEA,James Jordan,anytime_td,5,no projected player with this name in either team
+SF@SEA,James Jordan,first_td,3,no projected player with this name in either team
+SF@SEA,Malik Turner,anytime_td,1,no projected player with this name in either team
+SF@SEA,Malik Turner,first_td,1,no projected player with this name in either team
+SF@SEA,Nick Kallerup,anytime_td,5,no projected player with this name in either team
+SF@SEA,Nick Kallerup,first_td,3,no projected player with this name in either team
+SF@SEA,No Touchdown,first_td,3,no projected player with this name in either team
+SF@SEA,San Francisco 49ers D/ST,anytime_td,3,no projected player with this name in either team
+SF@SEA,San Francisco 49ers D/ST,first_td,3,no projected player with this name in either team
+SF@SEA,San Francisco 49ers Defense,anytime_td,1,no projected player with this name in either team
+SF@SEA,Seattle Seahawks D/ST,anytime_td,3,no projected player with this name in either team
+SF@SEA,Seattle Seahawks D/ST,first_td,3,no projected player with this name in either team
+SF@SEA,Seattle Seahawks Defense,anytime_td,1,no projected player with this name in either team
+SF@SEA,Velus Jones Jr.,anytime_td,5,no projected player with this name in either team
+SF@SEA,Velus Jones Jr.,first_td,3,no projected player with this name in either team
+BAL@ATL,Atlanta Falcons D/ST,anytime_td,3,no projected player with this name in either team
+BAL@ATL,Atlanta Falcons D/ST,first_td,3,no projected player with this name in either team
+BAL@ATL,Atlanta Falcons Defense,anytime_td,1,no projected player with this name in either team
+BAL@ATL,Baltimore Ravens D/ST,anytime_td,3,no projected player with this name in either team
+BAL@ATL,Baltimore Ravens D/ST,first_td,3,no projected player with this name in either team
+BAL@ATL,Baltimore Ravens Defense,anytime_td,1,no projected player with this name in either team
+BAL@ATL,Elijah Dotson,rec,2,no projected player with this name in either team
+BAL@ATL,No Touchdown,first_td,3,no projected player with this name in either team
+BAL@ATL,Tyler Huntley,anytime_td,5,no projected player with this name in either team
+BAL@ATL,Tyler Huntley,first_td,6,no projected player with this name in either team
+BAL@ATL,Tyler Huntley,pass_yds,10,no projected player with this name in either team
+BUF@LA,Buffalo Bills D/ST,anytime_td,3,no projected player with this name in either team
+BUF@LA,Buffalo Bills D/ST,first_td,3,no projected player with this name in either team
+BUF@LA,Buffalo Bills Defense,anytime_td,1,no projected player with this name in either team
+BUF@LA,CJ Daniels,anytime_td,5,no projected player with this name in either team
+BUF@LA,CJ Daniels,first_td,3,no projected player with this name in either team
+BUF@LA,Los Angeles Rams D/ST,anytime_td,3,no projected player with this name in either team
+BUF@LA,Los Angeles Rams D/ST,first_td,3,no projected player with this name in either team
+BUF@LA,Los Angeles Rams Defense,anytime_td,1,no projected player with this name in either team
+BUF@LA,Max Klare,anytime_td,5,no projected player with this name in either team
+BUF@LA,Max Klare,first_td,3,no projected player with this name in either team
+BUF@LA,No Touchdown,first_td,3,no projected player with this name in either team
+BUF@LA,Skyler Bell,anytime_td,5,no projected player with this name in either team
+BUF@LA,Skyler Bell,first_td,4,no projected player with this name in either team

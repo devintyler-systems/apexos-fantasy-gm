@@ -20,7 +20,10 @@ SCHEMA = "weekly_run_manifest/0.1"
 # Artifacts copied into a frozen run (small, human-diffable). Raw sim pickles stay out.
 FREEZE_PICKLES = {"proj_all.pkl": "projections.csv", "rank_raw.pkl": "rankings_raw.csv"}
 FREEZE_CSVS = ["w4_game_environment.csv", "w4_team_environment.csv", "w4_team_totals.csv", "w4_td_markets.csv",
-               "w4_injury_adjustments.csv", "qa_reconcile.csv"]
+               "w4_injury_adjustments.csv", "qa_reconcile.csv",
+               "props_lines_rejected.csv", "odds_unmatched_names.csv", "odds_name_aliases.csv", "odds_meta.csv", "odds_no_book_lines.csv", "injury_report_coverage.csv"]
+# Raw book prices (props_lines.csv, odds_game_lines.csv, edges_all_rows.csv) are NEVER frozen into git (CLAUDE.md: never commit odds files);
+# the odds workbook's sha256 is recorded in inputs_sha256 as odds_xlsx instead.
 
 
 def sha256(path, chunk=1 << 20):
@@ -100,6 +103,9 @@ def freeze(season, week, track, out_dir=None, runs_dir=None, as_of=None, notes="
     dk = os.environ.get("APEX_DK_SALARIES")
     if dk and os.path.exists(dk):
         inputs["dk_salaries"] = sha256(dk)
+    for i_, od in enumerate((os.environ.get("APEX_ODDS_XLSX") or "").split(os.pathsep)):      # one or more odds workbooks (hash only; never committed)
+        if od and os.path.exists(od):
+            inputs["odds_xlsx" if i_ == 0 else f"odds_xlsx_{i_}"] = sha256(od)
     man = {
         "schema": SCHEMA,
         "run_id": rid,
@@ -108,7 +114,7 @@ def freeze(season, week, track, out_dir=None, runs_dir=None, as_of=None, notes="
         "engine_version": ENGINE_VERSION,
         "git_sha": _git_sha(),
         "versions": _versions(),
-        "env": {k: v for k, v in sorted(os.environ.items()) if k.startswith("APEX_") and k not in ("APEX_DK_SALARIES", "APEX_MANUAL_OUT")},
+        "env": {k: v for k, v in sorted(os.environ.items()) if k.startswith("APEX_") and k not in ("APEX_DK_SALARIES", "APEX_MANUAL_OUT", "APEX_ODDS_XLSX")},
         "inputs_sha256": inputs,
         "artifacts": artifacts,
         "uses_future_information": False,
