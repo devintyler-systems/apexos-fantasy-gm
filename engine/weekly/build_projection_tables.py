@@ -5,6 +5,7 @@ from openpyxl.styles import Font, PatternFill, Alignment
 P=pd.read_pickle(OUT+"proj_all.pkl")
 O=DELIV
 WK=os.environ.get("APEX_TARGET_WEEK","")
+TW=os.environ.get("APEX_THROUGH_WEEK","") or (int(WK)-1 if WK else "")
 TRACK=os.environ.get("APEX_ENV","model")
 TRACK_LABEL="Market-anchored (nflverse spread/total as the team-points prior)" if TRACK=="market" else "Model-only (ratings + weather, no lines)"
 LINES_NOTE="Spread and total from the nflverse schedule feed the environment only; no player prop odds are used." if TRACK=="market" else "No sportsbook lines or odds are used anywhere in this workbook."
@@ -45,10 +46,10 @@ METHOD=pd.DataFrame({"Item":["What this is","Projection","Range","Availability %
  "Detail":[f"{TRACK_LABEL} Week {WK} projections from 20,000 correlated game simulations per game. {LINES_NOTE}",
  "Mean of the simulated stat, conditional on the player playing.",
  "P25 to P75 of the simulated stat (the middle half of outcomes).",
- "Chance the player is active, from the midweek injury report (Out 0, Doubtful 8, Questionable 50-85 by practice, no designation: Full 98 / Limited 90 / DNP 70).",
+ "Chance the player is active, from the NFL injury report and practice status via the fitted table in config/weekly/availability_by_status*.csv (by report status x practice x position, 2023-26): Out 0; Doubtful about 1-2%; Questionable about 52% (DNP) to 71% (Full); no game designation, WR/TE about 81% (DNP) / 95% (Full or Limited), RB about 60% (DNP) / 95-99%, QB set to 98% when he is the depth-chart starter. Roster-status Out (IR, released, retired, left team) is 0.",
  "Probability of at least one rushing or receiving TD (passing TDs do not count). Table shows if-active; the TD lists rank by availability-adjusted % (if-active x availability).",
  "Reliability of the projection, not the chance it hits. Score = Availability x (60% tightness + 40% sample/role stability). Tightness = 1 - (P75-P25) / (2 x projection): the narrower the middle-50% range relative to the number, the higher.",
- "TD conf (all TD columns and lists) is different: it measures the evidence behind the TD estimate = Availability x (50% role/sample stability + 50% red-zone touches observed, full credit at 8 inside-the-20 targets+carries; capped at 85 because TDs are inherently noisy). Passing-TD conf uses the tightness formula. Sample/role stability = Weeks 1-3 volume relative to a full 3-game role, scaled by games played, and (for pass catchers) by QB availability.",
+ f"TD conf (all TD columns and lists) is different: it measures the evidence behind the TD estimate = Availability x (50% role/sample stability + 50% red-zone touches observed, full credit at 8 inside-the-20 targets+carries; capped at 85 because TDs are inherently noisy). Passing-TD conf uses the tightness formula. Sample/role stability = Weeks 1-{TW} volume relative to a full {TW}-game role, scaled by games played, and (for pass catchers) by QB availability.",
  "Typical ranges: completions and passing yards highest, then rushing yards and receptions, then receiving yards; TD projections are the lowest by nature (small counts).",
  "Counting stats only; no fantasy-point conversion in these tables.",
  "Games already played are flagged PLAYED and excluded from the Top 20. Injury report is midweek, so availability will move. Backup QBs are modeled as proxies when a starter is doubtful."]})
