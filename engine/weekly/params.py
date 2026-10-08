@@ -10,8 +10,8 @@ from prep_nv import *
 from load import parse_injury
 import json, os
 
-VERSION = "w4-props-v4-nflverse"
-AS_OF = "2026-10-03"
+VERSION = "w5-props-v4-nflverse"
+AS_OF = os.environ.get("APEX_AS_OF", "2026-10-08")
 
 def shr(obs, n, prior, k):
     return (obs * n + prior * k) / (n + k)
@@ -88,6 +88,39 @@ def _apply_roster_out(o, week):
     if len(add):
         o = pd.concat([o, pd.DataFrame(dict(player=add.full_name.values, pos=add.position.values, team=add.team.values, injury=add.status.map(_ROSTER_OUT).values,
                                             practice="None", game_status="Out", nkey=add.nkey.values, p_active=0.0, injury_week=week))], ignore_index=True)
+    return _apply_stale_team_out(o, week)
+def _apply_stale_team_out(o, week):
+    """Join on gsis_id: a player whose latest team in the stats table is not a team he is live on in the target-week roster (traded/signed elsewhere), or who was cut in an earlier
+    roster snapshot and is absent from the target-week roster, cannot play for the stats team (2026 W5: Beckham NYG->MIN, Xavier Smith LA->SF, KhaDarel Hodge cut by SF in W4)."""
+    try:
+        R = pd.read_parquet(N + f"roster_{SEASON}.parquet"); R = R[R.game_type == "REG"]
+        S = pd.read_parquet(N + f"stats_player_week_{SEASON}.parquet")
+    except Exception:
+        return o
+    cur = R[R.week == week]
+    if len(cur) < 1000:
+        return o
+    S = S[S.position.isin(["QB", "RB", "FB", "WR", "TE"]) & (S.week <= week)].sort_values("week")
+    last = S.groupby("player_id").tail(1)
+    live = cur[cur.status.isin(["ACT", "DEV", "INA"])]
+    live_teams = live.groupby("gsis_id").team.agg(lambda x: {tm(t) for t in x})
+    ever_cut = set(R[(R.week < week) & (R.status == "CUT")].gsis_id) - set(cur.gsis_id)
+    rows = []
+    for r in last.itertuples():
+        t = tm(r.team)
+        if r.player_id in live_teams.index and t not in live_teams[r.player_id]:
+            rows.append((r.player_display_name, r.position, t, "Left team (roster " + "/".join(sorted(live_teams[r.player_id])) + ")"))
+        elif r.player_id in ever_cut:
+            rows.append((r.player_display_name, r.position, t, "Released"))
+    if not rows:
+        return o
+    a = pd.DataFrame(rows, columns=["player", "pos", "team", "injury"]); a["nkey"] = a.player.map(norm_name)
+    seen = set(zip(o.nkey, o.team))
+    hit = pd.Series([(x, y) in set(zip(a.nkey, a.team)) for x, y in zip(o.nkey, o.team)], index=o.index)
+    o.loc[hit, "p_active"] = 0.0; o.loc[hit, "game_status"] = "Out"
+    a = a[[(x, y) not in seen for x, y in zip(a.nkey, a.team)]]
+    if len(a):
+        o = pd.concat([o, a.assign(practice="None", game_status="Out", p_active=0.0, injury_week=week)], ignore_index=True)
     return o
 def _qb_fix(o):
     dq = _DC_QB[_DC_QB.pos_rank == 1][["team", "nkey"]].drop_duplicates()

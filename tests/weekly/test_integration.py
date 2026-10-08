@@ -42,6 +42,26 @@ def test_reserve_released_players_are_never_projected_active(tmp_path):
     assert bad.empty, bad[["player", "team", "p_active"]].to_string()
 
 
+@pytest.mark.skipif(not CACHE or not os.path.exists(os.path.join(CACHE or "", "roster_2026.parquet")), reason="no nflverse cache")
+def test_players_who_left_their_stats_team_are_projected_out(tmp_path):
+    """2026 W5: Beckham (NYG->MIN), X. Smith (LA->SF) and Hodge (cut by SF) kept anytime-TD probability on their old teams. Joined on gsis_id."""
+    env = dict(os.environ, APEX_NFLV=CACHE, APEX_OUT=str(tmp_path), APEX_ENV="market", APEX_NS="1000")
+    r = subprocess.run([sys.executable, "run_all.py"], cwd=WEEKLY, env=env, capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[-2000:]
+    R = pd.read_parquet(os.path.join(CACHE, "roster_2026.parquet")); R = R[R.game_type == "REG"]
+    cur = R[R.week == R.week.max()]
+    if len(cur) < 1000:
+        pytest.skip("roster snapshot is not a full roster")
+    S = pd.read_parquet(os.path.join(CACHE, "stats_player_week_2026.parquet"))
+    S = S[S.position.isin(["QB", "RB", "FB", "WR", "TE"])].sort_values("week").groupby("player_id").tail(1)
+    live = cur[cur.status.isin(["ACT", "DEV", "INA"])].groupby("gsis_id").team.agg(set)
+    gone = {(r.player_display_name, r.team) for r in S.itertuples() if r.player_id in live.index and r.team not in live[r.player_id]}
+    assert gone, "expected at least one mid-season team change in the 2026 data"
+    td = pd.read_csv(tmp_path / "w4_td_markets.csv")
+    bad = td[pd.Series([(a, b) in gone for a, b in zip(td.player, td.team)], index=td.index) & (td.p_active > 0.01)]
+    assert bad.empty, bad.to_string()
+
+
 @pytest.mark.skipif(not CACHE or not os.path.exists(os.path.join(CACHE or "", "depth_charts_2026.parquet")), reason="no nflverse cache")
 def test_starting_qb_follows_the_depth_chart_when_qb1_is_out(tmp_path):
     env = dict(os.environ, APEX_NFLV=CACHE, APEX_OUT=str(tmp_path), APEX_ENV="market", APEX_NS="1000")
@@ -59,9 +79,9 @@ def test_starting_qb_follows_the_depth_chart_when_qb1_is_out(tmp_path):
     for team, g in dc.groupby("team"):
         order = [n for n in g.player_name if n not in out]
         proj = pa[pa.team == team]
-        if not order or order[0] not in threw:
+        if not order or order[0] not in threw or not len(proj):      # no projection rows = bye week
             continue
-        top = proj.sort_values("ev_pts", ascending=False).iloc[0].player if len(proj) else None
+        top = proj.sort_values("ev_pts", ascending=False).iloc[0].player
         assert top == order[0], (team, order[:3], top)
         checked += 1
     assert checked >= 20
