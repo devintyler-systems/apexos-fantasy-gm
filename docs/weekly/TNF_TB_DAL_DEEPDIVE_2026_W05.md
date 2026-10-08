@@ -390,3 +390,24 @@ Two-plus passing-TD parlays cannot be compared to the books because the files ha
 - **Daniels.** Treat every TB passing and TB receiving number as lower-reliability. Books see him as the smaller passer and bigger runner than our model does.
 - **Showdown.** The ceiling lineup built for the $300K contest is in `SHOWDOWN_TB_DAL_2026_W05.md`.
 - **Everything here is model output on a snapshot.** Book lines were stamped 22:10 to 22:42Z, so they are about an hour old as of 23:35Z and have likely moved. Confidence in the model's numbers is a reliability index, not a hit probability, and no single-prop probability above 85% is shown.
+
+## Non-TD props: best bets and parlays (added 23:50Z)
+
+**Screen:** model vs book at the main line, centered on the model's known low bias on counts and yardage (diagnostic only, never a calibration), checked against each player's 2026 Weeks 1 to 4 games versus the line, with role flags. Ten props pass. Eight are TB pass-catcher overs that all depend on TB's passing volume, where the sim (34 attempts) and the books (28.5) disagree most, so they are one correlated bet, not eight.
+
+**The only prop that qualifies for a label under the project rule (rush yards, 50/50 blend with the market):**
+- **Javonte Williams UNDER 66.5 rush yards, -109 DraftKings.** Model P(under) 73%, book no-vig 50%, blend 61.5%. Weeks 1 to 4: over 66.5 in 1 of 4 games, average 57.8. Model main 53 [22-92]. Even centered on the model's rushing-yards bias the gap is about 17 points. Risk: DAL is a roughly 9-point favorite and could run late; his P90 is 92 yards. A rushing or receiving TD does not hurt this bet (his anytime TD is 66% and comes from short carries).
+
+**Supported by game logs, not by the label rule** (receptions, receiving yards and attempts are markets where the model has not beaten the books):
+- Williams UNDER 16.5 rush attempts, -105 theScore (average 15.5, over in 2 of 4). Overlaps the yards bet (correlation 1.13).
+- Ted Hurst III OVER 16.5 receiving yards, -113 FanDuel (over in 4 of 4 games, average 32; model 35 [1-75]).
+- Cade Otton OVER 29.5 receiving yards, -113 FanDuel (3 of 4, average 39; model 50 [15-92]).
+- Bucky Irving OVER 52.5 rush yards, -113 FanDuel (2 of 4, average 60; marginal).
+
+**Parlays.** The model's leg probabilities (about 70%) sit far above the books' 50%, so the raw EV (+80% and more) is not credible. Using the 50/50 blend per leg (Williams under 61.5%, Hurst over 59%, Otton over 61%) and a 20% payout cut:
+| Parlay | Blended joint | Multiplied-legs payout | Fair price | EV with 20% cut |
+|---|---|---|---|---|
+| Williams U66.5 rush yds + Hurst O16.5 rec yds | 36.5% | +261 | +174 | +13% |
+| Williams U66.5 + Hurst O16.5 + Otton O29.5 rec yds | 22.3% | +581 | +348 | +40% |
+
+Take either only if the book pays at least the fair price. Excluded: every Daniels prop (role mismatch), every Prescott prop (two feeds on yards, the model is well below the books), and every Lamb, Pickens, Ferguson and Flournoy receiving prop (the model is below the books by more than its usual bias and no game-log support).
