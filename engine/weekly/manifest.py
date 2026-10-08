@@ -21,7 +21,9 @@ SCHEMA = "weekly_run_manifest/0.1"
 FREEZE_PICKLES = {"proj_all.pkl": "projections.csv", "rank_raw.pkl": "rankings_raw.csv"}
 FREEZE_CSVS = ["w4_game_environment.csv", "w4_team_environment.csv", "w4_team_totals.csv", "w4_td_markets.csv",
                "w4_injury_adjustments.csv", "qa_reconcile.csv",
-               "props_lines.csv", "props_lines_rejected.csv", "edges_all_rows.csv", "odds_game_lines.csv", "odds_unmatched_names.csv"]
+               "props_lines_rejected.csv", "odds_unmatched_names.csv"]
+# Raw book prices (props_lines.csv, odds_game_lines.csv, edges_all_rows.csv) are NEVER frozen into git (CLAUDE.md: never commit odds files);
+# the odds workbook's sha256 is recorded in inputs_sha256 as odds_xlsx instead.
 
 
 def sha256(path, chunk=1 << 20):
