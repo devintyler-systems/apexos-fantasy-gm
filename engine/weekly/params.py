@@ -21,8 +21,10 @@ _G = pd.read_parquet(N + "games.parquet"); _G = _G[(_G.season == SEASON) & (_G.g
 for _c in ("home_team", "away_team"): _G[_c] = _G[_c].map(tm)
 BACKTEST = os.environ.get("APEX_BACKTEST", "0") == "1"
 TARGET_WEEK = int(os.environ.get("APEX_TARGET_WEEK", 0)) or int(_G[_G.home_score.isna()].week.min())
+# nflverse can label international games location="Home" (2026 W5 PHI@JAX at Tottenham); treat these venues as neutral
+INTL_STADIUMS = ["Tottenham Hotspur Stadium", "Wembley Stadium", "Allianz Arena", "Deutsche Bank Park", "Estadio Azteca", "Santiago Bernabeu", "Maracana Stadium", "Croke Park", "Melbourne Cricket Ground"]
 _tg = _G[_G.week == TARGET_WEEK].sort_values(["gameday", "gametime"])
-SCHED = pd.DataFrame(dict(away=_tg.away_team.values, home=_tg.home_team.values, date=_tg.gameday.values, time_edt=_tg.gametime.values, neutral=(_tg.location.values == "Neutral"),
+SCHED = pd.DataFrame(dict(away=_tg.away_team.values, home=_tg.home_team.values, date=_tg.gameday.values, time_edt=_tg.gametime.values, neutral=((_tg.location.values == "Neutral") | (np.isin(_tg.stadium.values, INTL_STADIUMS) & (not BACKTEST))),
                           spread_line=_tg.spread_line.values, total_line=_tg.total_line.values)).reset_index(drop=True)
 PLAYED = set() if BACKTEST else {(r.away_team, r.home_team) for r in _tg.itertuples() if not np.isnan(r.home_score)}
 def is_neutral(a, h):
