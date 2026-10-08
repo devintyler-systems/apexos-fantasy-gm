@@ -101,3 +101,29 @@ def test_manual_out_override_removes_the_player_and_is_frozen(tmp_path):
     after = run(tmp_path / "b", {"APEX_MANUAL_OUT": str(csv)})
     row = after[(after.player == pick.player) & (after.team == pick.team)]
     assert row.empty or float(row.p_active.iloc[0]) == 0.0
+
+
+@pytest.mark.skipif(not CACHE or not os.path.exists(os.path.join(CACHE or "", "games.parquet")), reason="no nflverse cache")
+def test_price_odds_pacific_to_utc_week_filter_and_two_way_devig(tmp_path):
+    """Synthetic Odds-API workbook: Pacific stamps shift +7h, a week-6 game is excluded, and a two-way market is de-vigged exactly and averaged over independent feeds."""
+    g = pd.read_parquet(os.path.join(CACHE, "games.parquet")); g = g[(g.season == 2026) & (g.game_type == "REG") & g.home_score.isna()]
+    wk = int(g.week.min()); a, h = g[g.week == wk].sort_values(["gameday", "gametime"]).iloc[0][["away_team", "home_team"]]
+    full = {"DAL": "Dallas Cowboys", "TB": "Tampa Bay Buccaneers", "GB": "Green Bay Packers", "CHI": "Chicago Bears", "PHI": "Philadelphia Eagles", "JAX": "Jacksonville Jaguars"}
+    if a not in full or h not in full:
+        pytest.skip("first Week game uses teams outside the test name table")
+    row = g[(g.away_team == a) & (g.home_team == h)].iloc[0]
+    et = pd.Timestamp(f"{row.gameday} {row.gametime}"); commence_pt = et - pd.Timedelta(hours=3)       # ET -> PT
+    last = commence_pt - pd.Timedelta(hours=1)
+    def rows(book, over, under, game_away, game_home, ct):
+        base = dict(game_id="x", commence_time=ct, in_play=False, bookmaker=book, last_update=last, home_team=game_home, away_team=game_away, market="player_receptions", description="Test Player", point=3.5)
+        return [dict(base, label="Over", price=over), dict(base, label="Under", price=under)]
+    rs = rows("A", -110, -110, full[a], full[h], commence_pt) + rows("B", -130, 110, full[a], full[h], commence_pt) + rows("C", -110, -110, "Philadelphia Eagles", "Jacksonville Jaguars", commence_pt + pd.Timedelta(days=9))
+    x = tmp_path / "odds.xlsx"; pd.DataFrame(rs).to_excel(x, index=False)
+    env = dict(os.environ, APEX_NFLV=CACHE, APEX_OUT=str(tmp_path), APEX_ENV="market", APEX_NS="500", APEX_ODDS_XLSX=str(x))
+    r = subprocess.run([sys.executable, "price_odds.py"], cwd=WEEKLY, env=env, capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr[-2000:]
+    rej = pd.read_csv(tmp_path / "props_lines_rejected.csv")
+    assert len(rej) == 2 and rej.reject.str.contains("not a Week").all()          # the far-future game is excluded
+    pl = pd.read_csv(tmp_path / "props_lines.csv")
+    assert set(pl.as_of_utc) == {(last + pd.Timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S")}      # Pacific + 7h
+    meta = pd.read_csv(tmp_path / "odds_meta.csv"); assert int(meta.tz_offset_h.iloc[0]) == 7
