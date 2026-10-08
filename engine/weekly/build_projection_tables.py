@@ -4,9 +4,13 @@ import pandas as pd, numpy as np
 from openpyxl.styles import Font, PatternFill, Alignment
 P=pd.read_pickle(OUT+"proj_all.pkl")
 O=DELIV
+WK=os.environ.get("APEX_TARGET_WEEK","")
+TRACK=os.environ.get("APEX_ENV","model")
+TRACK_LABEL="Market-anchored (nflverse spread/total as the team-points prior)" if TRACK=="market" else "Model-only (ratings + weather, no lines)"
+LINES_NOTE="Spread and total from the nflverse schedule feed the environment only; no player prop odds are used." if TRACK=="market" else "No sportsbook lines or odds are used anywhere in this workbook."
 pm=lambda x:f"{x:.0f}"
 def rng(a,b,d=0): return f"{a:.{d}f} to {b:.{d}f}"
-flag=lambda r:("PLAYED 10/01" if r.played else "")+(("; " if r.played and r.status else "")+(r.status if r.status else ""))
+flag=lambda r:("PLAYED" if r.played else "")+(("; " if r.played and r.status else "")+(r.status if r.status else ""))
 # ---------- QB ----------
 q=P[(P.pos=="QB")&(~P.proxy)&(P.p_active>=0.5)].copy().sort_values("pass_yds_mean",ascending=False)
 QB=pd.DataFrame({"Player":q.player,"Team":q.team,"Opp":q.opp,"Availability %":(q.p_active*100).round(0),
@@ -38,7 +42,7 @@ T5=pd.DataFrame(tops)
 T20=A[~A.played].sort_values("any_td_pct_wt",ascending=False).head(20)
 T20=pd.DataFrame([dict(Rank=i,**tdrow(x)) for i,x in enumerate(T20.itertuples(),1)])
 METHOD=pd.DataFrame({"Item":["What this is","Projection","Range","Availability %","Anytime TD %","Confidence (1-100)","  ingredients","  not","Scoring","Skipped / caveats"],
- "Detail":["Model-only Week 4 projections from 20,000 correlated game simulations per game. No sportsbook lines or odds are used anywhere in this workbook.",
+ "Detail":[f"{TRACK_LABEL} Week {WK} projections from 20,000 correlated game simulations per game. {LINES_NOTE}",
  "Mean of the simulated stat, conditional on the player playing.",
  "P25 to P75 of the simulated stat (the middle half of outcomes).",
  "Chance the player is active, from the midweek injury report (Out 0, Doubtful 8, Questionable 50-85 by practice, no designation: Full 98 / Limited 90 / DNP 70).",
@@ -47,8 +51,8 @@ METHOD=pd.DataFrame({"Item":["What this is","Projection","Range","Availability %
  "TD conf (all TD columns and lists) is different: it measures the evidence behind the TD estimate = Availability x (50% role/sample stability + 50% red-zone touches observed, full credit at 8 inside-the-20 targets+carries; capped at 85 because TDs are inherently noisy). Passing-TD conf uses the tightness formula. Sample/role stability = Weeks 1-3 volume relative to a full 3-game role, scaled by games played, and (for pass catchers) by QB availability.",
  "Typical ranges: completions and passing yards highest, then rushing yards and receptions, then receiving yards; TD projections are the lowest by nature (small counts).",
  "Counting stats only; no fantasy-point conversion in these tables.",
- "PIT @ CLE was played Thursday 10/01 (result not in data): shown for completeness, flagged PLAYED, excluded from the Top 20. Injury report is midweek, so availability will move. Backup QBs are modeled as proxies when a starter is doubtful."]})
-with pd.ExcelWriter(O+"Week4_Model_Projections.xlsx",engine="openpyxl") as xw:
+ "Games already played are flagged PLAYED and excluded from the Top 20. Injury report is midweek, so availability will move. Backup QBs are modeled as proxies when a starter is doubtful."]})
+with pd.ExcelWriter(O+f"Week{WK}_{TRACK}_Projections.xlsx",engine="openpyxl") as xw:
     for name,df in (("Method",METHOD),("QB",QB),("RB",RB),("WR_TE",WT),("TD Top5 by Game",T5),("TD Top20",T20)):
         df.to_excel(xw,sheet_name=name,index=False); ws=xw.sheets[name]
         for c in ws[1]: c.font=Font(bold=True,color="FFFFFF"); c.fill=PatternFill("solid",fgColor="1F3A5F"); c.alignment=Alignment(wrap_text=True,vertical="center")
