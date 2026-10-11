@@ -58,23 +58,23 @@
 
 | Game | Player | Model prob | Blend prob | **Play if price is at least** | Thursday ref (book) | Share ratio | Flag |
 |---|---|---|---|---|---|---|---|
-| CIN@MIA | Kevin Coleman Jr. | 14% | 12% | **+760** | +1050 (BetRivers) | 1.70 |  |
-| MIN@NO | T.J. Hockenson | 31% | 27% | **+273** | +310 (BetMGM) | 1.65 |  |
-| NYG@WAS | Antonio Williams | 30% | 25% | **+296** | +330 (DraftKings) | 1.62 |  |
-| LV@NE | Mike Washington Jr. | 21% | 18% | **+464** | +550 (FanDuel) | 1.61 | UPPER-RANGE: 12 proj carries vs 6 |
-| CIN@MIA | Malik Washington | 30% | 26% | **+286** | +320 (FanDuel) | 1.56 |  |
-| HOU@TEN | Tony Pollard | 39% | 33% | **+207** | +250 (DraftKings) | 1.55 |  |
 | MIN@NO | Juwan Johnson | 29% | 26% | **+284** | +310 (BetRivers) | 1.51 |  |
-| LV@NE | Michael Mayer | 26% | 23% | **+336** | +370 (DraftKings) | 1.48 |  |
+| HOU@TEN | Xavier Hutchinson | 17% | 15% | **+560** | +700 (BetRivers) | 1.39 |  |
+| CHI@GB | Christian Watson | 38% | 36% | **+181** | +185 (BetRivers) | 1.27 |  |
+| CLE@NYJ | KC Concepcion | 24% | 23% | **+331** | +320 (Bovada) | 1.27 |  |
+| MIN@NO | Devaughn Vele | 23% | 22% | **+354** | +350 (FanDuel) | 1.26 |  |
+| CHI@GB | Matthew Golden | 33% | 31% | **+221** | +220 (FanDuel) | 1.26 |  |
+| CLE@NYJ | Quinshon Judkins | 39% | 38% | **+161** | +155 (Bovada) | 1.24 |  |
+| HOU@TEN | Wan'Dale Robinson | 19% | 18% | **+454** | +490 (FanDuel) | 1.21 |  |
 
 **First TD longshots** (real role, model 5% or better):
 
 | Game | Player | Model prob | Play if price is at least | Thursday ref (book) | Ratio | Flag |
 |---|---|---|---|---|---|---|
-| LV@NE | Michael Mayer | 6% | **+1916** | +2250 (Hard Rock Bet) | 1.82 |  |
-| NYG@WAS | Antonio Williams | 8% | **+1422** | +1600 (Hard Rock Bet) | 1.77 |  |
-| CIN@MIA | Malik Washington | 7% | **+1497** | +1700 (DraftKings) | 1.76 |  |
-| MIN@NO | T.J. Hockenson | 8% | **+1284** | +1500 (theScore Bet) | 1.64 |  |
+| MIN@NO | Juwan Johnson | 8% | **+1395** | +1500 (theScore Bet) | 1.61 |  |
+| CHI@GB | Christian Watson | 9% | **+1154** | +1300 (theScore Bet) | 1.49 |  |
+| HOU@TEN | Wan'Dale Robinson | 5% | **+2015** | +2000 (BetMGM) | 1.35 |  |
+| CLE@NYJ | KC Concepcion | 6% | **+1503** | +1500 (theScore Bet) | 1.34 |  |
 
 ### Watch list: the model changed since Thursday, so Thursday's price is wrong by construction (check the live line; not recommended from stale prices)
 
@@ -137,10 +137,7 @@
 |---|---|---|---|---|---|---|---|
 | SF@SEA | AJ Barner | 32% | 27% | **+270** | +310 (Bovada) | 1.45 |  |
 | DET@ARI | Sam LaPorta | 43% | 39% | **+159** | +180 (Bovada) | 1.29 |  |
-| DEN@LAC | Tre Harris | 25% | 23% | **+332** | +360 (FanDuel) | 1.28 |  |
-| DEN@LAC | Omarion Hampton | 39% | 36% | **+175** | +170 (Bovada) | 1.22 | UPPER-RANGE: 3.2 proj targets vs 1.7 |
 | DEN@LAC | J.K. Dobbins | 44% | 41% | **+143** | +145 (BetMGM) | 1.21 |  |
-| DEN@LAC | RJ Harvey | 35% | 33% | **+206** | +200 (BetMGM) | 1.20 | UPPER-RANGE: 6 proj carries vs 4 |
 
 **First TD longshots** (real role, model 5% or better):
 
@@ -148,8 +145,7 @@
 |---|---|---|---|---|---|---|
 | SF@SEA | AJ Barner | 7% | **+1504** | +1800 (theScore Bet) | 1.47 |  |
 | DET@ARI | Sam LaPorta | 9% | **+1177** | +1400 (theScore Bet) | 1.46 |  |
-| DEN@LAC | Tre Harris | 6% | **+1700** | +2000 (Hard Rock Bet) | 1.40 |  |
-| DET@ARI | Michael Wilson | 8% | **+1343** | +1400 (Bovada) | 1.34 |  |
+| SF@SEA | Deebo Samuel | 7% | **+1424** | +1400 (Hard Rock Bet) | 1.24 |  |
 
 ### Watch list: the model changed since Thursday, so Thursday's price is wrong by construction (check the live line; not recommended from stale prices)
 
@@ -195,15 +191,7 @@
 
 ### Touchdown shots (anytime TD; players with a real projected role; ranked by model share of the game's TD field divided by the book's share)
 
-| Game | Player | Model prob | Blend prob | **Play if price is at least** | Thursday ref (book) | Share ratio | Flag |
-|---|---|---|---|---|---|---|---|
-| BAL@ATL | Brian Robinson Jr. | 35% | 31% | **+221** | +240 (FanDuel) | 1.40 | UPPER-RANGE: RB receiving-TD rate above 5% per target |
-
-**First TD longshots** (real role, model 5% or better):
-
-| Game | Player | Model prob | Play if price is at least | Thursday ref (book) | Ratio | Flag |
-|---|---|---|---|---|---|---|
-| BAL@ATL | Brian Robinson Jr. | 9% | **+1126** | +1200 (theScore Bet) | 1.42 | UPPER-RANGE: RB receiving-TD rate above 5% per target |
+None met the role and probability filters.
 
 ### Watch list: the model changed since Thursday, so Thursday's price is wrong by construction (check the live line; not recommended from stale prices)
 
@@ -239,15 +227,7 @@
 
 ### Touchdown shots (anytime TD; players with a real projected role; ranked by model share of the game's TD field divided by the book's share)
 
-| Game | Player | Model prob | Blend prob | **Play if price is at least** | Thursday ref (book) | Share ratio | Flag |
-|---|---|---|---|---|---|---|---|
-| BUF@LA | Khalil Shakir | 33% | 30% | **+239** | +250 (BetRivers) | 1.36 |  |
-
-**First TD longshots** (real role, model 5% or better):
-
-| Game | Player | Model prob | Play if price is at least | Thursday ref (book) | Ratio | Flag |
-|---|---|---|---|---|---|---|
-| BUF@LA | Khalil Shakir | 6% | **+1804** | +2000 (theScore Bet) | 1.58 |  |
+None met the role and probability filters.
 
 ### Watch list: the model changed since Thursday, so Thursday's price is wrong by construction (check the live line; not recommended from stale prices)
 
