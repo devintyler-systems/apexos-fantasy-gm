@@ -30,7 +30,7 @@ raw["in_week"] = [((a, h) in sched) and (sched[(a, h)].date == d) for a, h, d in
 rej_wk = raw[~raw.in_week]
 p = raw[raw.in_week].copy()
 p["game"] = p.away + "@" + p.home
-NOW = pd.Timestamp(dt.datetime.now(dt.timezone.utc)).tz_localize(None)
+NOW = pd.Timestamp(os.environ["APEX_NOW_UTC"]).tz_localize(None) if os.environ.get("APEX_NOW_UTC") else pd.Timestamp(dt.datetime.now(dt.timezone.utc)).tz_localize(None)      # APEX_NOW_UTC pins the pricing clock (tests only)
 p["played_or_started"] = p.commence_utc <= NOW
 # game lines (h2h/spreads/totals) for the model-vs-book table
 gl = p[p.market.isin(["h2h", "spreads", "totals"])]

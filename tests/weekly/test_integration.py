@@ -120,7 +120,7 @@ def test_price_odds_pacific_to_utc_week_filter_and_two_way_devig(tmp_path):
         return [dict(base, label="Over", price=over), dict(base, label="Under", price=under)]
     rs = rows("A", -110, -110, full[a], full[h], commence_pt) + rows("B", -130, 110, full[a], full[h], commence_pt) + rows("C", -110, -110, "Philadelphia Eagles", "Jacksonville Jaguars", commence_pt + pd.Timedelta(days=9))
     x = tmp_path / "odds.xlsx"; pd.DataFrame(rs).to_excel(x, index=False)
-    env = dict(os.environ, APEX_NFLV=CACHE, APEX_OUT=str(tmp_path), APEX_ENV="market", APEX_NS="500", APEX_ODDS_XLSX=str(x))
+    env = dict(os.environ, APEX_NFLV=CACHE, APEX_OUT=str(tmp_path), APEX_ENV="market", APEX_NS="500", APEX_ODDS_XLSX=str(x), APEX_NOW_UTC=str(last + pd.Timedelta(hours=7, minutes=30)))      # synthetic stamps sit before a real kickoff that passes; pin the pricing clock 30 minutes after the snapshot
     r = subprocess.run([sys.executable, "price_odds.py"], cwd=WEEKLY, env=env, capture_output=True, text=True)
     assert r.returncode == 0, r.stderr[-2000:]
     rej = pd.read_csv(tmp_path / "props_lines_rejected.csv")
