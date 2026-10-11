@@ -71,6 +71,7 @@ def test_starting_qb_follows_the_depth_chart_when_qb1_is_out(tmp_path):
     dc = dc[(dc.dt == dc.dt.max()) & (dc.pos_abb == "QB")].sort_values(["team", "pos_rank"])
     inj = pd.read_parquet(os.path.join(CACHE, "injuries_2026.parquet"))
     out = set(inj[(inj.game_type == "REG") & (inj.week == inj.week.max()) & (inj.report_status == "Out")].full_name)
+    unsure = set(inj[(inj.game_type == "REG") & (inj.week == inj.week.max()) & inj.report_status.isin(["Questionable", "Doubtful"])].full_name)      # a Questionable QB1 can be out-projected by his backup (CHI 2026 W5: Williams 35% vs Bagent 65%)
     pa = pd.read_pickle(tmp_path / "rank_raw.pkl")
     pa = pa[(pa.pos == "QB") & pa.ev_pts.notna()]
     st = pd.read_parquet(os.path.join(CACHE, "stats_player_week_2026.parquet"))
@@ -79,7 +80,7 @@ def test_starting_qb_follows_the_depth_chart_when_qb1_is_out(tmp_path):
     for team, g in dc.groupby("team"):
         order = [n for n in g.player_name if n not in out]
         proj = pa[pa.team == team]
-        if not order or order[0] not in threw or not len(proj):      # no projection rows = bye week
+        if not order or order[0] not in threw or order[0] in unsure or not len(proj):      # no projection rows = bye week
             continue
         top = proj.sort_values("ev_pts", ascending=False).iloc[0].player
         assert top == order[0], (team, order[:3], top)

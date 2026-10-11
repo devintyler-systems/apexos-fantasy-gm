@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
-PIPELINE = ["run_all.py", "build_outputs.py", "projections_report.py", "build_projection_tables.py"]
+PIPELINE = ["run_all.py", "build_outputs.py", "projections_report.py", "build_projection_tables.py", "injury_coverage.py"]
 DFS = ["dfs_collect.py"]  # dfs_classic.py takes the track as argv
 FITS = {"availability": ["fit_availability.py"], "team": ["fit_team_priors.py"], "player": ["fit_player_priors.py"],
         "calibration": ["calibrate_bt.py"], "weather": ["weather.py"], "opportunity": ["fit_opportunity.py"]}
@@ -34,6 +34,7 @@ def _env(args, track=None):
     e["APEX_SEASON"] = str(args.season)
     if getattr(args, "week", None):
         e["APEX_TARGET_WEEK"] = str(args.week)
+        e.setdefault("APEX_THROUGH_WEEK", str(args.week - 1))      # never let target-week (or later) stats into the model unless the operator says so
     if track:
         e["APEX_ENV"] = track
     return e

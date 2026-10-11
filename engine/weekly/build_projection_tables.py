@@ -52,7 +52,7 @@ METHOD=pd.DataFrame({"Item":["What this is","Projection","Range","Availability %
  f"TD conf (all TD columns and lists) is different: it measures the evidence behind the TD estimate = Availability x (50% role/sample stability + 50% red-zone touches observed, full credit at 8 inside-the-20 targets+carries; capped at 85 because TDs are inherently noisy). Passing-TD conf uses the tightness formula. Sample/role stability = Weeks 1-{TW} volume relative to a full {TW}-game role, scaled by games played, and (for pass catchers) by QB availability.",
  "Typical ranges: completions and passing yards highest, then rushing yards and receptions, then receiving yards; TD projections are the lowest by nature (small counts).",
  "Counting stats only; no fantasy-point conversion in these tables.",
- "Games already played are flagged PLAYED and excluded from the Top 20. Injury report is midweek, so availability will move. Backup QBs are modeled as proxies when a starter is doubtful."]})
+ "Games already played are flagged PLAYED and excluded from the Top 20. Availability reflects the NFL injury report as of the data fetch recorded in the run manifest and will move until the official inactives post about 90 minutes before each kickoff. Backup QBs are modeled as proxies when a starter is doubtful."]})
 with pd.ExcelWriter(O+f"Week{WK}_{TRACK}_Projections.xlsx",engine="openpyxl") as xw:
     for name,df in (("Method",METHOD),("QB",QB),("RB",RB),("WR_TE",WT),("TD Top5 by Game",T5),("TD Top20",T20)):
         df.to_excel(xw,sheet_name=name,index=False); ws=xw.sheets[name]
