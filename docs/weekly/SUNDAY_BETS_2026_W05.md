@@ -40,8 +40,6 @@
 |---|---|---|---|---|---|---|---|---|---|
 | IND@PIT | Germie Bernard | UNDER 2.5 rec | 72% | **-261** | -186 (betPARX) | 1 of 3 over, avg 2.3 | 83% vs 61% | 8 |  |
 | CHI@GB | Kaleb Johnson | UNDER 36.5 rush yds | 63% | **-169** | -114 (FanDuel) | 1 of 3 over, avg 26.7 | 75% vs 51% | 5 | RULE (rush yds, blend) |
-| MIN@NO | Kyler Murray | UNDER 20.5 pass cmp | 62% | **-165** | +100 (betPARX) | 1 of 3 over, avg 15.0 | 76% vs 48% | 10 |  |
-| MIN@NO | Kyler Murray | UNDER 17.5 rush yds | 61% | **-159** | -110 (DraftKings) | 0 of 3 over, avg 14.0 | 73% vs 50% | 5 | RULE (rush yds, blend) |
 | LV@NE | Drake Maye | UNDER 19.5 pass cmp | 62% | **-166** | -103 (BetOnline.ag) | 2 of 4 over, avg 18.2 | 75% vs 50% | 10 |  |
 | CHI@GB | Colston Loveland | UNDER 37.5 rec yds | 57% | **-132** | -111 (DraftKings) | 1 of 4 over, avg 22.8 | 64% vs 50% | 5 |  |
 | CHI@GB | Colston Loveland | UNDER 3.5 rec | 49% | **+103** | +132 (betPARX) | 2 of 4 over, avg 2.8 | 56% vs 42% | 11 |  |
@@ -211,10 +209,7 @@ None met the role and probability filters.
 
 ### Lines that look too HIGH (play the under)
 
-| Game | Player | Prop | Blend prob | **Play if price is at least** | Thursday ref (book) | Weeks 1-4 | Model vs book | Feeds | Tag |
-|---|---|---|---|---|---|---|---|---|---|
-| BUF@LA | Josh Allen | UNDER 20.5 pass cmp | 60% | **-152** | +100 (Bovada) | 1 of 4 over, avg 19.8 | 73% vs 48% | 8 |  |
-| BUF@LA | Josh Allen | UNDER 32.5 pass att | 63% | **-173** | -112 (DraftKings) | 1 of 4 over, avg 29.8 | 75% vs 51% | 6 |  |
+None passed all four tests.
 
 ### Big disagreements (model and book 30+ points apart): look for a role or news difference before betting; not recommended
 

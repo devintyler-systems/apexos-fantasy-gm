@@ -93,7 +93,7 @@ T["moved"] = T.key.map(moved)
 BIGK = set(P[P.gap.abs() >= 0.30].key)      # model and book 30+ points apart on any prop: the same role difference applies to his touchdown price
 T["bigdis"] = T.key.isin(BIGK)
 P["moved"] = P.key.map(moved)
-P["supported_raw"] = P.supported; P["supported"] = P.supported & (P.moved == "")
+P["supported_raw"] = P.supported; P["bigdis"] = P.key.isin(set(P[P.gap.abs() >= 0.30].key)); P["supported"] = P.supported & (P.moved == "") & ~P.bigdis      # one 30-point disagreement removes all of that player's props
 _u = PJ.drop_duplicates("key").set_index("key"); T["tgt"] = T.key.map(_u.tgt_mean).fillna(0); T["car"] = T.key.map(_u.rush_att_mean).fillna(0)
 T["real_role"] = (T.tgt >= 4) | (T.car >= 8)
 T.to_pickle(OUT + "sunday_td.pkl"); P.to_pickle(OUT + "sunday_props_moved.pkl")
