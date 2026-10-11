@@ -112,7 +112,8 @@ E.loc[ft, "novig_p_ceiling"] = E.loc[ft, "imp_vig_in"] / tot      # listed field
 E["edge"] = E.model_p - E.novig_p
 E["ev"] = E.ev.where(E.ev.notna(), E.model_p * payout(E.odds) - (1 - E.model_p))
 E["age_h"] = (NOW - E.as_of).dt.total_seconds() / 3600; E["stale"] = E.age_h > STALE_H
-n_stale = int(E.stale.sum()); E = E[~E.stale].copy()      # stale lines are excluded, not just flagged
+n_stale = int(E.stale.sum())
+if os.environ.get("APEX_ODDS_KEEP_STALE") != "1": E = E[~E.stale].copy()      # stale lines are excluded, not just flagged (set APEX_ODDS_KEEP_STALE=1 to price old lines for reference, every row keeps age_h and stale)
 E["is_main_line"] = False
 for k_, g_ in (E[~E.market.isin(ONE_SIDED)].groupby(["game", "player", "market"]) if len(E) else []):
     sc = g_.groupby("line").agg(feeds=("book", "nunique"), off=("novig_p", lambda x: abs(x.mean() - 0.5)))      # main line = most feeds; ties go to the line priced closest to even
