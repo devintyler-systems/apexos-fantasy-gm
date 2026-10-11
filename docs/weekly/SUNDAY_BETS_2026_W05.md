@@ -58,7 +58,6 @@
 
 | Game | Player | Model prob | Blend prob | **Play if price is at least** | Thursday ref (book) | Share ratio | Flag |
 |---|---|---|---|---|---|---|---|
-| IND@PIT | Seth McGowan | 18% | 14% | **+640** | +1000 (Bovada) | 2.41 |  |
 | CIN@MIA | Kevin Coleman Jr. | 14% | 12% | **+760** | +1050 (BetRivers) | 1.70 |  |
 | MIN@NO | T.J. Hockenson | 31% | 27% | **+273** | +310 (BetMGM) | 1.65 |  |
 | NYG@WAS | Antonio Williams | 30% | 25% | **+296** | +330 (DraftKings) | 1.62 |  |
@@ -66,6 +65,7 @@
 | CIN@MIA | Malik Washington | 30% | 26% | **+286** | +320 (FanDuel) | 1.56 |  |
 | HOU@TEN | Tony Pollard | 39% | 33% | **+207** | +250 (DraftKings) | 1.55 |  |
 | MIN@NO | Juwan Johnson | 29% | 26% | **+284** | +310 (BetRivers) | 1.51 |  |
+| LV@NE | Michael Mayer | 26% | 23% | **+336** | +370 (DraftKings) | 1.48 |  |
 
 **First TD longshots** (real role, model 5% or better):
 
@@ -91,15 +91,15 @@
 
 | Legs | Joint prob (blend; same-game correlation from the sims) | Multiplied Thursday payout | **Fair price** | EV no cut | EV with 20% cut | Flag |
 |---|---|---|---|---|---|---|
-| (2) Xavier Hutchinson OVER 1.5 rec + Seth McGowan Anytime TD | 8.4% | +2,375 | **+1091** | +108% | +68% |  |
-| (2) Jacory Croskey-Merritt UNDER 55.5 rush_yds + Seth McGowan Anytime TD | 8.8% | +2,009 | **+1043** | +85% | +49% |  |
 | (2) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds | 40.3% | +331 | **+148** | +74% | +47% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Seth McGowan Anytime TD | 5.4% | +4,646 | **+1738** | +158% | +108% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Kaleb Johnson UNDER 36.5 rush_yds + Seth McGowan Anytime TD | 5.3% | +4,546 | **+1796** | +145% | +97% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Joe Burrow OVER 23.5 pass_cmp + Seth McGowan Anytime TD | 4.9% | +4,732 | **+1937** | +137% | +91% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Seth McGowan Anytime TD + Xavier Hutchinson Anytime TD | 0.8% | +37,865 | **+12029** | +213% | +151% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Kaleb Johnson UNDER 36.5 rush_yds + Seth McGowan Anytime TD | 3.4% | +8,808 | **+2825** | +205% | +144% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp + Seth McGowan Anytime TD | 3.2% | +9,165 | **+3043** | +195% | +137% |  |
+| (2) Xavier Hutchinson OVER 1.5 rec + Kaleb Johnson UNDER 36.5 rush_yds | 39.1% | +322 | **+156** | +65% | +40% |  |
+| (2) Xavier Hutchinson OVER 1.5 rec + Joe Burrow OVER 23.5 pass_cmp | 36.4% | +339 | **+175** | +60% | +35% |  |
+| (3) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Kaleb Johnson UNDER 36.5 rush_yds | 25.3% | +710 | **+295** | +105% | +69% |  |
+| (3) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp | 23.6% | +742 | **+324** | +98% | +63% |  |
+| (3) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Tyler Shough OVER 9.5 rush_yds | 24.1% | +710 | **+315** | +95% | +61% |  |
+| (4) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp + Kaleb Johnson UNDER 36.5 rush_yds | 14.8% | +1,481 | **+575** | +134% | +90% |  |
+| (4) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Tyler Shough OVER 9.5 rush_yds + Kaleb Johnson UNDER 36.5 rush_yds | 15.1% | +1,420 | **+561** | +130% | +87% |  |
+| (4) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Germie Bernard UNDER 2.5 rec + Kaleb Johnson UNDER 36.5 rush_yds | 18.3% | +1,145 | **+446** | +128% | +86% |  |
 
 
 ---
@@ -136,7 +136,6 @@
 | Game | Player | Model prob | Blend prob | **Play if price is at least** | Thursday ref (book) | Share ratio | Flag |
 |---|---|---|---|---|---|---|---|
 | SF@SEA | AJ Barner | 32% | 27% | **+270** | +310 (Bovada) | 1.45 |  |
-| SF@SEA | Kaelon Black | 16% | 14% | **+635** | +800 (FanDuel) | 1.43 |  |
 | DET@ARI | Sam LaPorta | 43% | 39% | **+159** | +180 (Bovada) | 1.29 |  |
 | DEN@LAC | Tre Harris | 25% | 23% | **+332** | +360 (FanDuel) | 1.28 |  |
 | DEN@LAC | Omarion Hampton | 39% | 36% | **+175** | +170 (Bovada) | 1.22 | UPPER-RANGE: 3.2 proj targets vs 1.7 |
@@ -167,15 +166,15 @@
 
 | Legs | Joint prob (blend; same-game correlation from the sims) | Multiplied Thursday payout | **Fair price** | EV no cut | EV with 20% cut | Flag |
 |---|---|---|---|---|---|---|
-| (2) Kaelon Black OVER 15.5 rush_yds + Kaelon Black Anytime TD | 9.2% | +1,604 | **+985** | +57% | +27% |  |
 | (2) Kaelon Black OVER 15.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec | 44.0% | +203 | **+127** | +33% | +15% |  |
 | (2) Kaelon Black OVER 15.5 rush_yds + Jaylen Waddle UNDER 4.5 rec | 37.6% | +255 | **+166** | +34% | +14% |  |
-| (3) Kaelon Black OVER 15.5 rush_yds + Jaylen Waddle UNDER 4.5 rec + Kaelon Black Anytime TD | 5.5% | +3,098 | **+1734** | +74% | +41% |  |
-| (3) Kaelon Black OVER 15.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec + Kaelon Black Anytime TD | 6.4% | +2,624 | **+1466** | +74% | +40% |  |
-| (3) Kaelon Black OVER 15.5 rush_yds + Jeremiyah Love OVER 11.5 rush_att + Kaelon Black Anytime TD | 5.5% | +3,023 | **+1713** | +72% | +39% |  |
-| (4) Kaelon Black OVER 15.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec + Jaylen Waddle UNDER 4.5 rec + Kaelon Black Anytime TD | 3.8% | +5,013 | **+2547** | +93% | +55% |  |
-| (4) Kaelon Black OVER 15.5 rush_yds + Jeremiyah Love OVER 11.5 rush_att + Jaylen Waddle UNDER 4.5 rec + Kaelon Black Anytime TD | 3.3% | +5,763 | **+2963** | +91% | +54% |  |
-| (4) Kaelon Black OVER 15.5 rush_yds + Jaylen Waddle UNDER 4.5 rec + Tyler Allgeier UNDER 11.5 rec_yds + Kaelon Black Anytime TD | 3.1% | +6,087 | **+3135** | +91% | +54% |  |
+| (2) Kaelon Black OVER 15.5 rush_yds + Jeremiyah Love OVER 11.5 rush_att | 38.0% | +247 | **+163** | +32% | +13% |  |
+| (3) Kaelon Black OVER 15.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec + Jaylen Waddle UNDER 4.5 rec | 26.0% | +468 | **+284** | +48% | +24% |  |
+| (3) Kaelon Black OVER 15.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec + Tyler Allgeier UNDER 11.5 rec_yds | 25.0% | +485 | **+301** | +46% | +22% |  |
+| (3) Kaelon Black OVER 15.5 rush_yds + Jeremiyah Love OVER 11.5 rush_att + Jaylen Waddle UNDER 4.5 rec | 22.5% | +551 | **+344** | +47% | +22% |  |
+| (4) Kaelon Black OVER 15.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec + Jaylen Waddle UNDER 4.5 rec + Tyler Allgeier UNDER 11.5 rec_yds | 14.8% | +999 | **+577** | +62% | +33% |  |
+| (4) Kaelon Black OVER 15.5 rush_yds + Jeremiyah Love OVER 11.5 rush_att + Isaac TeSlaa UNDER 2.5 rec + Jaylen Waddle UNDER 4.5 rec | 15.5% | +942 | **+544** | +62% | +32% |  |
+| (4) Kaelon Black OVER 15.5 rush_yds + Jeremiyah Love OVER 11.5 rush_att + Jaylen Waddle UNDER 4.5 rec + Tyler Allgeier UNDER 11.5 rec_yds | 12.9% | +1,160 | **+678** | +62% | +32% |  |
 
 
 ---
@@ -216,7 +215,6 @@
 
 | Legs | Joint prob (blend; same-game correlation from the sims) | Multiplied Thursday payout | **Fair price** | EV no cut | EV with 20% cut | Flag |
 |---|---|---|---|---|---|---|
-| (2) Rashod Bateman OVER 17.5 rec_yds + Rashod Bateman OVER 1.5 rec | 49.4% | +218 | **+102** | +57% | +36% |  |
 | (2) Drake London UNDER 5.5 rec + Rashod Bateman OVER 17.5 rec_yds | 33.7% | +309 | **+197** | +38% | +17% |  |
 | (2) Drake London UNDER 5.5 rec + Rashod Bateman OVER 1.5 rec | 37.0% | +263 | **+170** | +34% | +15% |  |
 
@@ -243,16 +241,13 @@
 
 | Game | Player | Model prob | Blend prob | **Play if price is at least** | Thursday ref (book) | Share ratio | Flag |
 |---|---|---|---|---|---|---|---|
-| BUF@LA | Ty Johnson | 21% | 17% | **+486** | +650 (FanDuel) | 1.70 |  |
 | BUF@LA | Khalil Shakir | 33% | 30% | **+239** | +250 (BetRivers) | 1.36 |  |
-| BUF@LA | Blake Corum | 32% | 29% | **+250** | +270 (FanDuel) | 1.35 | UPPER-RANGE: RB receiving-TD rate above 5% per target |
 
 **First TD longshots** (real role, model 5% or better):
 
 | Game | Player | Model prob | Play if price is at least | Thursday ref (book) | Ratio | Flag |
 |---|---|---|---|---|---|---|
 | BUF@LA | Khalil Shakir | 6% | **+1804** | +2000 (theScore Bet) | 1.58 |  |
-| BUF@LA | Blake Corum | 6% | **+1819** | +2000 (theScore Bet) | 1.52 | UPPER-RANGE: RB receiving-TD rate above 5% per target |
 
 ### Watch list: the model changed since Thursday, so Thursday's price is wrong by construction (check the live line; not recommended from stale prices)
 
@@ -262,36 +257,24 @@
 | BUF@LA | Keon Coleman | targets 4.2 to 4.9 | 21% |
 | BUF@LA | Dalton Kincaid | targets 4.8 to 5.7 | 20% |
 
-### Parlays (legs from this window)
-
-| Legs | Joint prob (blend; same-game correlation from the sims) | Multiplied Thursday payout | **Fair price** | EV no cut | EV with 20% cut | Flag |
-|---|---|---|---|---|---|---|
-| (2) Josh Allen UNDER 20.5 pass_cmp + Josh Allen UNDER 32.5 pass_att | 43.8% | +279 | **+128** | +66% | +42% |  |
-| (2) Josh Allen UNDER 20.5 pass_cmp + Ty Johnson Anytime TD | 10.7% | +1,400 | **+835** | +60% | +30% |  |
-| (2) Josh Allen UNDER 32.5 pass_att + Ty Johnson Anytime TD | 11.2% | +1,320 | **+790** | +60% | +30% |  |
-| (3) Josh Allen UNDER 20.5 pass_cmp + Josh Allen UNDER 32.5 pass_att + Ty Johnson Anytime TD | 7.9% | +2,739 | **+1169** | +124% | +81% |  |
-| (3) Josh Allen UNDER 36.5 rush_yds + Josh Allen UNDER 20.5 pass_cmp + Josh Allen UNDER 32.5 pass_att | 28.4% | +620 | **+252** | +105% | +69% |  |
-| (3) Josh Allen UNDER 36.5 rush_yds + Josh Allen UNDER 20.5 pass_cmp + Ty Johnson Anytime TD | 6.9% | +2,751 | **+1359** | +95% | +58% |  |
-| (4) Josh Allen UNDER 36.5 rush_yds + Josh Allen UNDER 20.5 pass_cmp + Josh Allen UNDER 32.5 pass_att + Ty Johnson Anytime TD | 5.0% | +5,297 | **+1905** | +169% | +116% |  |
-
 
 ---
 ## Mixed: all windows
 
 | Legs | Joint prob | Multiplied Thursday payout | **Fair price** | EV no cut | EV with 20% cut | Flag |
 |---|---|---|---|---|---|---|
-| (2) Xavier Hutchinson OVER 1.5 rec + Seth McGowan Anytime TD | 8.4% | +2,375 | **+1091** | +108% | +68% |  |
-| (2) Josh Allen UNDER 36.5 rush_yds + Seth McGowan Anytime TD | 9.0% | +1,991 | **+1015** | +88% | +52% |  |
 | (2) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds | 41.3% | +328 | **+142** | +77% | +50% |  |
-| (2) Jacory Croskey-Merritt UNDER 55.5 rush_yds + Seth McGowan Anytime TD | 8.8% | +2,009 | **+1043** | +85% | +49% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Seth McGowan Anytime TD | 5.6% | +4,605 | **+1693** | +162% | +111% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Seth McGowan Anytime TD | 5.4% | +4,646 | **+1738** | +158% | +108% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds + Seth McGowan Anytime TD | 5.3% | +4,585 | **+1775** | +150% | +101% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Joe Burrow OVER 23.5 pass_cmp + Seth McGowan Anytime TD | 4.9% | +4,732 | **+1937** | +137% | +91% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Seth McGowan Anytime TD + Ty Johnson Anytime TD | 0.9% | +35,492 | **+10671** | +230% | +165% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Seth McGowan Anytime TD + Ty Johnson Anytime TD | 0.9% | +35,185 | **+10641** | +229% | +163% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Seth McGowan Anytime TD | 3.6% | +8,921 | **+2667** | +226% | +162% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds + Seth McGowan Anytime TD + Ty Johnson Anytime TD | 0.9% | +35,036 | **+10892** | +220% | +156% |  |
+| (2) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds | 40.3% | +331 | **+148** | +74% | +47% |  |
+| (2) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds | 39.5% | +326 | **+153** | +68% | +42% |  |
+| (2) Xavier Hutchinson OVER 1.5 rec + Joe Burrow OVER 23.5 pass_cmp | 36.4% | +339 | **+175** | +60% | +35% |  |
+| (3) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds | 26.8% | +720 | **+274** | +119% | +81% |  |
+| (3) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds + Josh Allen UNDER 36.5 rush_yds | 26.2% | +710 | **+281** | +112% | +75% |  |
+| (3) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds | 25.6% | +717 | **+291** | +109% | +72% |  |
+| (3) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp | 24.1% | +735 | **+314** | +102% | +66% |  |
+| (4) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds + Josh Allen UNDER 36.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds | 17.0% | +1,452 | **+488** | +164% | +114% |  |
+| (4) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp | 15.6% | +1,501 | **+539** | +151% | +104% |  |
+| (4) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Tyler Shough OVER 9.5 rush_yds | 16.0% | +1,439 | **+525** | +146% | +100% |  |
+| (4) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds + Josh Allen UNDER 36.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp | 15.3% | +1,481 | **+552** | +142% | +97% |  |
 
 Cross-game legs are treated as independent (separate simulations); same-game legs carry the simulated correlation.
 

@@ -90,7 +90,7 @@ T["moved"] = T.key.map(moved)
 P["moved"] = P.key.map(moved)
 P["supported_raw"] = P.supported; P["supported"] = P.supported & (P.moved == "")
 _u = PJ.drop_duplicates("key").set_index("key"); T["tgt"] = T.key.map(_u.tgt_mean).fillna(0); T["car"] = T.key.map(_u.rush_att_mean).fillna(0)
-T["real_role"] = (T.tgt >= 3) | (T.car >= 5)
+T["real_role"] = (T.tgt >= 4) | (T.car >= 8)
 T.to_pickle(OUT + "sunday_td.pkl"); P.to_pickle(OUT + "sunday_props_moved.pkl")
 # leg arrays
 def legarr(gm, k, kind, mk=None, line=None, lean=None):
@@ -110,7 +110,7 @@ def combos(univ, sizes=(2, 3, 4)):
     for n in sizes:
         for c in itertools.combinations(range(len(univ)), n):
             ls = [univ.iloc[i] for i in c]
-            if len({x.name for x in ls}) < n: continue                      # one leg per player
+            if len({x["name"] for x in ls}) < n: continue                      # one leg per player
             blend = 1.0; pay = 1.0
             for g in {x.game for x in ls}:
                 gl = [x for x in ls if x.game == g]
