@@ -41,9 +41,12 @@ for (gm, k, mk), g in Em[Em.is_main_line & Em.market.isin(COUNT)].groupby(["game
     bb = b.sort_values("odds", ascending=False).iloc[0]
     lg = st[(st.key == k) & (st[PL[mk]] > 0)]; n = len(lg); hits = int((lg[COL[mk]] > line).sum()); avg = float(lg[COL[mk]].mean()) if n else np.nan
     agree = n >= 3 and ((lean == "OVER" and hits / n >= 0.5 and avg >= line) or (lean == "UNDER" and hits / n <= 0.5 and avg <= line))
-    sup = (abs(gc) >= 0.08) and (np.sign(gap) == np.sign(gc)) and pa >= 0.9 and feeds >= (4 if mk in ("rec", "rush_att", "pass_att", "pass_cmp") else 3) and agree
+    kneel = (mk == "rush_yds" and line <= 2.5)                      # quarterback kneel-down / scramble lines are not a real market
+    sup0 = (abs(gc) >= 0.08) and (np.sign(gap) == np.sign(gc)) and pa >= 0.9 and feeds >= (4 if mk in ("rec", "rush_att", "pass_att", "pass_cmp") else 3) and agree and not kneel
+    big = abs(gap) >= 0.30                                          # model and book 30+ points apart: usually a role or news difference, so investigate instead of betting
+    sup = sup0 and not big
     rows.append(dict(window=WINDOW[gm], game=gm, player=ov.player.iloc[0], team=ov.team.iloc[0], key=k, market=mk, line=line, lean=lean, model_side=pm, book_side=pb, blend=blend, gap=gap, gap_c=gc, price=int(bb.odds), book=bb.book,
-                     ev_ref=blend * (dec(bb.odds) - 1) - (1 - blend), fair=fair_amer(blend), feeds=feeds, games=n, hits=hits, avg=avg, pa=pa, supported=sup, rule_eligible=(mk == "rush_yds")))
+                     ev_ref=blend * (dec(bb.odds) - 1) - (1 - blend), fair=fair_amer(blend), feeds=feeds, games=n, hits=hits, avg=avg, pa=pa, supported=sup, big_watch=(sup0 and big), rule_eligible=(mk == "rush_yds")))
 P = pd.DataFrame(rows)
 # ---- TD shots
 tdr = []
@@ -87,6 +90,8 @@ def moved(k):
     return "; ".join(o)
 T["flag"] = T.key.map(up)
 T["moved"] = T.key.map(moved)
+BIGK = set(P[P.gap.abs() >= 0.30].key)      # model and book 30+ points apart on any prop: the same role difference applies to his touchdown price
+T["bigdis"] = T.key.isin(BIGK)
 P["moved"] = P.key.map(moved)
 P["supported_raw"] = P.supported; P["supported"] = P.supported & (P.moved == "")
 _u = PJ.drop_duplicates("key").set_index("key"); T["tgt"] = T.key.map(_u.tgt_mean).fillna(0); T["car"] = T.key.map(_u.rush_att_mean).fillna(0)
@@ -99,9 +104,9 @@ def legarr(gm, k, kind, mk=None, line=None, lean=None):
     else: x = pl[{"rec": "rec", "rec_yds": "rec_yds", "rush_yds": "rush_yds", "rush_att": "rush_att", "pass_yds": "pass_yds", "pass_cmp": "pass_cmp", "pass_att": "pass_att"}[mk]]; a = (x > line) if lean == "OVER" else (x < line)
     return a, m
 legs = []
-S = P[P.supported & ~P.key.isin(SKIP) & (P.blend >= 0.55)].copy(); S["absgc"] = S.gap_c.abs()
+S = P[P.supported & ~P.key.isin(SKIP) & (P.blend >= 0.55) & (P.pa >= 0.97)].copy(); S["absgc"] = S.gap_c.abs()
 for r in S.itertuples(): legs.append(dict(window=r.window, game=r.game, key=r.key, name=r.player, label=f"{r.player} {r.lean} {r.line:g} {r.market}", kind="prop", mk=r.market, line=r.line, lean=r.lean, blend=r.blend, price=r.price, book=r.book, score=r.absgc, up=""))
-Z = T[(T.market == "anytime_td") & (T.pa >= 0.95) & (T.ratio >= 1.2) & (T.ratio <= 3.0) & (T.price >= 120) & (T.model >= 0.15) & T.real_role & (T.flag == "") & (T.moved == "")].copy()
+Z = T[(T.market == "anytime_td") & (T.pa >= 0.97) & (T.ratio >= 1.2) & (T.ratio <= 3.0) & (T.price >= 120) & (T.model >= 0.15) & T.real_role & (T.flag == "") & (T.moved == "") & ~T.bigdis].copy()
 for r in Z.itertuples(): legs.append(dict(window=r.window, game=r.game, key=r.key, name=r.player, label=f"{r.player} Anytime TD", kind="atd", mk="atd", line=None, lean=None, blend=r.blend, price=r.price, book=r.book, score=r.ratio - 1, up=r.flag))
 L = pd.DataFrame(legs)
 out = []
@@ -132,6 +137,6 @@ for w, g in list(L.groupby("window")) + [("ALL", L)]:
     u = g.sort_values("score", ascending=False)
     u = pd.concat([u[u.kind == "prop"].head(6), u[u.kind == "atd"].head(4)]) if w != "ALL" else pd.concat([u[u.kind == "prop"].head(7), u[u.kind == "atd"].head(5)])
     if len(u) < 2: continue
-    PAR[w] = combos(u.reset_index(drop=True), (2, 3, 4) if len(u) >= 4 else (2,))
+    PAR[w] = combos(u.reset_index(drop=True), ((2, 3, 4) if w == "ALL" else (2, 3)) if len(u) >= 4 else (2,))
 pd.to_pickle((L, PAR), OUT + "sunday_parlays.pkl")
 print({w: len(v) for w, v in PAR.items()}, "legs", len(L))

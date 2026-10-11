@@ -17,21 +17,20 @@
 
 | Game | Player | Prop | Blend prob | **Play if price is at least** | Thursday ref (book) | Weeks 1-4 | Model vs book | Feeds | Tag |
 |---|---|---|---|---|---|---|---|---|---|
-| HOU@TEN | Xavier Hutchinson | OVER 1.5 rec | 62% | **-164** | +125 (theScore Bet) | 4 of 4 over, avg 3.0 | 80% vs 44% | 10 |  |
 | CIN@MIA | Joe Burrow | OVER 23.5 pass cmp | 58% | **-141** | -105 (BetMGM) | 3 of 4 over, avg 28.0 | 67% vs 50% | 10 |  |
 | MIN@NO | Tyler Shough | OVER 9.5 rush yds | 60% | **-149** | -114 (DraftKings) | 2 of 4 over, avg 18.0 | 70% vs 50% | 5 | RULE (rush yds, blend) |
 | HOU@TEN | C.J. Stroud | OVER 31.5 pass att | 54% | **-116** | -110 (DraftKings) | 2 of 4 over, avg 37.8 | 58% vs 50% | 7 |  |
 | CIN@MIA | Joe Burrow | OVER 33.5 pass att | 51% | **-102** | +100 (theScore Bet) | 3 of 4 over, avg 39.2 | 53% vs 48% | 6 |  |
 | HOU@TEN | Elic Ayomanor | OVER 17.5 rec yds | 59% | **-146** | -105 (BetOnline.ag) | 2 of 4 over, avg 28.2 | 70% vs 49% | 4 |  |
 | HOU@TEN | Calvin Ridley | OVER 0.5 rec | 72% | **-255** | -188 (FanDuel) | 2 of 3 over, avg 1.0 | 82% vs 62% | 6 |  |
-| IND@PIT | Jonathan Taylor | OVER 2.5 rec | 57% | **-132** | -110 (FanDuel) | 2 of 4 over, avg 2.5 | 63% vs 51% | 10 |  |
+| IND@PIT | Jonathan Taylor | OVER 2.5 rec | 57% | **-132** | -110 (FanDuel) | 2 of 4 over, avg 2.5 | 63% vs 51% | 10 |  p_active 0.95: check inactives |
 | NYG@WAS | Darnell Mooney | OVER 1.5 rec | 57% | **-133** | -115 (theScore Bet) | 3 of 4 over, avg 1.5 | 63% vs 51% | 10 |  |
 | CLE@NYJ | Deshaun Watson | OVER 19.5 pass cmp | 53% | **-111** | -115 (betPARX) | 2 of 4 over, avg 20.0 | 54% vs 52% | 9 |  |
-| IND@PIT | Jonathan Taylor | OVER 16.5 rec yds | 55% | **-124** | -110 (DraftKings) | 2 of 4 over, avg 17.2 | 62% vs 49% | 3 |  |
+| IND@PIT | Jonathan Taylor | OVER 16.5 rec yds | 55% | **-124** | -110 (DraftKings) | 2 of 4 over, avg 17.2 | 62% vs 49% | 3 |  p_active 0.95: check inactives |
 | NYG@WAS | Darnell Mooney | OVER 17.5 rec yds | 56% | **-127** | -113 (BetRivers) | 3 of 4 over, avg 23.8 | 62% vs 50% | 3 |  |
 | MIN@NO | Juwan Johnson | OVER 4.5 rec | 51% | **-104** | +120 (betPARX) | 2 of 4 over, avg 5.2 | 57% vs 45% | 11 |  |
-| NYG@WAS | Isaiah Likely | OVER 40.5 rec yds | 55% | **-124** | -113 (BetRivers) | 2 of 4 over, avg 47.5 | 61% vs 50% | 3 |  |
-| NYG@WAS | Isaiah Likely | OVER 4.5 rec | 53% | **-111** | +106 (FanDuel) | 3 of 4 over, avg 5.5 | 58% vs 48% | 10 |  |
+| NYG@WAS | Isaiah Likely | OVER 40.5 rec yds | 55% | **-124** | -113 (BetRivers) | 2 of 4 over, avg 47.5 | 61% vs 50% | 3 |  p_active 0.95: check inactives |
+| NYG@WAS | Isaiah Likely | OVER 4.5 rec | 53% | **-111** | +106 (FanDuel) | 3 of 4 over, avg 5.5 | 58% vs 48% | 10 |  p_active 0.95: check inactives |
 | MIN@NO | Juwan Johnson | OVER 43.5 rec yds | 55% | **-122** | -113 (DraftKings) | 4 of 4 over, avg 58.0 | 60% vs 50% | 3 |  |
 | HOU@TEN | Wan'Dale Robinson | OVER 3.5 rec | 60% | **-149** | -135 (Hard Rock Bet) | 2 of 4 over, avg 4.0 | 64% vs 56% | 9 |  |
 
@@ -39,10 +38,8 @@
 
 | Game | Player | Prop | Blend prob | **Play if price is at least** | Thursday ref (book) | Weeks 1-4 | Model vs book | Feeds | Tag |
 |---|---|---|---|---|---|---|---|---|---|
-| NYG@WAS | Jacory Croskey-Merritt | UNDER 55.5 rush yds | 65% | **-184** | -109 (DraftKings) | 1 of 4 over, avg 39.2 | 80% vs 50% | 4 | RULE (rush yds, blend) |
 | IND@PIT | Germie Bernard | UNDER 2.5 rec | 72% | **-261** | -186 (betPARX) | 1 of 3 over, avg 2.3 | 83% vs 61% | 8 |  |
 | CHI@GB | Kaleb Johnson | UNDER 36.5 rush yds | 63% | **-169** | -114 (FanDuel) | 1 of 3 over, avg 26.7 | 75% vs 51% | 5 | RULE (rush yds, blend) |
-| MIN@NO | Kyler Murray | UNDER 31.5 pass att | 66% | **-198** | +100 (theScore Bet) | 1 of 3 over, avg 23.7 | 84% vs 49% | 8 |  |
 | MIN@NO | Kyler Murray | UNDER 20.5 pass cmp | 62% | **-165** | +100 (betPARX) | 1 of 3 over, avg 15.0 | 76% vs 48% | 10 |  |
 | MIN@NO | Kyler Murray | UNDER 17.5 rush yds | 61% | **-159** | -110 (DraftKings) | 0 of 3 over, avg 14.0 | 73% vs 50% | 5 | RULE (rush yds, blend) |
 | LV@NE | Drake Maye | UNDER 19.5 pass cmp | 62% | **-166** | -103 (BetOnline.ag) | 2 of 4 over, avg 18.2 | 75% vs 50% | 10 |  |
@@ -54,18 +51,26 @@
 | HOU@TEN | David Montgomery | UNDER 46.5 rush yds | 58% | **-136** | -112 (DraftKings) | 1 of 4 over, avg 31.8 | 65% vs 50% | 3 | RULE (rush yds, blend) |
 | NYG@WAS | Jameis Winston | UNDER 31.5 pass att | 65% | **-188** | -121 (betPARX) | 0 of 3 over, avg 26.0 | 78% vs 52% | 8 |  |
 
+### Big disagreements (model and book 30+ points apart): look for a role or news difference before betting; not recommended
+
+| Game | Player | Prop | Model vs book | Weeks 1-4 |
+|---|---|---|---|---|
+| HOU@TEN | Xavier Hutchinson | OVER 1.5 rec | 80% vs 44% | 4 of 4 over, avg 3.0 |
+| MIN@NO | Kyler Murray | UNDER 31.5 pass att | 84% vs 49% | 1 of 3 over, avg 23.7 |
+| NYG@WAS | Jacory Croskey-Merritt | UNDER 55.5 rush yds | 80% vs 50% | 1 of 4 over, avg 39.2 |
+
 ### Touchdown shots (anytime TD; players with a real projected role; ranked by model share of the game's TD field divided by the book's share)
 
 | Game | Player | Model prob | Blend prob | **Play if price is at least** | Thursday ref (book) | Share ratio | Flag |
 |---|---|---|---|---|---|---|---|
 | MIN@NO | Juwan Johnson | 29% | 26% | **+284** | +310 (BetRivers) | 1.51 |  |
-| HOU@TEN | Xavier Hutchinson | 17% | 15% | **+560** | +700 (BetRivers) | 1.39 |  |
 | CHI@GB | Christian Watson | 38% | 36% | **+181** | +185 (BetRivers) | 1.27 |  |
 | CLE@NYJ | KC Concepcion | 24% | 23% | **+331** | +320 (Bovada) | 1.27 |  |
 | MIN@NO | Devaughn Vele | 23% | 22% | **+354** | +350 (FanDuel) | 1.26 |  |
 | CHI@GB | Matthew Golden | 33% | 31% | **+221** | +220 (FanDuel) | 1.26 |  |
 | CLE@NYJ | Quinshon Judkins | 39% | 38% | **+161** | +155 (Bovada) | 1.24 |  |
 | HOU@TEN | Wan'Dale Robinson | 19% | 18% | **+454** | +490 (FanDuel) | 1.21 |  |
+| CHI@GB | Tucker Kraft | 31% | 30% | **+239** | +230 (DraftKings) | 1.20 |  |
 
 **First TD longshots** (real role, model 5% or better):
 
@@ -89,17 +94,15 @@
 
 ### Parlays (legs from this window)
 
-| Legs | Joint prob (blend; same-game correlation from the sims) | Multiplied Thursday payout | **Fair price** | EV no cut | EV with 20% cut | Flag |
-|---|---|---|---|---|---|---|
-| (2) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds | 40.3% | +331 | **+148** | +74% | +47% |  |
-| (2) Xavier Hutchinson OVER 1.5 rec + Kaleb Johnson UNDER 36.5 rush_yds | 39.1% | +322 | **+156** | +65% | +40% |  |
-| (2) Xavier Hutchinson OVER 1.5 rec + Joe Burrow OVER 23.5 pass_cmp | 36.4% | +339 | **+175** | +60% | +35% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Kaleb Johnson UNDER 36.5 rush_yds | 25.3% | +710 | **+295** | +105% | +69% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp | 23.6% | +742 | **+324** | +98% | +63% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Tyler Shough OVER 9.5 rush_yds | 24.1% | +710 | **+315** | +95% | +61% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp + Kaleb Johnson UNDER 36.5 rush_yds | 14.8% | +1,481 | **+575** | +134% | +90% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Tyler Shough OVER 9.5 rush_yds + Kaleb Johnson UNDER 36.5 rush_yds | 15.1% | +1,420 | **+561** | +130% | +87% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Germie Bernard UNDER 2.5 rec + Kaleb Johnson UNDER 36.5 rush_yds | 18.3% | +1,145 | **+446** | +128% | +86% |  |
+| Legs | Joint prob (blend; same-game correlation from the sims) | Multiplied Thursday payout | **Fair price (play if the book pays at least)** | EV with 20% cut, if the blend is right | Flag |
+|---|---|---|---|---|---|
+| (2) Kaleb Johnson UNDER 36.5 rush_yds + Elic Ayomanor OVER 17.5 rec_yds | 37.2% | +266 | **+169** | +17% |  |
+| (2) Joe Burrow OVER 23.5 pass_cmp + Kaleb Johnson UNDER 36.5 rush_yds | 36.7% | +266 | **+172** | +15% |  |
+| (2) Germie Bernard UNDER 2.5 rec + Kaleb Johnson UNDER 36.5 rush_yds | 45.4% | +189 | **+120** | +14% |  |
+| (3) Joe Burrow OVER 23.5 pass_cmp + Kaleb Johnson UNDER 36.5 rush_yds + Elic Ayomanor OVER 17.5 rec_yds | 21.8% | +616 | **+359** | +29% |  |
+| (3) Tyler Shough OVER 9.5 rush_yds + Kaleb Johnson UNDER 36.5 rush_yds + Elic Ayomanor OVER 17.5 rec_yds | 22.3% | +588 | **+349** | +27% |  |
+| (3) Germie Bernard UNDER 2.5 rec + Kaleb Johnson UNDER 36.5 rush_yds + Elic Ayomanor OVER 17.5 rec_yds | 26.9% | +464 | **+271** | +27% |  |
+EV shown is the blended probability against stale, multiplied prices and a 20% cut: a way to rank tickets, not a forecast. Parlays here are 2 and 3 legs only; the one 4-leg lottery ticket sits in the mixed section.
 
 
 ---
@@ -109,12 +112,11 @@
 
 | Game | Player | Prop | Blend prob | **Play if price is at least** | Thursday ref (book) | Weeks 1-4 | Model vs book | Feeds | Tag |
 |---|---|---|---|---|---|---|---|---|---|
-| SF@SEA | Kaelon Black | OVER 15.5 rush yds | 64% | **-174** | -112 (DraftKings) | 3 of 4 over, avg 30.0 | 77% vs 50% | 3 | RULE (rush yds, blend) |
-| DET@ARI | Jeremiyah Love | OVER 11.5 rush att | 60% | **-149** | -120 (Hard Rock Bet) | 2 of 4 over, avg 13.8 | 68% vs 52% | 5 |  |
+| SF@SEA | Kaelon Black | OVER 15.5 rush yds | 64% | **-174** | -112 (DraftKings) | 3 of 4 over, avg 30.0 | 77% vs 50% | 3 | RULE (rush yds, blend) p_active 0.95: check inactives |
+| DET@ARI | Jeremiyah Love | OVER 11.5 rush att | 60% | **-149** | -120 (Hard Rock Bet) | 2 of 4 over, avg 13.8 | 68% vs 52% | 5 |  p_active 0.95: check inactives |
 | SF@SEA | Rashid Shaheed | OVER 1.5 rec | 69% | **-220** | -180 (BetRivers) | 2 of 4 over, avg 1.8 | 77% vs 61% | 10 |  |
 | DET@ARI | Tyler Allgeier | OVER 6.5 rush att | 55% | **-123** | -117 (DraftKings) | 2 of 4 over, avg 8.0 | 58% vs 52% | 5 |  |
-| DET@ARI | Jared Goff | OVER 0.5 rush yds | 56% | **-126** | -114 (FanDuel) | 3 of 3 over, avg 5.0 | 61% vs 51% | 3 | RULE (rush yds, blend) |
-| SF@SEA | Christian McCaffrey | OVER 51.5 rush yds | 53% | **-114** | -114 (FanDuel) | 3 of 4 over, avg 54.5 | 56% vs 50% | 4 | RULE (rush yds, blend) |
+| SF@SEA | Christian McCaffrey | OVER 51.5 rush yds | 53% | **-114** | -114 (FanDuel) | 3 of 4 over, avg 54.5 | 56% vs 50% | 4 | RULE (rush yds, blend) p_active 0.95: check inactives |
 | DET@ARI | Jahmyr Gibbs | OVER 19.5 rush att | 50% | **-101** | -110 (DraftKings) | 2 of 4 over, avg 20.0 | 50% vs 50% | 6 |  |
 
 ### Lines that look too HIGH (play the under)
@@ -145,7 +147,6 @@
 |---|---|---|---|---|---|---|
 | SF@SEA | AJ Barner | 7% | **+1504** | +1800 (theScore Bet) | 1.47 |  |
 | DET@ARI | Sam LaPorta | 9% | **+1177** | +1400 (theScore Bet) | 1.46 |  |
-| SF@SEA | Deebo Samuel | 7% | **+1424** | +1400 (Hard Rock Bet) | 1.24 |  |
 
 ### Watch list: the model changed since Thursday, so Thursday's price is wrong by construction (check the live line; not recommended from stale prices)
 
@@ -160,17 +161,15 @@
 
 ### Parlays (legs from this window)
 
-| Legs | Joint prob (blend; same-game correlation from the sims) | Multiplied Thursday payout | **Fair price** | EV no cut | EV with 20% cut | Flag |
-|---|---|---|---|---|---|---|
-| (2) Kaelon Black OVER 15.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec | 44.0% | +203 | **+127** | +33% | +15% |  |
-| (2) Kaelon Black OVER 15.5 rush_yds + Jaylen Waddle UNDER 4.5 rec | 37.6% | +255 | **+166** | +34% | +14% |  |
-| (2) Kaelon Black OVER 15.5 rush_yds + Jeremiyah Love OVER 11.5 rush_att | 38.0% | +247 | **+163** | +32% | +13% |  |
-| (3) Kaelon Black OVER 15.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec + Jaylen Waddle UNDER 4.5 rec | 26.0% | +468 | **+284** | +48% | +24% |  |
-| (3) Kaelon Black OVER 15.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec + Tyler Allgeier UNDER 11.5 rec_yds | 25.0% | +485 | **+301** | +46% | +22% |  |
-| (3) Kaelon Black OVER 15.5 rush_yds + Jeremiyah Love OVER 11.5 rush_att + Jaylen Waddle UNDER 4.5 rec | 22.5% | +551 | **+344** | +47% | +22% |  |
-| (4) Kaelon Black OVER 15.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec + Jaylen Waddle UNDER 4.5 rec + Tyler Allgeier UNDER 11.5 rec_yds | 14.8% | +999 | **+577** | +62% | +33% |  |
-| (4) Kaelon Black OVER 15.5 rush_yds + Jeremiyah Love OVER 11.5 rush_att + Isaac TeSlaa UNDER 2.5 rec + Jaylen Waddle UNDER 4.5 rec | 15.5% | +942 | **+544** | +62% | +32% |  |
-| (4) Kaelon Black OVER 15.5 rush_yds + Jeremiyah Love OVER 11.5 rush_att + Jaylen Waddle UNDER 4.5 rec + Tyler Allgeier UNDER 11.5 rec_yds | 12.9% | +1,160 | **+678** | +62% | +32% |  |
+| Legs | Joint prob (blend; same-game correlation from the sims) | Multiplied Thursday payout | **Fair price (play if the book pays at least)** | EV with 20% cut, if the blend is right | Flag |
+|---|---|---|---|---|---|
+| (2) Isaac TeSlaa UNDER 2.5 rec + Bo Nix UNDER 14.5 rush_yds | 41.8% | +197 | **+139** | +8% |  |
+| (2) Isaac TeSlaa UNDER 2.5 rec + Jaylen Waddle UNDER 4.5 rec | 41.0% | +200 | **+144** | +7% |  |
+| (2) Jaylen Waddle UNDER 4.5 rec + Bo Nix UNDER 14.5 rush_yds | 35.4% | +248 | **+182** | +6% |  |
+| (3) Isaac TeSlaa UNDER 2.5 rec + Jaylen Waddle UNDER 4.5 rec + Bo Nix UNDER 14.5 rush_yds | 24.5% | +457 | **+308** | +14% |  |
+| (3) Isaac TeSlaa UNDER 2.5 rec + Tyler Allgeier UNDER 11.5 rec_yds + Bo Nix UNDER 14.5 rush_yds | 23.7% | +474 | **+322** | +14% |  |
+| (3) Isaac TeSlaa UNDER 2.5 rec + Jaylen Waddle UNDER 4.5 rec + Tyler Allgeier UNDER 11.5 rec_yds | 23.3% | +481 | **+330** | +13% |  |
+EV shown is the blended probability against stale, multiplied prices and a 20% cut: a way to rank tickets, not a forecast. Parlays here are 2 and 3 legs only; the one 4-leg lottery ticket sits in the mixed section.
 
 
 ---
@@ -180,8 +179,8 @@
 
 | Game | Player | Prop | Blend prob | **Play if price is at least** | Thursday ref (book) | Weeks 1-4 | Model vs book | Feeds | Tag |
 |---|---|---|---|---|---|---|---|---|---|
-| BAL@ATL | Rashod Bateman | OVER 17.5 rec yds | 59% | **-145** | -112 (DraftKings) | 3 of 4 over, avg 42.8 | 68% vs 50% | 6 |  |
-| BAL@ATL | Rashod Bateman | OVER 1.5 rec | 65% | **-185** | -147 (DraftKings) | 3 of 4 over, avg 2.8 | 72% vs 57% | 11 |  |
+| BAL@ATL | Rashod Bateman | OVER 17.5 rec yds | 59% | **-145** | -112 (DraftKings) | 3 of 4 over, avg 42.8 | 68% vs 50% | 6 |  p_active 0.95: check inactives |
+| BAL@ATL | Rashod Bateman | OVER 1.5 rec | 65% | **-185** | -147 (DraftKings) | 3 of 4 over, avg 2.8 | 72% vs 57% | 11 |  p_active 0.95: check inactives |
 
 ### Lines that look too HIGH (play the under)
 
@@ -199,13 +198,6 @@ None met the role and probability filters.
 |---|---|---|---|
 | BAL@ATL | Mark Andrews | targets 6.2 to 7.0 | 26% |
 
-### Parlays (legs from this window)
-
-| Legs | Joint prob (blend; same-game correlation from the sims) | Multiplied Thursday payout | **Fair price** | EV no cut | EV with 20% cut | Flag |
-|---|---|---|---|---|---|---|
-| (2) Drake London UNDER 5.5 rec + Rashod Bateman OVER 17.5 rec_yds | 33.7% | +309 | **+197** | +38% | +17% |  |
-| (2) Drake London UNDER 5.5 rec + Rashod Bateman OVER 1.5 rec | 37.0% | +263 | **+170** | +34% | +15% |  |
-
 
 ---
 ## Monday 8:15 PM ET / 5:15 PM PT (BUF@LA)
@@ -215,15 +207,20 @@ None met the role and probability filters.
 | Game | Player | Prop | Blend prob | **Play if price is at least** | Thursday ref (book) | Weeks 1-4 | Model vs book | Feeds | Tag |
 |---|---|---|---|---|---|---|---|---|---|
 | BUF@LA | James Cook | OVER 75.5 rush yds | 53% | **-112** | -112 (BetOnline.ag) | 2 of 4 over, avg 105.2 | 56% vs 50% | 4 | RULE (rush yds, blend) |
-| BUF@LA | Davante Adams | OVER 4.5 rec | 52% | **-107** | +110 (betPARX) | 2 of 4 over, avg 5.5 | 56% vs 47% | 11 |  |
+| BUF@LA | Davante Adams | OVER 4.5 rec | 52% | **-107** | +110 (betPARX) | 2 of 4 over, avg 5.5 | 56% vs 47% | 11 |  p_active 0.95: check inactives |
 
 ### Lines that look too HIGH (play the under)
 
 | Game | Player | Prop | Blend prob | **Play if price is at least** | Thursday ref (book) | Weeks 1-4 | Model vs book | Feeds | Tag |
 |---|---|---|---|---|---|---|---|---|---|
-| BUF@LA | Josh Allen | UNDER 36.5 rush yds | 66% | **-198** | -111 (DraftKings) | 1 of 4 over, avg 29.5 | 83% vs 50% | 6 | RULE (rush yds, blend) |
 | BUF@LA | Josh Allen | UNDER 20.5 pass cmp | 60% | **-152** | +100 (Bovada) | 1 of 4 over, avg 19.8 | 73% vs 48% | 8 |  |
 | BUF@LA | Josh Allen | UNDER 32.5 pass att | 63% | **-173** | -112 (DraftKings) | 1 of 4 over, avg 29.8 | 75% vs 51% | 6 |  |
+
+### Big disagreements (model and book 30+ points apart): look for a role or news difference before betting; not recommended
+
+| Game | Player | Prop | Model vs book | Weeks 1-4 |
+|---|---|---|---|---|
+| BUF@LA | Josh Allen | UNDER 36.5 rush yds | 83% vs 50% | 1 of 4 over, avg 29.5 |
 
 ### Touchdown shots (anytime TD; players with a real projected role; ranked by model share of the game's TD field divided by the book's share)
 
@@ -241,20 +238,20 @@ None met the role and probability filters.
 ---
 ## Mixed: all windows
 
-| Legs | Joint prob | Multiplied Thursday payout | **Fair price** | EV no cut | EV with 20% cut | Flag |
-|---|---|---|---|---|---|---|
-| (2) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds | 41.3% | +328 | **+142** | +77% | +50% |  |
-| (2) Xavier Hutchinson OVER 1.5 rec + Jacory Croskey-Merritt UNDER 55.5 rush_yds | 40.3% | +331 | **+148** | +74% | +47% |  |
-| (2) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds | 39.5% | +326 | **+153** | +68% | +42% |  |
-| (2) Xavier Hutchinson OVER 1.5 rec + Joe Burrow OVER 23.5 pass_cmp | 36.4% | +339 | **+175** | +60% | +35% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds | 26.8% | +720 | **+274** | +119% | +81% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds + Josh Allen UNDER 36.5 rush_yds | 26.2% | +710 | **+281** | +112% | +75% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds | 25.6% | +717 | **+291** | +109% | +72% |  |
-| (3) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp | 24.1% | +735 | **+314** | +102% | +66% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds + Josh Allen UNDER 36.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds | 17.0% | +1,452 | **+488** | +164% | +114% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp | 15.6% | +1,501 | **+539** | +151% | +104% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Josh Allen UNDER 36.5 rush_yds + Jacory Croskey-Merritt UNDER 55.5 rush_yds + Tyler Shough OVER 9.5 rush_yds | 16.0% | +1,439 | **+525** | +146% | +100% |  |
-| (4) Xavier Hutchinson OVER 1.5 rec + Kaelon Black OVER 15.5 rush_yds + Josh Allen UNDER 36.5 rush_yds + Joe Burrow OVER 23.5 pass_cmp | 15.3% | +1,481 | **+552** | +142% | +97% |  |
+| Legs | Joint prob | Multiplied Thursday payout | **Fair price (play if the book pays at least)** | EV with 20% cut, if the blend is right | Flag |
+|---|---|---|---|---|---|
+| (2) Drake London UNDER 5.5 rec + Kaleb Johnson UNDER 36.5 rush_yds | 35.7% | +305 | **+181** | +23% |  |
+| (2) Drake London UNDER 5.5 rec + Elic Ayomanor OVER 17.5 rec_yds | 33.6% | +322 | **+197** | +20% |  |
+| (2) Joe Burrow OVER 23.5 pass_cmp + Drake London UNDER 5.5 rec | 33.2% | +322 | **+201** | +19% |  |
+| (2) Drake London UNDER 5.5 rec + Germie Bernard UNDER 2.5 rec | 41.0% | +232 | **+144** | +17% |  |
+| (3) Drake London UNDER 5.5 rec + Kaleb Johnson UNDER 36.5 rush_yds + Elic Ayomanor OVER 17.5 rec_yds | 21.1% | +692 | **+373** | +38% |  |
+| (3) Joe Burrow OVER 23.5 pass_cmp + Drake London UNDER 5.5 rec + Kaleb Johnson UNDER 36.5 rush_yds | 20.8% | +692 | **+380** | +36% |  |
+| (3) Tyler Shough OVER 9.5 rush_yds + Drake London UNDER 5.5 rec + Kaleb Johnson UNDER 36.5 rush_yds | 21.3% | +661 | **+369** | +34% |  |
+| (3) Drake London UNDER 5.5 rec + Germie Bernard UNDER 2.5 rec + Kaleb Johnson UNDER 36.5 rush_yds | 25.8% | +523 | **+288** | +34% |  |
+| (4) Joe Burrow OVER 23.5 pass_cmp + Drake London UNDER 5.5 rec + Kaleb Johnson UNDER 36.5 rush_yds + Elic Ayomanor OVER 17.5 rec_yds | 12.4% | +1,446 | **+709** | +55% |  |
+| (4) Tyler Shough OVER 9.5 rush_yds + Drake London UNDER 5.5 rec + Kaleb Johnson UNDER 36.5 rush_yds + Elic Ayomanor OVER 17.5 rec_yds | 12.6% | +1,386 | **+692** | +53% |  |
+| (4) Drake London UNDER 5.5 rec + Germie Bernard UNDER 2.5 rec + Kaleb Johnson UNDER 36.5 rush_yds + Elic Ayomanor OVER 17.5 rec_yds | 15.3% | +1,117 | **+554** | +52% |  |
+| (4) Drake London UNDER 5.5 rec + Kaleb Johnson UNDER 36.5 rush_yds + Isaac TeSlaa UNDER 2.5 rec + Elic Ayomanor OVER 17.5 rec_yds | 14.6% | +1,166 | **+583** | +51% |  |
 
 Cross-game legs are treated as independent (separate simulations); same-game legs carry the simulated correlation.
 
@@ -264,18 +261,18 @@ Cross-game legs are treated as independent (separate simulations); same-game leg
 
 Only the model-only track is independent of the market (the market-anchored track is built from the line). It ran high on totals all season, so I would not play any over; a model-only total that is still below the line is the only total signal worth noting.
 
-| Game | Live line (spread, total) | Model-only fair spread (home) | Model-only total | Note |
+| Game | Live line (favorite, total) | Model-only fair line | Model-only total | Note |
 |---|---|---|---|---|
-| CHI@GB | CHI -1.5, 47.5 | +3.0 | 46.9 |  |
-| CIN@MIA | CIN -7, 44.5 | +3.0 | 44.8 |  |
-| LV@NE | NE -3.5, 45.5 | -4.0 | 43.7 | model-only total below the line |
-| MIN@NO | MIN -2.5, 41.5 | +1.0 | 43.2 |  |
-| CLE@NYJ | NYJ -2.5, 38.5 | -1.0 | 41.5 |  |
-| IND@PIT | PIT -3, 41.5 | -0.0 | 47.7 |  |
-| HOU@TEN | HOU -6.5, 37.5 | +3.0 | 40.4 |  |
-| NYG@WAS | WSH -3.5, 41.5 | -0.0 | 45.4 |  |
-| DEN@LAC | DEN -3.5, 41.5 | +1.0 | 41.3 |  |
-| DET@ARI | DET -5.5, 54.5 | +3.0 | 52.9 | model-only total below the line |
-| SF@SEA | SEA -3, 46.5 | -2.0 | 48.1 |  |
-| BAL@ATL | ATL -3, 43.5 | -0.0 | 48.2 |  |
-| BUF@LA | LAR -3, 54.5 | -1.0 | 51.7 | model-only total below the line |
+| CHI@GB | CHI -1.5, 47.5 | CHI -3.0 | 46.9 |  |
+| CIN@MIA | CIN -7, 44.5 | CIN -3.0 | 44.8 | model-only is 4.0 points less bullish on CIN than the line |
+| LV@NE | NE -3.5, 45.5 | NE -4.0 | 43.7 | model-only total below the line |
+| MIN@NO | MIN -2.5, 41.5 | MIN -1.0 | 43.2 |  |
+| CLE@NYJ | NYJ -2.5, 38.5 | NYJ -1.0 | 41.5 | model-only total runs high (ignore) |
+| IND@PIT | PIT -3, 41.5 | pick'em | 47.7 | model-only is 3.0 points less bullish on PIT than the line; model-only total runs high (ignore) |
+| HOU@TEN | HOU -6.5, 37.5 | HOU -3.0 | 40.4 | model-only is 3.5 points less bullish on HOU than the line |
+| NYG@WAS | WSH -3.5, 41.5 | pick'em | 45.4 | model-only is 3.5 points less bullish on WSH than the line; model-only total runs high (ignore) |
+| DEN@LAC | DEN -3.5, 41.5 | DEN -1.0 | 41.3 | model-only is 2.5 points less bullish on DEN than the line |
+| DET@ARI | DET -5.5, 54.5 | DET -3.0 | 52.9 | model-only is 2.5 points less bullish on DET than the line; model-only total below the line |
+| SF@SEA | SEA -3, 46.5 | SEA -2.0 | 48.1 |  |
+| BAL@ATL | ATL -3, 43.5 | pick'em | 48.2 | model-only is 3.0 points less bullish on ATL than the line; model-only total runs high (ignore) |
+| BUF@LA | LAR -3, 54.5 | LA -1.0 | 51.7 | model-only is 4.0 points less bullish on LAR than the line; model-only total below the line |
