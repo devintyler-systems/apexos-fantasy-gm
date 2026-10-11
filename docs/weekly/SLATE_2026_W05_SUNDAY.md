@@ -12,13 +12,43 @@
 
 1. **Availability changed a lot since Thursday and the report is now complete.** BAL Lamar Jackson is Out (Tyler Huntley starts). CHI Caleb Williams is Questionable and modeled at 35% active (Tyson Bagent 65%), and CHI Monangai is Out. PHI Barkley, DeVonta Smith and Marquise Brown are Out. WAS Mariota and Diggs are Out, McLaurin Questionable (0.67). LAC Johnston and Thompson are Out, McConkey Questionable (0.50). NYJ Hall and Mitchell are Out. CIN Chase and Higgins are Questionable (0.75). LV Jeanty is Questionable (0.50). Questionable values are the fitted practice-status probabilities, not news.
 2. **Official inactives are not in.** They post about 90 minutes before each window (about 12:00Z for PHI@JAX, 15:30Z for the 1 PM games). The nflverse feed never carries them. Rerun the affected games after they post.
-3. **The engine does not carry quarterback quality to receivers.** Huntley (BAL) projects at about 222 passing yards, above Jackson's frozen 217, and Bagent (CHI) at 221 above Williams' 208. Every BAL and CHI pass-catcher is not discounted for the backup. Treat those two games as the least reliable.
+3. **The engine does not carry quarterback quality to receivers.** Huntley (BAL) projects at about 218 passing yards and 19 completions on a one-game, 9-attempt sample, roughly the level Jackson produced (242 per game over his four starts). Bagent (CHI) projects at 219 yards, above Williams' 205 in the same run. Every BAL and CHI pass-catcher is not discounted for the backup. Treat those two games as the least reliable.
 4. **PHI running back output is unreliable.** About 11 of PHI's 25.6 team carries are not assigned to any named player (Barkley and Bigsby are out; Pierce and Steele have no 2026 stats). Shipley is probably under-projected, and Hurts's rushing TD share is probably inflated (anytime TD 0.27 in the market track).
-5. **Backup running backs carry big redistributions that history does not support yet.** NYJ Braelon Allen 18.7 carries (his share 69.5% vs 33% season to date) and anytime TD 0.50; CHI Swift 20.7 carries (61% share vs 43%). Treat as upper-range.
+5. **Backup running backs and receivers who inherit vacated work are projected above their own history.** NYJ Braelon Allen: 18.7 carries against 8.2 per game so far (his best sole-back game was 14) and a 0.5 anytime TD that comes mostly from a receiving-TD rate about 3.5 times the league rate for backs. CHI Swift: 20.7 carries vs 17.3 and 0.98 rushing TDs per game, the highest in the file. PHI Shipley 9.1 carries vs 3.8, PHI Goedert and Ertz about 1.9 times their targets per active game, LAC Gadsden 6.2 targets vs 3.8, NYJ Garrett Wilson 10.1 vs 7.8. Running backs' receiving-TD rates run 1.5 to 3.5 times the league rate across the Top 20, so every back's anytime TD is an upper-range estimate: Gibbs (71.7% to 75.6%) and Bijan Robinson (66% to 68%) included. Do not treat any of these as a bet.
+   **Plays I would not rank:** Allen, Swift, Shipley and all PHI plays, Hurts and Wicks, Goedert, Ertz, Gadsden, Huntley, Bagent and every BAL and CHI skill player, Flowers, Chase, Jefferson, Jeanty, McConkey.
 6. **The target-share cap is disabled.** No player is above 34% (Smith-Njigba 33.9%, Bowers 33.7%, Wilson 32.2%), but nothing enforces it.
 7. **Thursday result for the record:** TB 24, DAL 16 against a sim that had DAL winning (75% market-anchored, 65% model-only). That game is graded Tuesday and it does not enter this run.
 8. **No market numbers exist in this file.** The Thursday odds workbooks are two days old and were not used; send new ones for the Sunday slate and I will price against them.
 
+
+8b. **Anytime-TD columns differ by sheet.** The position sheets in the workbook show the probability if the player plays; the TD Top 20 shows it multiplied by availability (Chase 35.7% if active vs 27.0% adjusted; Flowers 37.3% vs 24.9%). Every Reliability index is a 1-100 score capped at 85 for touchdowns, not a probability.
+
+## Sunday Top 20 anytime TD (Sunday games only; availability-adjusted; model probability, upper-range for backs; no market numbers)
+
+| # | Market-anchored | Prob (adj / if active) | Model-only | Prob (adj / if active) | Flag |
+|---|---|---|---|---|---|
+| 1 | Jahmyr Gibbs (DET) | 75.6% / 75.6% | Jahmyr Gibbs (DET) | 71.7% / 71.7% |  |
+| 2 | Bijan Robinson (ATL) | 66.0% / 66.0% | Bijan Robinson (ATL) | 68.0% / 68.0% |  |
+| 3 | D'Andre Swift (CHI) | 62.9% / 66.1% | D'Andre Swift (CHI) | 64.6% / 68.0% |  |
+| 4 | Chase Brown (CIN) | 57.3% / 57.3% | Jonathan Taylor (IND) | 61.8% / 64.9% |  |
+| 5 | Jonathan Taylor (IND) | 52.7% / 55.4% | Derrick Henry (BAL) | 61.6% / 61.6% |  |
+| 6 | Derrick Henry (BAL) | 52.2% / 52.2% | Christian McCaffrey (SF) | 53.4% / 56.1% |  |
+| 7 | Amon-Ra St. Brown (DET) | 51.9% / 51.9% | Chase Brown (CIN) | 53.2% / 53.2% |  |
+| 8 | Aaron Jones (MIN) | 50.9% / 51.2% | Jaxon Smith-Njigba (SEA) | 51.8% / 54.6% |  |
+| 9 | Christian McCaffrey (SF) | 50.0% / 52.6% | Aaron Jones (MIN) | 51.3% / 51.6% |  |
+| 10 | Braelon Allen (NYJ) | 49.9% / 49.9% | Jaylen Warren (PIT) | 50.5% / 50.5% | UPPER-RANGE: projected 18.7 carries vs 8.2 per game so far |
+| 11 | Jaylen Warren (PIT) | 49.6% / 49.6% | Braelon Allen (NYJ) | 50.0% / 50.0% |  |
+| 12 | Jaxon Smith-Njigba (SEA) | 49.4% / 52.1% | Emanuel Wilson (SEA) | 49.0% / 49.0% |  |
+| 13 | Bhayshul Tuten (JAX) | 48.8% / 48.8% | Bhayshul Tuten (JAX) | 48.7% / 48.7% |  |
+| 14 | Emanuel Wilson (SEA) | 47.7% / 47.7% | Amon-Ra St. Brown (DET) | 47.6% / 47.6% |  |
+| 15 | David Montgomery (HOU) | 45.7% / 45.7% | Jeremiyah Love (ARI) | 45.6% / 48.0% |  |
+| 16 | J.K. Dobbins (DEN) | 43.9% / 43.9% | David Montgomery (HOU) | 44.7% / 44.7% |  |
+| 17 | Jeremiyah Love (ARI) | 43.8% / 46.1% | Trey McBride (ARI) | 43.8% / 43.8% |  |
+| 18 | Sam LaPorta (DET) | 43.6% / 43.6% | Quinshon Judkins (CLE) | 43.5% / 43.5% |  |
+| 19 | Trey McBride (ARI) | 42.7% / 42.7% | Ollie Gordon II (MIA) | 43.4% / 43.4% |  |
+| 20 | Romeo Doubs (NE) | 42.0% / 42.0% | Tony Pollard (TEN) | 43.2% / 45.5% | UPPER-RANGE: projected 7.9 targets vs 5.0 per game so far |
+
+17 of the 20 are running backs and several share a game (DET@ARI, SF@SEA, BAL@ATL, IND@PIT, CLE@NYJ), so they are correlated through game script and are not independent legs. Monday BUF@LA is excluded from this list.
 
 ---
 ## PHI @ JAX  (2026-10-11 09:30 ET)  [neutral site, London]
