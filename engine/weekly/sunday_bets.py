@@ -9,6 +9,7 @@ from params import SCHED, is_neutral, norm_name, SEASON
 Em = pd.read_csv(OUT + "edges_all_rows.csv")
 WINDOW = {"CHI@GB": "1PM", "CIN@MIA": "1PM", "LV@NE": "1PM", "MIN@NO": "1PM", "CLE@NYJ": "1PM", "IND@PIT": "1PM", "HOU@TEN": "1PM", "NYG@WAS": "1PM",
           "DEN@LAC": "4PM", "DET@ARI": "4PM", "SF@SEA": "4PM", "BAL@ATL": "SNF", "BUF@LA": "MNF"}
+if os.environ.get("APEX_WINDOW_JSON"): WINDOW = __import__("json").loads(os.environ["APEX_WINDOW_JSON"])      # e.g. {"BUF@LA": "MNF"} for a single-game rerun
 Em = Em[Em.game.isin(WINDOW)].copy(); Em["key"] = Em.player.map(norm_name); Em["window"] = Em.game.map(WINDOW)
 COUNT = ["rec", "rec_yds", "rush_yds", "rush_att", "pass_yds", "pass_cmp", "pass_att"]
 st = pd.read_parquet(NFLV + f"stats_player_week_{SEASON}.parquet"); st = st[(st.week <= 4) & (st.season_type == "REG")].copy(); st["key"] = st.player_display_name.map(norm_name)
@@ -64,7 +65,7 @@ pd.to_pickle((P, T, bias), OUT + "sunday_bets.pkl")
 print("bias", bias.round(3).to_dict()); print(len(P), "props;", int(P.supported.sum()), "supported;", len(T), "TD rows")
 
 # ================= TD shot flags, parlays =================
-PJ = pd.read_csv(sorted(__import__("glob").glob("../../runs/weekly/2026_w05_market_20261011T16*"))[0] + "/projections.csv"); PJ["key"] = PJ.player.map(norm_name)
+PJ = pd.read_csv(os.environ.get("APEX_PJ_CSV") or (sorted(__import__("glob").glob("../../runs/weekly/2026_w05_market_20261011T16*"))[0] + "/projections.csv")); PJ["key"] = PJ.player.map(norm_name)
 car = st[st.carries > 0].groupby("key").carries.agg(["mean", "size"]); tg = st[st.targets > 0].groupby("key").targets.agg(["mean", "size"])
 def up(k):
     r = PJ[PJ.key == k]
