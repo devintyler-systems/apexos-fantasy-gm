@@ -1,0 +1,2 @@
+pricing_now_utc,minutes_to_first_kickoff,snapshot_min,snapshot_max,book_names,independent_feeds_by_market,stale_rows_excluded,odds_rows,rows_in_week,rows_not_week,tz_offset_h
+2026-10-08T23:01:42Z,73.3,2026-10-08 22:10:45,2026-10-08 22:42:39,12,"{'anytime_td': 6, 'first_td': 6, 'pass_att': 9, 'pass_cmp': 10, 'pass_yds': 6, 'rec': 11, 'rec_yds': 6, 'rush_att': 8, 'rush_yds': 6}",0,14484,13812,672,7

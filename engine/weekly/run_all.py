@@ -256,7 +256,7 @@ def run_game(away, home, neutral, ns=NS):
 
 if __name__ == "__main__":
     for _, r in SCHED.iterrows():
-        run_game(r.away, r.home, neutral=(r.away == "IND" and r.home == "WAS"))
+        run_game(r.away, r.home, neutral=bool(r.neutral))
     O = OUT
     pd.DataFrame(env_rows).to_csv(O + "w4_game_environment.csv", index=False)
     pd.DataFrame(rows_mk).to_csv(O + "w4_player_props_fair_lines.csv", index=False)

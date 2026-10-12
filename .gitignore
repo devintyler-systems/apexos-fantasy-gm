@@ -35,3 +35,10 @@ htmlcov/
 # Weekly engine working data (frozen runs under runs/weekly/ ARE committed)
 var/
 inputs/
+
+# raw book prices and anything derived row-by-row from them (never commit odds files)
+props_lines.csv
+odds_game_lines.csv
+edges_all_rows.csv
+W05_books_vs_model.csv
+*Odds*.xlsx

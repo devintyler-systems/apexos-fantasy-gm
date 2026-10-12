@@ -26,7 +26,7 @@ Also available and not yet used: ftn_charting_{season}, advstats_week_{rec,rush,
 ./run_pipeline.sh market    # market-anchored environment (nflverse spread/total as team-points prior)
 ```
 Outputs land in `deliverables_model/` and `deliverables_market/`: rankings, TD markets, fair lines, ladders, team/game props,
-`Week4_Model_Projections.xlsx`, DFS Classic pool + lineups.
+`Week<N>_<track>_Projections.xlsx`, DFS Classic pool + lineups.
 Environment variables: `APEX_SEASON`, `APEX_THROUGH_WEEK`, `APEX_TARGET_WEEK`, `APEX_INJ_WEEK`, `APEX_ROSTER` (v3|v4), `APEX_ENV` (model|market), `APEX_NS`, `APEX_BACKTEST`.
 
 ## 3. Grading (Tuesday)
