@@ -10,6 +10,7 @@ from params import norm_name, is_neutral, INJ
 AWAY, HOME = sys.argv[1], sys.argv[2]; ANCHOR = "--anchor" in sys.argv; ROBUST = "--robust" in sys.argv
 CAP = 50000; KFG = 3.9      # kicker: engine has no FG distance, so use the league-average DK value per made FG (approximate)
 sal = pd.read_csv(os.environ["APEX_DK_SALARIES"])
+sal["TeamAbbrev"] = sal["TeamAbbrev"].replace({"LAR": "LA"})      # DK uses LAR for the Rams, nflverse uses LA
 sal["nkey"] = sal["Name"].map(norm_name)
 fl = sal[sal["Roster Position"] == "FLEX"].set_index(["nkey", "TeamAbbrev"]); cp = sal[sal["Roster Position"] == "CPT"].set_index(["nkey", "TeamAbbrev"])
 R.run_game(AWAY, HOME, neutral=is_neutral(AWAY, HOME), ns=20000); d = R.STORE.pop((AWAY, HOME)); A, H = d["A"], d["H"]
@@ -37,6 +38,9 @@ def build(anchor):
             k = (norm_name(pl["player"]), t)
             if k not in fl.index or pl["p_active"] < 0.03 or pl["mask"].sum() < 200: continue
             m = pl["mask"]; sc = {}
+            if os.environ.get("APEX_QB_RUSH") and k[0] == norm_name(os.environ["APEX_QB_RUSH"].split(":")[0]):      # QB rushing overlay: the engine has no QB carries, so use his 2026 per-game rushing yards and TD rate (independent noise, NOT calibrated)
+                _, ypg, tdpg = os.environ["APEX_QB_RUSH"].split(":"); rng = np.random.default_rng(5); n_ = len(pl["rush_yds"])
+                pl = dict(pl); pl["rush_yds"] = rng.gamma(4.0, float(ypg) / 4.0, n_); pl["rush_td"] = (rng.random(n_) < min(0.9, float(tdpg))).astype(float)
             for mk in ("pass_yds", "rush_yds", "rec_yds", "rec"):
                 ln = scales.get((k[0], mk)) if anchor else None
                 if ln is not None:
@@ -48,7 +52,7 @@ def build(anchor):
             k = (norm_name(kk.player), t)
             if k in fl.index: arrs[k] = (KFG * own["fg"] + own["xp_off"] + own["xp_d"]).astype(np.float32); meta[k] = dict(pos="K", p_active=1.0, scale={})
     for t, own, opp in ((AWAY, A, H), (HOME, H, A)):
-        k = (norm_name({"DAL": "Cowboys", "TB": "Buccaneers"}.get(t, t)), t)
+        k = (norm_name({"DAL": "Cowboys", "TB": "Buccaneers", "BUF": "Bills", "LA": "Rams"}.get(t, t)), t)
         if k in fl.index: arrs[k] = (opp["sacks"] + 2 * opp["int_n"] + 2 * opp["fl_n"] + 6 * own["dtd"] + 2 * own["saf"] + tier(opp["off_pts"])).astype(np.float32); meta[k] = dict(pos="DST", p_active=1.0, scale={})
     return arrs, meta
 arrs, meta = build(ANCHOR)

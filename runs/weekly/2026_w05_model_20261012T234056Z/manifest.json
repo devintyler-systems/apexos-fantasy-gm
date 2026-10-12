@@ -1,0 +1,122 @@
+{
+ "artifacts": {
+  "injury_report_coverage.csv": {
+   "rows": 30,
+   "sha256": "cc0bbd36f03ccf05303ab3d7015b8dcdb6e570f0074e0f6987ae549ecbacacd1"
+  },
+  "manual_overrides.csv": {
+   "rows": 5,
+   "sha256": "d40981239512cd9eb3c94baaf869371a805d1504969ba7d96181bc2d92fde7f2"
+  },
+  "projections.csv": {
+   "rows": 377,
+   "sha256": "afc49f77d38bb4ee3450390271c79af7b0c137f20b251c96b0af4d523a97d7fc"
+  },
+  "rankings_raw.csv": {
+   "rows": 494,
+   "sha256": "b449fea9cc1095fa835d3d5bde504d8d78124d6bb971cfc9001e735e04aa0be3"
+  },
+  "w4_game_environment.csv": {
+   "rows": 15,
+   "sha256": "1fc94979fb3e2487f764dc660da48d1c080c48abcd93b91a0b65172305af493c"
+  },
+  "w4_injury_adjustments.csv": {
+   "rows": 226,
+   "sha256": "ff903f83382a3547c499cbc933e7a62f35080532232c596e8a08cc440ef53c17"
+  },
+  "w4_td_markets.csv": {
+   "rows": 1344,
+   "sha256": "4fe71a48e6e6e0bd180d4588adcbe98fe7e45c88e92e165e839f493a07caaaf3"
+  },
+  "w4_team_environment.csv": {
+   "rows": 30,
+   "sha256": "30c7ffdbcd4548542797faf66b839bbc448b94fe74d8e96c0c8c76c318b04a68"
+  },
+  "w4_team_totals.csv": {
+   "rows": 30,
+   "sha256": "9f545b969e6ef99d657cb736ea68877ceb295088e8a448353838339e3c7e3adb"
+  }
+ },
+ "as_of_utc": "2026-10-12T23:40:56Z",
+ "engine_version": "weekly-0.1.0",
+ "env": {
+  "APEX_DELIV": "/home/user/apexos-fantasy-gm/var/r3/deliv",
+  "APEX_NFLV": "/home/user/apexos-fantasy-gm/var/nflverse",
+  "APEX_OUT": "/home/user/apexos-fantasy-gm/var/r3/out"
+ },
+ "git_sha": "a46efa13d6d0eb5d2fc3fb4eb2f32a2f48f1c59d",
+ "inputs_sha256": {
+  "advstats_week_def_2023.parquet": "857941121910635489c6bcb10fa023f7c04c6afd75974d975e14f8afc07be352",
+  "advstats_week_def_2024.parquet": "13261d480979aee8f63f09c2dfbd383e0bb8970b2f7bd83dde6b1e217ae0d3e9",
+  "advstats_week_def_2025.parquet": "a1224b47bd23840a9c0e072d6ed91dd0298777fd53570290b273080975bdb7ea",
+  "advstats_week_def_2026.parquet": "313b53ed284e96b9d1fb859f66a71a6985a38b976969218c513bbd67635f0eea",
+  "advstats_week_pass_2023.parquet": "20eef8dbe8982befacdc1f7db0301f323580209bfb891850444a8d749895ab41",
+  "advstats_week_pass_2024.parquet": "39c6ee888479630fd147188f5302fedc7d03ad682d2ee45016f4e04a259e8395",
+  "advstats_week_pass_2025.parquet": "9752d5201209e80a8c5b1388f9030fa370a990b84328e46555241ec40913c8a3",
+  "advstats_week_pass_2026.parquet": "538d098a39e6b3930cba15a94c1600c656990ee3497c9d550c9f1ad870b22e15",
+  "advstats_week_rec_2023.parquet": "7ed7a0d9e1b8e77810c9679836a01bee0e8965b472e3cec594393b211e46c21d",
+  "advstats_week_rec_2024.parquet": "6dfac12d7c8b7a75361931a34a55a4f022718f89150689bcfcffd6f5d2d7f671",
+  "advstats_week_rec_2025.parquet": "b4fcae8322c17b021283cba924a35f6452b831a2959c4adb2c357866b8975b97",
+  "advstats_week_rec_2026.parquet": "7519698347f8c88206427bf64f10661e32e961b1da5f55eda69d7cee825d2065",
+  "advstats_week_rush_2023.parquet": "c2832394c58d1c63318d6451b4442d1b4f43d8124f09852635a266ac4b04e161",
+  "advstats_week_rush_2024.parquet": "1ebd2420054b61d6fc73843571fed8770adbb77069ab7f75462715900dd67718",
+  "advstats_week_rush_2025.parquet": "898b688a2ff17e09157d9fcd9c0f84bed3987ccba0da49579fe406f5f5cfc364",
+  "advstats_week_rush_2026.parquet": "a8c3175eb837eb4599a7857c4aacab80be55cee8cde7da0f72c2c01c9f8ff7a8",
+  "config/availability_by_status.csv": "eaa50c4335e75c3996d988e3870e3066da9538cd22f6d921e13c514c28236ae5",
+  "config/availability_by_status_pos.csv": "31dc0aad1802cf988e4a9edeec23444a204f1797664bdc5450f39b3d30a35beb",
+  "config/calibration.json": "3fb59f82534d0c4dafba47ab2a75ac0d75bed0a8574dd9c75decd75aad3d455c",
+  "config/calibration_params.json": "b8c824d269e9b8ac293907833fe826c19e301b83b876f31fea12b1d7993549e7",
+  "config/opportunity_fit.json": "a2df21bc434a89ddcf51713bac218b781b29a2d0d32430f753640c7473294bf7",
+  "config/player_prior_fit.json": "8f8b74b106bdd30fd143a36ffde150ace6865ee64c8996aaf4d52c65bd4117fd",
+  "config/team_prior_fit.json": "f386a1224b09b908c67ce3fa1a05afca4afe8108d15d735a082073a66cbafa52",
+  "config/weather_effects.json": "dab0556b87424d094866d3555dce76b71c9076c277a4983d5f3b31ec270c7143",
+  "depth_charts_2023.parquet": "44dbf02554d4a8a783f52d53b3c66ede8cc9886097518c56c7e1069f5e2d18ff",
+  "depth_charts_2024.parquet": "2b5e72fa37f6a498238da30d619cd5d2fe883ffbfdbaaf637301893ad6c22097",
+  "depth_charts_2025.parquet": "14f74185b3c2c48df234ced284ba3596bda3333d0b2a8df40841f68cd34539fa",
+  "depth_charts_2026.parquet": "16558838c6eeb23cb500958ffaf049a37ff3ec01c400a15b0364d0b9c706ae9c",
+  "ftn_charting_2023.parquet": "162f0f48a8fca23f86a334c78e27f8daa7443e6b383beada0416b65c593b2c0e",
+  "ftn_charting_2024.parquet": "9396c95effac1a81cc30efcf9c4c87ab89855548ae605404318ae949d4356119",
+  "ftn_charting_2025.parquet": "2ee4b11962f4c91d426e0edeca5bbded078616ce0efab0710aa2b40b4cfad898",
+  "ftn_charting_2026.parquet": "c8412a44895ff9aa287185180514ab559ff1925e5f0f0d6b602728d414976f15",
+  "games.parquet": "eeb790773af403cc55cf63b523da4c8390f74c76677d7904a7af913db6bd18ad",
+  "injuries_2023.parquet": "5d8d881aabd613c3172231b33ac0b4397b3f383498f5e4509c31f3c77c3402a3",
+  "injuries_2024.parquet": "7ebabbba930a70bc7e4d257c7c41ca8708f147a4cdd4100956abcfbaf70f7fc1",
+  "injuries_2025.parquet": "c7637c2f6347194426a8582a984aac82a6bf8ab06af72cdd96666a2e0733ab24",
+  "injuries_2026.parquet": "b961b2a4e05f64b8538d2901c5ce140bda522f7e751a04f38f5e9b2d18f0f400",
+  "play_by_play_2023.parquet": "bd3484731408def6b0ec93225bba2bd7b2c65769ca707a2b9444d891abdc6776",
+  "play_by_play_2024.parquet": "3fd2896bc0b911b615142d2f1fabae54a4bbba5ab7b73b28187b118ef8af6a3b",
+  "play_by_play_2025.parquet": "c6ecedd6d678cc37ed316b23ef84ee1ec6abb69c514bb11868a7ebd5a367df29",
+  "play_by_play_2026.parquet": "8acfb4cafc4d3ab86190734e70f10032e4a0485127e38d98e3a270c3480bc301",
+  "players.parquet": "b89fe8593ee86278cbf83a8921a31b0070c503c9767e2596c19140bdc38c1745",
+  "roster_2023.parquet": "66dcb7d0e203c41b49e997b93eb55ed77bcc960e5dd0774b7e2426a87cef3c90",
+  "roster_2024.parquet": "bd38dbe785728c6b4ddc0b56b7d4fee69a8337595db3b631528d284253c04aaf",
+  "roster_2025.parquet": "902904a0500f066f02ef23f7857e3db35060517e50ffcfe36cc1bc5c6d230f70",
+  "roster_2026.parquet": "0dc09f8ab7e63591bd5897ed4d6c38558f7da8da1e0d72318764a0ea0eb0c773",
+  "snap_counts_2023.parquet": "97873cab365dfb39286bc1de3ac772fa4b51f09cce52ae5f8317e006cc007f62",
+  "snap_counts_2024.parquet": "9ec66a0c755939b329d4eba3f90e716bb874b5a6544f325ba220f003991ff99f",
+  "snap_counts_2025.parquet": "47220218fecda7af7ee5b0272a8ecce7c1bfb1f4e1f0a2c8c90047571728ce20",
+  "snap_counts_2026.parquet": "fe64c1db713dc197f36baaf7bd2cb09b34c83d983a7d30b0719f1dfb123e5bb7",
+  "stats_player_week_2023.parquet": "ac776fbd7c9fefdb4069b72304f4c5fa05ae417acd49f6e4e27be14b9d7a4bbc",
+  "stats_player_week_2024.parquet": "847569d194ca3d96b5efcf91e6eac5e18780fc47568a713fd545a82d29d155c1",
+  "stats_player_week_2025.parquet": "2a461becaa9adb3c93a3074a3a31f1e960162a50163371a2d34e28393b5fff10",
+  "stats_player_week_2026.parquet": "bbfadb63f6a999b724fcc46f327b589a134f74e5c158c525cbc2cf6e4cbdc278",
+  "stats_team_week_2023.parquet": "a155e2a9cb2a6bff1b254f747a33603c43aa5a1117c26d203b44e5bfb83339b1",
+  "stats_team_week_2024.parquet": "c95aca86417589edb34b5001c11ba4bab869394fd3d51e475ff0958dda1669fc",
+  "stats_team_week_2025.parquet": "ec168d98ebbcb0d14d1049ba690e55a629fe6e4f00aaa8a700c309d9dad6d34d",
+  "stats_team_week_2026.parquet": "6156d45ad720c63164450ebcfa9e8ceeb1143ac12160a79b612cb7e4a9596d74"
+ },
+ "notes": "Week 5 MNF refresh C (BUF@LA) at 2026-10-12T23:40:55Z, pre-kickoff. ESPN game-summary Outs (Palmer, Klare, Daniels, Simpson) plus DJ Moore applied from the DK Showdown file status OUT (NFL report: Questionable, conflict flagged; ESPN feed does not list him). Played games flagged. Thursday book lines (97h old) used for reference pricing only, never frozen. Audit: Palmer name in manual_out is 'Joshua' vs nflverse 'Josh' (already Out via NFL report), Klare/Daniels/Simpson/Skyler Bell have no projection rows.",
+ "run_id": "2026_w05_model_20261012T234056Z",
+ "schema": "weekly_run_manifest/0.1",
+ "season": 2026,
+ "track": "model",
+ "uses_future_information": false,
+ "versions": {
+  "numpy": "2.5.3",
+  "pandas": "3.0.5",
+  "pulp": "3.3.2",
+  "python": "3.13.16",
+  "scipy": "1.18.1"
+ },
+ "week": 5
+}
