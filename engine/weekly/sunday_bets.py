@@ -139,5 +139,15 @@ for w, g in list(L.groupby("window")) + [("ALL", L)]:
     u = pd.concat([u[u.kind == "prop"].head(6), u[u.kind == "atd"].head(4)]) if w != "ALL" else pd.concat([u[u.kind == "prop"].head(7), u[u.kind == "atd"].head(5)])
     if len(u) < 2: continue
     PAR[w] = combos(u.reset_index(drop=True), ((2, 3, 4) if w == "ALL" else (2, 3)) if len(u) >= 4 else (2,))
+def cap_exposure(df, maxuse=2):
+    """W5 postmortem: all 12 mixed parlays shared one leg (London U5.5 rec lost) -> 12 losses from one miss. A leg may appear in at most `maxuse` published parlays."""
+    use, keep = {}, []
+    for r in df.sort_values("ev0", ascending=False).itertuples():
+        legs = r.legs.split(" + ")
+        if all(use.get(l, 0) < maxuse for l in legs):
+            keep.append(r.Index)
+            for l in legs: use[l] = use.get(l, 0) + 1
+    return df.loc[keep]
+PAR = {w: cap_exposure(v) for w, v in PAR.items()}
 pd.to_pickle((L, PAR), OUT + "sunday_parlays.pkl")
 print({w: len(v) for w, v in PAR.items()}, "legs", len(L))

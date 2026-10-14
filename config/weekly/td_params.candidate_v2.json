@@ -1,0 +1,12 @@
+{
+ "rec_td": {
+  "WR": 1.17,
+  "TE": 1.2,
+  "RB": 0.88
+ },
+ "rush_td": {
+  "QB": 1.35,
+  "RB": 0.92
+ },
+ "_note": "CANDIDATE, not loaded (the engine reads td_params.json). Copy over td_params.json to adopt. Evidence: docs/weekly/DECISIONS.md #19."
+}

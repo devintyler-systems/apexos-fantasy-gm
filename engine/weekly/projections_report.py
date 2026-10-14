@@ -37,7 +37,8 @@ for _,g in SCHED.iterrows():
                 rec={}
                 for k in ("pass_cmp","pass_yds","pass_td"):
                     s=st(pl[k],m); rec.update({f"{k}_mean":s["mean"],f"{k}_p25":s["p25"],f"{k}_p75":s["p75"],f"{k}_conf":conf(s,sample,1.0,pl["p_active"])})
-                rows.append(dict(base,**rec,rush_td_mean=tdst["mean"],any_td_pct=p_any,exp_td=tdst["mean"],td_conf=int(np.clip(round(88*pl["p_active"]*(0.5*min(1.0,sample)+0.5*0.4)),1,85))))
+                ry=st(pl["rush_yds"],m); rec.update({"rush_yds_mean":ry["mean"],"rush_yds_p25":ry["p25"],"rush_yds_p75":ry["p75"]})      # QB rushing is simulated; publish it (2026 W5: 671 QB rush yds, 8 QB rush TD)
+                rows.append(dict(base,**rec,rush_att_mean=float(pl["rush_att"][m].mean()),rush_td_mean=tdst["mean"],any_td_pct=p_any,exp_td=tdst["mean"],td_conf=int(np.clip(round(88*pl["p_active"]*(0.5*min(1.0,sample)+0.5*0.4)),1,85))))
             else:
                 tg=float(r.Receiving_Tgt); ca=float(r.Rushing_Att)
                 if pl["pos"]=="RB": sample=min(1,(ca+2*tg)/60)*gf

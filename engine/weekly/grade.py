@@ -24,7 +24,9 @@ MARKETS = [
     ("pass_yds", "pass_yds_mean", "passing_yards", lambda P: P.pass_yds_mean >= 100, ("pass_yds_p25", "pass_yds_p75")),
     ("pass_cmp", "pass_cmp_mean", "completions", lambda P: P.pass_yds_mean >= 100, ("pass_cmp_p25", "pass_cmp_p75")),
     ("pass_td", "pass_td_mean", "passing_tds", lambda P: P.pass_yds_mean >= 100, ("pass_td_p25", "pass_td_p75")),
+    ("qb_rush_yds", "rush_yds_mean", "rushing_yards", lambda P: (P.pos == "QB") & (P.pass_yds_mean >= 100) & P.rush_yds_mean.notna(), ("rush_yds_p25", "rush_yds_p75")),      # 2026 W5 postmortem: QB rushing was in the sim but not in the table
 ]
+EXTRA = ["passing_interceptions", "rushing_fumbles_lost", "receiving_fumbles_lost", "sack_fumbles_lost"]      # optional: used only for DK points when the actuals carry them
 
 
 def _actuals(season, week):
@@ -56,15 +58,16 @@ def grade(run_dir):
         return {"run_id": man["run_id"], "status": "no_final_games", "games_graded": 0}
     played = set(zip(sn.nkey, sn.team))
     P = P[[(a, b) in played for a, b in zip(P.nkey, P.team)]].copy()
-    P = P.merge(st[["nkey", "team"] + STATS], on=["nkey", "team"], how="left")
-    for c in STATS:
+    extra = [c for c in EXTRA if c in st.columns]
+    P = P.merge(st[["nkey", "team"] + STATS + extra].drop_duplicates(["nkey", "team"]), on=["nkey", "team"], how="left")
+    for c in STATS + extra:
         P[c] = P[c].fillna(0)
     P["actual_td"] = ((P.rushing_tds + P.receiving_tds) >= 1).astype(float)
     out = {"run_id": man["run_id"], "season": season, "week": week, "track": man["track"],
            "status": "graded", "games_graded": int(len(final_games & set(tuple(x.split("@")) for x in P.game))), "markets": {}}
     for name, pc, ac, mask, (lo, hi) in MARKETS:
         d = P[mask(P)]
-        if d.empty:
+        if d.empty or ac not in P.columns or lo not in P.columns:
             continue
         err = d[pc] - d[ac]
         inside = ((d[ac] >= d[lo]) & (d[ac] <= d[hi])).mean()
@@ -76,6 +79,23 @@ def grade(run_dir):
         out["anytime_td"] = dict(n=int(len(td)), brier=float(np.mean((p - a) ** 2)),
                                  log_loss=float(-np.mean(a * np.log(p) + (1 - a) * np.log(1 - p))),
                                  sum_projected=float(p.sum()), actual_scorers=float(a.sum()))
+    # DraftKings points (no bonuses; INT -1, fumbles lost -1), by position: projected from means, actual from the box score
+    need = ["pass_yds_mean", "pass_td_mean", "rush_yds_mean", "rec_yds_mean", "rush_td_mean", "rec_td_mean", "rec_mean"]
+    if all(c in P.columns for c in need):
+        Q = P.copy()
+        for c in need:
+            Q[c] = Q[c].fillna(0)
+        proj = 0.04 * Q.pass_yds_mean + 4 * Q.pass_td_mean + 0.1 * (Q.rush_yds_mean + Q.rec_yds_mean) + 6 * (Q.rush_td_mean + Q.rec_td_mean) + Q.rec_mean
+        z = lambda c: Q[c] if c in Q.columns else 0.0
+        act = (0.04 * Q.passing_yards + 4 * Q.passing_tds - z("passing_interceptions") + 0.1 * (Q.rushing_yards + Q.receiving_yards)
+               + 6 * (Q.rushing_tds + Q.receiving_tds) + Q.receptions - z("rushing_fumbles_lost") - z("receiving_fumbles_lost") - z("sack_fumbles_lost"))
+        keep = proj >= 8
+        if keep.any():
+            out["dk_points"] = dict(n=int(keep.sum()), proj_mean=float(proj[keep].mean()), actual_mean=float(act[keep].mean()), mae=float((proj - act)[keep].abs().mean()),
+                                    bias_by_pos={k: float((proj - act)[keep & (Q.pos == k)].mean()) for k in ("QB", "RB", "WR", "TE") if (keep & (Q.pos == k)).any()})
+    qb = P[(P.pos == "QB") & (P.pass_yds_mean >= 100)]
+    if len(qb) and "rush_td_mean" in qb.columns:
+        out["qb_rush_td"] = dict(n=int(len(qb)), sum_projected=float(qb.rush_td_mean.fillna(0).sum()), actual_qbs_with_td=float((qb.rushing_tds >= 1).sum()))
     env_path = os.path.join(run_dir, "w4_game_environment.csv")
     if os.path.exists(env_path):
         env = pd.read_csv(env_path).merge(final[["away_team", "home_team", "away_score", "home_score"]],

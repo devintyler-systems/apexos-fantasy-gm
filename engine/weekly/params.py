@@ -47,7 +47,17 @@ def build_inj():
     o = pd.DataFrame(dict(player=i.full_name, pos=i.position, team=i.team, injury=i.report_primary_injury.fillna(i.practice_primary_injury), practice=i.ps, game_status=i.report_status, nkey=i.full_name.map(norm_name)))
     o["p_active"] = [p_active(a, b, c) for a, b, c in zip(i.rs, i.ps, i.pg)]
     o["injury_week"] = int(i.week.max())
-    return _apply_manual_out(_apply_roster_out(o, int(i.week.max()))).reset_index(drop=True)
+    return _apply_manual_out(_apply_roster_out(o, _roster_week(int(i.week.max())))).reset_index(drop=True)
+def _roster_week(inj_week):
+    """Live runs: use the newest full-roster week for the RES/CUT/RET/EXE and stale-team rules. On a Tuesday run the new week's injury report is not out yet (injury week = last week) but the roster already
+    shows who went on IR or was released after the games (2026 W6 test: Jadarian Price SEA, Demarcus Robinson SF were RES in the week-6 roster and still projected active from the week-5 one). Backtests keep the injury week."""
+    if os.environ.get("APEX_BACKTEST") == "1" or "APEX_INJ_WEEK" in os.environ:
+        return inj_week
+    try:
+        r = pd.read_parquet(N + f"roster_{SEASON}.parquet", columns=["game_type", "week"]); r = r[r.game_type == "REG"]
+        w = int(r.week.max()); return max(inj_week, w) if (r.week == w).sum() >= 1000 else inj_week
+    except Exception:
+        return inj_week
 def _apply_manual_out(o):
     """Operator-supplied confirmed inactives (APEX_MANUAL_OUT=<csv: player,team,source,as_of_utc,note>). The file is frozen with the run, so every override is visible and auditable."""
     path = os.environ.get("APEX_MANUAL_OUT")
@@ -231,6 +241,15 @@ def inj_groups(team):
 
 # ---------------- roster build (v4: fitted shrinkage + last-season priors; see fit_player_priors.py) ----------------
 import json
+
+# TD weight multipliers by position (default 1.0 = no change). APEX_TDFILE overrides the file (used by the backtests to compare variants).
+TDM = {"rec_td": {}, "rush_td": {}}
+_tdf = os.environ.get("APEX_TDFILE", CONF + "td_params.json")
+if os.path.exists(_tdf): TDM.update({k: v for k, v in json.load(open(_tdf)).items() if k in TDM})
+def _apply_td_mult(d):
+    for pos, m in TDM["rec_td"].items(): d.loc[d.pos == pos, "w_rec_td"] = d.loc[d.pos == pos, "w_rec_td"] * float(m)
+    for pos, m in TDM["rush_td"].items(): d.loc[d.pos == pos, "w_rush_td"] = d.loc[d.pos == pos, "w_rush_td"] * float(m)
+    return d
 PP = json.load(open(CONF+"player_prior_fit.json"))
 _CAL = json.load(open(CONF+"calibration_params.json")); OTHER_TGT = _CAL["other_tgt"]; OTHER_CAR = _CAL["other_car"]
 
@@ -328,6 +347,7 @@ def build_roster_v4(team):
     rz10_c_sh = (d.rz10_car + 8 * d.car_sh) / (rz10C + 8)
     d["w_rec_td"] = (0.40 * rz_t_sh + 0.60 * d.tgt_sh) * tilt
     d["w_rush_td"] = 0.40 * rz10_c_sh + 0.60 * d.car_sh
+    d = _apply_td_mult(d)
     d["other_tgt_sh"] = other_sh; d["other_car_sh"] = other_car
     d["tilt"] = tilt
     return d.reset_index(drop=True), other_sh, other_car
@@ -396,6 +416,7 @@ def build_roster_v3(team):
     rz10_c_sh = (d.rz10_car + 8 * d.car_sh) / (rz10C + 8)
     d["w_rec_td"] = (0.40 * rz_t_sh + 0.60 * d.tgt_sh) * tilt
     d["w_rush_td"] = 0.40 * rz10_c_sh + 0.60 * d.car_sh
+    d = _apply_td_mult(d)
     d["other_tgt_sh"] = other_sh; d["other_car_sh"] = other_car
     d["tilt"] = tilt
     return d.reset_index(drop=True), other_sh, other_car
