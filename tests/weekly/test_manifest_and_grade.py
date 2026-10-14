@@ -100,3 +100,29 @@ def test_grade_skips_games_not_final(tmp_path):
     import datetime as dt
     d = manifest.freeze(2026, 4, "market", out_dir=out, runs_dir=str(tmp_path / "runs"), as_of=dt.datetime(2026, 1, 2, tzinfo=dt.timezone.utc))
     assert grade.grade(d)["status"] == "no_final_games"
+
+
+def test_espn_inactives_parse_and_resolve():
+    """ESPN summary -> manual_out rows: nflverse team codes, explicit Out only, names resolved to the roster (Josh vs Joshua Palmer)."""
+    import json
+    import espn_inactives as ei
+    d = json.load(open(os.path.join(os.path.dirname(__file__), "fixtures", "espn_summary_bufla.json")))
+    rows = ei.parse_summary(d, "2026-10-12T23:30:00Z")
+    assert {r["team"] for r in rows} == {"BUF", "LA"}                         # ESPN LAR -> nflverse LA
+    assert all(r["game"] == "BUF@LA" for r in rows)
+    roster = pd.DataFrame([dict(team="BUF", full_name="Josh Palmer", last_name="Palmer", position="WR", gsis_id="00-0036988"),
+                           dict(team="LA", full_name="Max Klare", last_name="Klare", position="TE", gsis_id="00-0041510")])
+    out = ei.resolve(rows, roster)
+    by = {r["player"]: r for r in out}
+    assert "Josh Palmer" in by and by["Josh Palmer"]["gsis_id"] == "00-0036988"     # 'Joshua Palmer' style mismatches resolve on (team, last name)
+    assert "UNRESOLVED" in next(r for r in out if r["team"] == "LA" and r["player"] != "Max Klare")["note"]
+
+
+def test_postmortem_picks_latest_pre_kickoff_run(tmp_path):
+    import postmortem
+    for rid, asof, tr in (("2026_w05_market_a", "2026-10-11T06:58:31Z", "market"), ("2026_w05_market_b", "2026-10-11T16:18:23Z", "market"), ("2026_w05_market_c", "2026-10-12T23:40:50Z", "market")):
+        d = tmp_path / rid; d.mkdir(); (d / "manifest.json").write_text(json.dumps(dict(as_of_utc=asof, track=tr)))
+    g = pd.DataFrame([dict(gameday="2026-10-11", gametime="13:00", away_team="CHI", home_team="GB")])       # 17:00Z kickoff
+    pick = postmortem.pick_runs(str(tmp_path), 2026, 5, g)
+    assert pick[("CHI@GB", "market")].endswith("market_b")                                       # a is stale, c is after kickoff
+    assert pick[("CHI@GB", "model")] is None

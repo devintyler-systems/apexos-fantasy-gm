@@ -1,0 +1,5 @@
+{
+ "rec_td": {},
+ "rush_td": {},
+ "_note": "Position multipliers on the touchdown allocation weights (relative within a team, so team TD totals are unchanged). Empty = baseline. Evidence for any non-empty value lives in docs/weekly/DECISIONS.md."
+}

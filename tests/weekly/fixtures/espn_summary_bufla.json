@@ -1,0 +1,281 @@
+{
+ "injuries": [
+  {
+   "team": {
+    "abbreviation": "LAR",
+    "displayName": "Los Angeles Rams"
+   },
+   "injuries": [
+    {
+     "status": "Out",
+     "athlete": {
+      "displayName": "Ty Simpson",
+      "id": "4685522",
+      "position": {
+       "name": "Quarterback",
+       "displayName": "Quarterback",
+       "abbreviation": "QB"
+      }
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "INACTIVE",
+       "abbreviation": "INACTIVE",
+       "displayDescription": "Inactive"
+      },
+      "type": "Coach's Decision",
+      "location": "Other",
+      "detail": "Not Specified",
+      "side": "Not Specified",
+      "returnDate": "2026-10-18"
+     }
+    },
+    {
+     "status": "Out",
+     "athlete": {
+      "displayName": "Max Klare",
+      "id": "4833029",
+      "position": {
+       "name": "Tight End",
+       "displayName": "Tight End",
+       "abbreviation": "TE"
+      }
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "INACTIVE",
+       "abbreviation": "INACTIVE",
+       "displayDescription": "Inactive"
+      },
+      "type": "Coach's Decision",
+      "location": "Other",
+      "detail": "Not Specified",
+      "side": "Not Specified",
+      "returnDate": "2026-10-18"
+     }
+    },
+    {
+     "status": "Out",
+     "athlete": {
+      "displayName": "Larrell Murchison",
+      "id": "4240123",
+      "position": {
+       "name": "Defensive End",
+       "displayName": "Defensive End",
+       "abbreviation": "DE"
+      }
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "INACTIVE",
+       "abbreviation": "INACTIVE",
+       "displayDescription": "Inactive"
+      },
+      "type": "Coach's Decision",
+      "location": "Other",
+      "detail": "Not Specified",
+      "side": "Not Specified",
+      "returnDate": "2026-10-18"
+     }
+    },
+    {
+     "status": "Out",
+     "athlete": {
+      "displayName": "Bill Murray",
+      "id": "3912189",
+      "position": {
+       "name": "Guard",
+       "displayName": "Guard",
+       "abbreviation": "G"
+      }
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "INACTIVE",
+       "abbreviation": "INACTIVE",
+       "displayDescription": "Inactive"
+      },
+      "type": "Coach's Decision",
+      "location": "Other",
+      "detail": "Not Specified",
+      "side": "Not Specified",
+      "returnDate": "2026-10-18"
+     }
+    },
+    {
+     "status": "Out",
+     "athlete": {
+      "displayName": "CJ Daniels",
+      "id": "4605951",
+      "position": {
+       "name": "Wide Receiver",
+       "displayName": "Wide Receiver",
+       "abbreviation": "WR"
+      }
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "INACTIVE",
+       "abbreviation": "INACTIVE",
+       "displayDescription": "Inactive"
+      },
+      "type": "Coach's Decision",
+      "location": "Other",
+      "detail": "Not Specified",
+      "side": "Not Specified",
+      "returnDate": "2026-10-18"
+     }
+    }
+   ]
+  },
+  {
+   "team": {
+    "abbreviation": "BUF",
+    "displayName": "Buffalo Bills"
+   },
+   "injuries": [
+    {
+     "status": "Out",
+     "athlete": {
+      "displayName": "Landon Jackson",
+      "id": "4432715",
+      "position": {
+       "name": "Defensive End",
+       "displayName": "Defensive End",
+       "abbreviation": "DE"
+      }
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "INACTIVE",
+       "abbreviation": "INACTIVE",
+       "displayDescription": "Inactive"
+      },
+      "type": "Knee",
+      "location": "Leg",
+      "detail": "Not Specified",
+      "side": "Not Specified",
+      "returnDate": "2026-10-18"
+     }
+    },
+    {
+     "status": "Out",
+     "athlete": {
+      "displayName": "Dee Alford",
+      "id": "4401823",
+      "position": {
+       "name": "Cornerback",
+       "displayName": "Cornerback",
+       "abbreviation": "CB"
+      }
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "INACTIVE",
+       "abbreviation": "INACTIVE",
+       "displayDescription": "Inactive"
+      },
+      "type": "Ankle",
+      "location": "Leg",
+      "detail": "Not Specified",
+      "side": "Not Specified",
+      "returnDate": "2026-10-18"
+     }
+    },
+    {
+     "status": "Out",
+     "athlete": {
+      "displayName": "Joshua Palmer",
+      "id": "4242433",
+      "position": {
+       "name": "Wide Receiver",
+       "displayName": "Wide Receiver",
+       "abbreviation": "WR"
+      }
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "INACTIVE",
+       "abbreviation": "INACTIVE",
+       "displayDescription": "Inactive"
+      },
+      "type": "Shoulder",
+      "location": "Arm",
+      "detail": "Not Specified",
+      "side": "Not Specified",
+      "returnDate": "2026-10-18"
+     }
+    },
+    {
+     "status": "Out",
+     "athlete": {
+      "displayName": "Ar'maj Reed-Adams",
+      "id": "4606712",
+      "position": {
+       "name": "Guard",
+       "displayName": "Guard",
+       "abbreviation": "G"
+      }
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "INACTIVE",
+       "abbreviation": "INACTIVE",
+       "displayDescription": "Inactive"
+      },
+      "type": "Coach's Decision",
+      "location": "Other",
+      "detail": "Not Specified",
+      "side": "Not Specified",
+      "returnDate": "2026-10-18"
+     }
+    },
+    {
+     "status": "Out",
+     "athlete": {
+      "displayName": "Ed Oliver",
+      "id": "4039303",
+      "position": {
+       "name": "Defensive Tackle",
+       "displayName": "Defensive Tackle",
+       "abbreviation": "DT"
+      }
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "INACTIVE",
+       "abbreviation": "INACTIVE",
+       "displayDescription": "Inactive"
+      },
+      "type": "Knee",
+      "location": "Leg",
+      "detail": "Not Specified",
+      "side": "Not Specified",
+      "returnDate": "2026-10-18"
+     }
+    }
+   ]
+  }
+ ],
+ "header": {
+  "id": "401872994",
+  "competitions": [
+   {
+    "competitors": [
+     {
+      "team": {
+       "abbreviation": "LAR"
+      },
+      "homeAway": "home"
+     },
+     {
+      "team": {
+       "abbreviation": "BUF"
+      },
+      "homeAway": "away"
+     }
+    ]
+   }
+  ]
+ }
+}

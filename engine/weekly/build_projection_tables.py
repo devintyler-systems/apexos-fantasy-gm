@@ -33,7 +33,8 @@ q=P[(P.pos=="QB")&(~P.proxy)&(P.p_active>=0.3)].copy().sort_values("pass_yds_mea
 QB=pd.DataFrame({"Player":q.player,"Team":q.team,"Opp":q.opp,"Availability %":(q.p_active*100).round(0),
  "Pass Cmp":q.pass_cmp_mean.round(1),"Cmp range (P25-P75)":[rng(a,b) for a,b in zip(q.pass_cmp_p25,q.pass_cmp_p75)],"Cmp conf":q.pass_cmp_conf,
  "Pass Yds":q.pass_yds_mean.round(0),"Yds range (P25-P75)":[rng(a,b) for a,b in zip(q.pass_yds_p25,q.pass_yds_p75)],"Yds conf":q.pass_yds_conf,
- "Pass TD":q.pass_td_mean.round(2),"TD range (P25-P75)":[rng(a,b) for a,b in zip(q.pass_td_p25,q.pass_td_p75)],"TD conf":q.pass_td_conf,"Notes":[("Questionable: starts in %.0f%% of simulated games, backup in the rest. " % (100*r.p_active) if r.p_active<0.97 else "")+flag(r) for r in q.itertuples()]})
+ "Pass TD":q.pass_td_mean.round(2),"TD range (P25-P75)":[rng(a,b) for a,b in zip(q.pass_td_p25,q.pass_td_p75)],"TD conf":q.pass_td_conf,
+ "Rush Att":q.rush_att_mean.round(1),"Rush Yds":q.rush_yds_mean.round(0),"Rush range (P25-P75)":[rng(a,b) for a,b in zip(q.rush_yds_p25,q.rush_yds_p75)],"Rush TD %":(q.rush_td_mean*100).round(0),"Notes":[("Questionable: starts in %.0f%% of simulated games, backup in the rest. " % (100*r.p_active) if r.p_active<0.97 else "")+flag(r) for r in q.itertuples()]})
 # ---------- RB ----------
 r=P[(P.pos=="RB")&((P.rush_att_mean>=3)|(P.tgt_mean>=2))].copy(); r["scrim"]=r.rush_yds_mean+r.rec_yds_mean; r=r.sort_values("scrim",ascending=False)
 RB=pd.DataFrame({"Player":r.player,"Team":r.team,"Opp":r.opp,"Availability %":(r.p_active*100).round(0),
