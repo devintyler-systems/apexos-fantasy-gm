@@ -1,5 +1,12 @@
 {
- "rec_td": {},
- "rush_td": {},
- "_note": "Position multipliers on the touchdown allocation weights (relative within a team, so team TD totals are unchanged). Empty = baseline. Evidence for any non-empty value lives in docs/weekly/DECISIONS.md."
+ "rec_td": {
+  "WR": 1.17,
+  "TE": 1.2,
+  "RB": 0.88
+ },
+ "rush_td": {
+  "QB": 1.35,
+  "RB": 0.92
+ },
+ "_note": "Adopted 2026-10-14 (DECISIONS #19, #24): position multipliers on the touchdown allocation weights, relative within a team so team TD totals are unchanged. Empty dicts = the pre-v2 baseline. APEX_TDFILE overrides for backtests."
 }
