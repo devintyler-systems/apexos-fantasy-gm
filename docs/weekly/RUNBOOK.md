@@ -33,6 +33,10 @@ Environment variables: `APEX_SEASON`, `APEX_THROUGH_WEEK`, `APEX_TARGET_WEEK`, `
 `python engine/weekly/espn_inactives.py YYYYMMDD --games AWAY@HOME,... [--dk DKSalaries.csv] --out var/manual_out.csv`, then rerun the affected games with `APEX_MANUAL_OUT=var/manual_out.csv` and freeze under a new run id.
 The ESPN feed shows at most 5 names per team: only explicit Outs are written, nobody is marked Active. DK status the NFL report disagrees with goes to `dk_nfl_conflicts.csv` (flag it; the NFL report governs).
 
+## 2c. Live DraftKings prop LINES (any time before kickoff)
+`python engine/weekly/espn_props.py --week N [--games AWAY@HOME,...] --out var/espn_dk_lines.xlsx`, then `APEX_ODDS_XLSX=var/espn_dk_lines.xlsx APEX_ENV=<track> python engine/weekly/price_odds.py` against the finished run.
+Lines only (assumed -110, no prices, no touchdown markets): a line comparison, never an edge. `espn_dk_line_moves.csv` has open vs current for closing-line tracking.
+
 ## 3. Grading (Tuesday)
 One command for the tables: `python engine/weekly/postmortem.py SEASON WEEK` (latest pre-kickoff frozen run per game, team points vs the DraftKings line, player skill vs the naive per-game average, availability, volume). Then `apex-weekly grade` per run and the grader agent.
 `APEX_SEASON=2026 ...` -> compare frozen projections to `stats_player_week_2026` (see `compare_bt.py` for the metric set: MAE, bias,

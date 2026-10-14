@@ -1,0 +1,268 @@
+{
+ "items": [
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/3912547?lang=en&region=us"
+   },
+   "type": {
+    "id": "8",
+    "name": "Total Passing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-14T05:23Z",
+   "current": {
+    "target": {
+     "value": 221.5,
+     "displayValue": "221.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 225.5,
+     "displayValue": "225.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/3912547?lang=en&region=us"
+   },
+   "type": {
+    "id": "8",
+    "name": "Total Passing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-14T05:23Z",
+   "current": {
+    "target": {
+     "value": 221.5,
+     "displayValue": "221.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 225.5,
+     "displayValue": "225.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/4426338?lang=en&region=us"
+   },
+   "type": {
+    "id": "8",
+    "name": "Total Passing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-13T21:21Z",
+   "current": {
+    "target": {
+     "value": 200.5,
+     "displayValue": "200.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 212.5,
+     "displayValue": "212.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/3912547?lang=en&region=us"
+   },
+   "type": {
+    "id": "12",
+    "name": "Total Rushing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-13T19:38Z",
+   "current": {
+    "target": {
+     "value": 4.5,
+     "displayValue": "4.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 4.5,
+     "displayValue": "4.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/3912547?lang=en&region=us"
+   },
+   "type": {
+    "id": "12",
+    "name": "Total Rushing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-13T19:38Z",
+   "current": {
+    "target": {
+     "value": 4.5,
+     "displayValue": "4.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 4.5,
+     "displayValue": "4.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/4241985?lang=en&region=us"
+   },
+   "type": {
+    "id": "12",
+    "name": "Total Rushing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-13T23:27Z",
+   "current": {
+    "target": {
+     "value": 48.5,
+     "displayValue": "48.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 50.5,
+     "displayValue": "50.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/4241985?lang=en&region=us"
+   },
+   "type": {
+    "id": "12",
+    "name": "Total Rushing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-13T23:27Z",
+   "current": {
+    "target": {
+     "value": 48.5,
+     "displayValue": "48.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 50.5,
+     "displayValue": "50.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/4426338?lang=en&region=us"
+   },
+   "type": {
+    "id": "12",
+    "name": "Total Rushing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-14T03:05Z",
+   "current": {
+    "target": {
+     "value": 14.5,
+     "displayValue": "14.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 14.5,
+     "displayValue": "14.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/4426338?lang=en&region=us"
+   },
+   "type": {
+    "id": "12",
+    "name": "Total Rushing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-14T03:05Z",
+   "current": {
+    "target": {
+     "value": 14.5,
+     "displayValue": "14.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 14.5,
+     "displayValue": "14.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/4429835?lang=en&region=us"
+   },
+   "type": {
+    "id": "12",
+    "name": "Total Rushing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-13T19:59Z",
+   "current": {
+    "target": {
+     "value": 12.5,
+     "displayValue": "12.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 13.5,
+     "displayValue": "13.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/4429835?lang=en&region=us"
+   },
+   "type": {
+    "id": "12",
+    "name": "Total Rushing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-13T19:59Z",
+   "current": {
+    "target": {
+     "value": 12.5,
+     "displayValue": "12.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 13.5,
+     "displayValue": "13.5"
+    }
+   }
+  },
+  {
+   "athlete": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/4568490?lang=en&region=us"
+   },
+   "type": {
+    "id": "12",
+    "name": "Total Rushing Yards (incl. overtime)"
+   },
+   "lastUpdated": "2026-10-13T20:57Z",
+   "current": {
+    "target": {
+     "value": 14.5,
+     "displayValue": "14.5"
+    }
+   },
+   "open": {
+    "target": {
+     "value": 16.5,
+     "displayValue": "16.5"
+    }
+   }
+  }
+ ]
+}

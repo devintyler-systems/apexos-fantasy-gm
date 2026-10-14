@@ -11,4 +11,4 @@ metrics:
   qb_rush_td: [n, sum_projected, actual_qbs_with_td]
   team_points: [n_games, rmse, total_bias, winner_hit_rate]
 comparability: definitions mirror engine/weekly/compare_bt.py so live and backtest numbers are comparable.
-promotion_rule: a model or calibration change is promoted only if the multi-season week 4-12 backtest beats the current baseline on rec_yds MAE, rec MAE and TD log loss without worsening team RMSE.
+promotion_rule: a model or calibration change is promoted only if the multi-season week 4-12 backtest beats the current baseline on rec_yds MAE and TD log loss and is no worse than 0.001 on rec MAE and team RMSE (amended 2026-10-14, DECISIONS #24: random-number noise between two runs is about 0.0005, and a change that cannot move receptions cannot be required to beat them).

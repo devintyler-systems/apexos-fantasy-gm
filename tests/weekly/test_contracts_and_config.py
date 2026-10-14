@@ -67,3 +67,11 @@ def test_projection_stages_never_read_book_lines():
     for f in ("run_all.py", "sim.py", "params.py", "prep_nv.py", "projections_report.py", "build_projection_tables.py"):
         txt = open(os.path.join(WEEKLY, f)).read()
         assert "props_lines" not in txt and "odds_american" not in txt, f
+
+
+def test_td_params_schema_and_bounds():
+    td = json.load(open(os.path.join(CONF, "td_params.json")))
+    assert set(td) >= {"rec_td", "rush_td"}
+    for grp in ("rec_td", "rush_td"):
+        for pos, v in td[grp].items():
+            assert pos in ("QB", "RB", "WR", "TE") and 0.5 < v < 2.0

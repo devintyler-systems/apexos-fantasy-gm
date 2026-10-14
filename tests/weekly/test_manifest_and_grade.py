@@ -126,3 +126,19 @@ def test_postmortem_picks_latest_pre_kickoff_run(tmp_path):
     pick = postmortem.pick_runs(str(tmp_path), 2026, 5, g)
     assert pick[("CHI@GB", "market")].endswith("market_b")                                       # a is stale, c is after kickoff
     assert pick[("CHI@GB", "model")] is None
+
+
+def test_espn_prop_lines_parse_and_odds_api_layout():
+    """ESPN DraftKings propBets -> priced-market rows only (TD scorer and 'Longest' markets dropped), mapped to nflverse names by espn_id, in the workbook layout price_odds reads."""
+    import json
+    import espn_props as ep
+    items = json.load(open(os.path.join(os.path.dirname(__file__), "fixtures", "espn_propbets_sample.json")))["items"]
+    ids = {ep.athlete_id(i) for i in items if ep.athlete_id(i)}
+    by = {a: dict(full_name=f"Player {a}", team="DEN") for a in ids}
+    df = ep.parse_items(items, by)
+    assert len(df) > 0 and set(df.market) <= set(ep.MARKET.values())
+    assert df.line_current.notna().all() and (df.line_open > 0).all()
+    assert ep.parse_items(items, {}).empty                                    # unknown athletes are dropped, never guessed
+    wb = ep.to_odds_api(df, "Denver Broncos", "Seattle Seahawks", "2026-10-16T00:15Z", "2026-10-14T02:39Z")
+    assert set(wb.label) == {"Over", "Under"} and (wb.price == -110).all() and wb.bookmaker.str.contains("price assumed").all()
+    assert (wb.commence_time == pd.Timestamp("2026-10-15 17:15")).all()       # Pacific = UTC - 7h
