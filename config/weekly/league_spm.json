@@ -1,0 +1,27 @@
+{
+ "_note": "SPAMML league scoring layer (DECISIONS #27). Scoring is ACTUAL NFL points only: every player on a scoring play is credited its full value (a passing TD pays the QB 6 and the receiver 6). No yards, receptions, turnovers or sacks. No bench: every rostered player starts. A bye week scores 0.",
+ "scoring": {
+  "td": 6,
+  "two_pt": 2,
+  "xp": 1,
+  "fg": 3,
+  "dst_td": 6,
+  "dst_safety": 2
+ },
+ "lineup": {"QB": 1, "RB": 2, "WT": 3, "K": 1, "DST": 1},
+ "dst_ev": 1.0,
+ "kicker_env": {
+  "intercept": 4.078,
+  "slope": 0.1439,
+  "n": 756,
+  "evidence": "2023-25 weeks 4-12, kicker-games with >=3 prior games, outcome = 3*FG + XP. Only the team's market implied points predict next-game kicker points (in-sample r=0.135, 5-fold CV r=0.09). Trailing kicker points (r=0.01), kicker FG accuracy, kicker FG attempts per game and team FG attempts per game (red-zone stall) add nothing out of sample. 5-fold CV MAE 2.922 vs 3.102 for the trailing-8-game average. Reproduce: engine/weekly/kicker_bt.py"
+ },
+ "rule": {
+  "min_gain_irreversible": 1.0,
+  "min_gain_zero_slot": 0.0,
+  "k_tie_band": 0.75,
+  "hot_streak_ratio": 1.5,
+  "_note": "Dropping a player who projects above 0 this week is irreversible (another team claims him), so it needs a gain of min_gain_irreversible AND a candidate whose ytd TD rate is not above hot_streak_ratio times his projection. Dropping a player who scores 0 this week (bye, out) needs any gain. Kickers within k_tie_band points are tied and ordered by team implied points."
+ },
+ "team_aliases": {"LAR": "LA", "JAC": "JAX", "WSH": "WAS", "LVR": "LV", "ARZ": "ARI", "BLT": "BAL", "CLV": "CLE", "HST": "HOU", "SD": "LAC", "OAK": "LV", "STL": "LA"}
+}
