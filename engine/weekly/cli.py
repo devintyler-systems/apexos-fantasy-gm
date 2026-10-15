@@ -94,6 +94,12 @@ def cmd_verify(a):
     return 1 if bad else 0
 
 
+def cmd_waiver(a):
+    from league_spm import main as waiver
+    waiver(a.run, a.roster, a.available, a.out, a.season)
+    return 0
+
+
 def cmd_fit(a):
     for s in FITS[a.which]:
         _sh(s, _env(a))
@@ -112,6 +118,8 @@ def main(argv=None):
     g = sp.add_parser("grade"); g.add_argument("run_dir"); g.set_defaults(fn=cmd_grade)
     v = sp.add_parser("verify"); v.add_argument("run_dir"); v.set_defaults(fn=cmd_verify)
     t = sp.add_parser("fit"); t.add_argument("which", choices=sorted(FITS)); t.add_argument("--season", type=int, default=2026); t.set_defaults(fn=cmd_fit)
+    w = sp.add_parser("waiver"); w.add_argument("--run", required=True); w.add_argument("--roster", required=True); w.add_argument("--available", required=True)
+    w.add_argument("--out"); w.add_argument("--season", type=int, default=2026); w.set_defaults(fn=cmd_waiver)
     a = p.parse_args(argv)
     return a.fn(a)
 

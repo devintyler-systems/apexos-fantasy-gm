@@ -8,6 +8,7 @@ apex-weekly fetch  --season 2026                 # nflverse cache -> var/nflvers
 apex-weekly run    --season 2026 --track both    # model-only + market-anchored, sequential
 apex-weekly freeze --season 2026 --week 5 --track market   # immutable, hashed run -> runs/weekly/<run_id>/
 apex-weekly verify runs/weekly/<run_id>
+apex-weekly waiver --run <run_dir> --roster my_roster.csv --available available.csv   # SPAMML league points + add/drop sheet (DECISIONS #27)
 apex-weekly grade  runs/weekly/<run_id>          # after the games are final
 APEX_DK_SALARIES=/path/DKSalaries_classic.csv apex-weekly run --season 2026 --dfs
 ```
