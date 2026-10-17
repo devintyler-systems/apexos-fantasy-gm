@@ -8,5 +8,6 @@
   "QB": 1.35,
   "RB": 0.92
  },
- "_note": "Adopted 2026-10-14 (DECISIONS #19, #24): position multipliers on the touchdown allocation weights, relative within a team so team TD totals are unchanged. Empty dicts = the pre-v2 baseline. APEX_TDFILE overrides for backtests."
+ "_note": "Adopted 2026-10-17 (DECISIONS #29, #30): position multipliers on the touchdown allocation weights (v2, adopted 2026-10-14, DECISIONS #19, #24), relative within a team so team TD totals are unchanged, plus an anytime-TD probability floor of 0.06 for active non-QB players projected for >= 0.5 receptions (v3). Remove 'anytime_floor' (or set 0.0) for the v2-only baseline. APEX_TDFILE overrides for backtests.",
+ "anytime_floor": 0.06
 }
