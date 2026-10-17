@@ -34,6 +34,8 @@ CUSHION = 1.12
 
 
 def american(p):
+    if p is None or np.isnan(p):
+        return 0
     p = float(np.clip(p, 1e-4, 1 - 1e-4))
     return int(round(-100 * p / (1 - p))) if p >= .5 else int(round(100 * (1 - p) / p))
 

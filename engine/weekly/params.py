@@ -427,9 +427,24 @@ def build_roster_v3(team):
 ROSTER_MODE = os.environ.get("APEX_ROSTER", "v4")
 build_roster = build_roster_v3 if ROSTER_MODE == "v3" else build_roster_v4
 
+from qb_fill import adjust_qbs
+def _live_roster_gone():
+    """(set of QB name keys whose newest full-roster status is CUT/RET/EXE, True) for a live run; (empty, False) when the roster file is a sparse historical snapshot."""
+    try:
+        r = pd.read_parquet(N + f"roster_{SEASON}.parquet"); r = r[r.game_type == "REG"]
+        w = int(r.week.max()); r = r[r.week == w]
+        if len(r) < 1000:
+            return set(), False
+        r = r[r.position == "QB"]
+        return set(r[r.status.isin(["CUT", "RET", "EXE"])].full_name.map(norm_name)), True
+    except Exception:
+        return set(), False
+_GONE_QB, _LIVE_ROSTER = _live_roster_gone()
+
 def qb_list(team):
     """QBs for a team ordered by the CURRENT depth chart (nflverse), then attempts. Starter is no longer inferred from Weeks 1-3 attempts."""
     q = pas[(pas.team == team)].copy()
+    q = adjust_qbs(q, _DC_QB[_DC_QB.team == team], _GONE_QB, _LIVE_ROSTER)     # DECISIONS #31: released QBs out, depth-chart QBs without attempts in (live runs only)
     dq = _DC_QB[_DC_QB.team == team].set_index("nkey").pos_rank
     q["depth"] = q.nkey.map(dq).fillna(99)
     q1 = q[q.depth == q.depth.min()] if (q.depth < 99).any() else q.sort_values("Att", ascending=False).head(1)
