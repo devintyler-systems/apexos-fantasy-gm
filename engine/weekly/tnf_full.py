@@ -34,6 +34,8 @@ CUSHION = 1.12
 
 
 def american(p):
+    if p is None or np.isnan(p):
+        return 0
     p = float(np.clip(p, 1e-4, 1 - 1e-4))
     return int(round(-100 * p / (1 - p))) if p >= .5 else int(round(100 * (1 - p) / p))
 
@@ -49,7 +51,7 @@ def play_price(p):
 
 def sim(away, home, lines_csv, tag):
     import run_all as R
-    from params import is_neutral, norm_name, SEASON
+    from params import is_neutral, norm_name, SEASON, TD_FLOOR, floor_anytime
     R.run_game(away, home, neutral=is_neutral(away, home), ns=20000)
     d = R.STORE.pop((away, home))
     A, H = d["A"], d["H"]
@@ -75,7 +77,7 @@ def sim(away, home, lines_csv, tag):
     for k, p in pls.items():
         if p["p_active"] < 0.5: continue
         m = p["mask"]; tdc = p["rush_td"] + p["rec_td"]
-        any_td = float((tdc[m] >= 1).mean()); two = float((tdc[m] >= 2).mean()); first = float((tdc[m] / ttot[m]).mean())
+        any_td = floor_anytime(float((tdc[m] >= 1).mean()), p["pos"], float(p["rec"][m].mean()), TD_FLOOR, p["p_active"] >= 0.5); two = float((tdc[m] >= 2).mean()); first = float((tdc[m] / ttot[m]).mean())
         ptd = float(p["pass_td"][m].mean()) if p["pos"] == "QB" else np.nan
         trows.append(dict(player=p["player"], team=p["team"], pos=p["pos"], pa=float(p["p_active"]), any_td=any_td, two_plus=two, first_td=first, exp_td=float(tdc[m].mean()),
                           exp_pass_td=ptd, p1_pass=float((p["pass_td"][m] >= 1).mean()) if p["pos"] == "QB" else np.nan,

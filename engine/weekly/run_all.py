@@ -226,7 +226,7 @@ def run_game(away, home, neutral, ns=NS):
             # TD markets
             tdc = (pl["rush_td"] + pl["rec_td"] + (0 if pl["pos"] != "QB" else 0))[m]
             tdc_all = (pl["rush_td"] + pl["rec_td"])
-            pany = float((tdc >= 1).mean())
+            pany = floor_anytime(float((tdc >= 1).mean()), pl["pos"], float(pl["rec"][m].mean()), TD_FLOOR, pl["p_active"] >= 0.5)
             if pany >= .015:
                 pfirst = float((tdc_all[m] / Ttot[m]).mean()); p2 = float((tdc >= 2).mean())
                 for mkt, pr in (("anytime_td", pany), ("first_td", pfirst), ("last_td", pfirst), ("2plus_td", p2)):
