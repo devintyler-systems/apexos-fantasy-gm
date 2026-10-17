@@ -27,9 +27,10 @@ def test_load_floor_defaults_to_baseline(tmp_path):
     assert F.load_floor(str(p)) == pytest.approx(0.06)
 
 
-def test_live_config_is_baseline_and_candidate_extends_v2():
+def test_live_config_carries_v2_multipliers_and_the_adopted_floor():
     live = json.load(open(os.path.join(ROOT, "config", "weekly", "td_params.json")))
-    cand = json.load(open(os.path.join(ROOT, "config", "weekly", "td_params.candidate_v3.json")))
-    assert "anytime_floor" not in live                                         # candidate is not adopted
-    assert cand["anytime_floor"] == pytest.approx(0.06)
-    assert cand["rec_td"] == live["rec_td"] and cand["rush_td"] == live["rush_td"]   # same v2 multipliers
+    assert live["anytime_floor"] == pytest.approx(0.06)                          # v3 adopted 2026-10-17 (DECISIONS #30)
+    assert live["rec_td"] == {"WR": 1.17, "TE": 1.2, "RB": 0.88}                 # v2 multipliers unchanged
+    assert live["rush_td"] == {"QB": 1.35, "RB": 0.92}
+    assert not os.path.exists(os.path.join(ROOT, "config", "weekly", "td_params.candidate_v3.json"))
+    assert F.load_floor(os.path.join(ROOT, "config", "weekly", "td_params.json")) == pytest.approx(0.06)
