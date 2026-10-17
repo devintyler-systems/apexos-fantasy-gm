@@ -3,7 +3,7 @@ import os
 """Model-only Week 4 projections (no lines): QB cmp/yds/TD, RB rush+rec yds + TDs, WR/TE rec yds/rec/TDs, anytime TD lists. Confidence 1-100."""
 import numpy as np, pandas as pd
 import run_all as R
-from params import SCHED, INJ, norm_name, is_neutral
+from params import SCHED, INJ, norm_name, is_neutral, TD_FLOOR, floor_anytime
 O=DELIV
 rows=[]
 def st(x,m):
@@ -40,6 +40,7 @@ for _,g in SCHED.iterrows():
                 ry=st(pl["rush_yds"],m); rec.update({"rush_yds_mean":ry["mean"],"rush_yds_p25":ry["p25"],"rush_yds_p75":ry["p75"]})      # QB rushing is simulated; publish it (2026 W5: 671 QB rush yds, 8 QB rush TD)
                 rows.append(dict(base,**rec,rush_att_mean=float(pl["rush_att"][m].mean()),rush_td_mean=tdst["mean"],any_td_pct=p_any,exp_td=tdst["mean"],td_conf=int(np.clip(round(88*pl["p_active"]*(0.5*min(1.0,sample)+0.5*0.4)),1,85))))
             else:
+                p_any=floor_anytime(p_any,pl["pos"],float(pl["rec"][m].mean()),TD_FLOOR,pl["p_active"]>=0.5)
                 tg=float(r.Receiving_Tgt); ca=float(r.Rushing_Att)
                 if pl["pos"]=="RB": sample=min(1,(ca+2*tg)/60)*gf
                 else: sample=min(1,tg/25)*gf

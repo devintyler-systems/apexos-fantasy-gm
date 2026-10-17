@@ -246,6 +246,8 @@ import json
 TDM = {"rec_td": {}, "rush_td": {}}
 _tdf = os.environ.get("APEX_TDFILE", CONF + "td_params.json")
 if os.path.exists(_tdf): TDM.update({k: v for k, v in json.load(open(_tdf)).items() if k in TDM})
+from td_floor import load_floor, floor_anytime
+TD_FLOOR = load_floor(_tdf)    # anytime-TD probability floor (0.0 = baseline); candidate v3, DECISIONS #29
 def _apply_td_mult(d):
     for pos, m in TDM["rec_td"].items(): d.loc[d.pos == pos, "w_rec_td"] = d.loc[d.pos == pos, "w_rec_td"] * float(m)
     for pos, m in TDM["rush_td"].items(): d.loc[d.pos == pos, "w_rush_td"] = d.loc[d.pos == pos, "w_rush_td"] * float(m)
