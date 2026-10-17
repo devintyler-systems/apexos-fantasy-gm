@@ -35,6 +35,7 @@ def sim_all(lines):
 # Known identity gaps (Week 6 audit): HOU WR2 Marvin Harrison Jr. is not projected (traded players are dropped by the stale-team rule, DECISIONS #13), so HOU receiving shares are overstated.
 EXCLUDE = {("HOU", "rec"), ("HOU", "rec_yds")}
 QB_OUT_TEAMS = set()      # teams whose projected QB1 is out; set by render()
+BACKUP_QBS = set()        # fill-in QBs on those teams: they inherit the generic backup rushing profile (about 0.35 rush TD), so their anytime-TD numbers are not published
 
 
 def _game_pool(away, home):
@@ -79,7 +80,7 @@ class Pool:
     def add_game(self, game, legs, meta, fav, td_max=8, td_lo=0.12, td_hi=0.60):
         for nm in fav:
             self.leg[f"{game}: {nm}"] = dict(game=game, arr=legs[nm], meta=meta[nm], r=fav[nm]["r"], p=float(legs[nm].mean()), kind="line", shrunk=fav[nm]["shrunk"])
-        td = [k for k in meta if meta[k]["kind"] == "td" and meta[k]["market"] == "any_td" and td_lo <= meta[k]["p"] <= td_hi]
+        td = [k for k in meta if meta[k]["kind"] == "td" and meta[k]["market"] == "any_td" and td_lo <= meta[k]["p"] <= td_hi and meta[k]["player"] not in BACKUP_QBS]
         for k in sorted(td, key=lambda x: -meta[x]["p"])[:td_max]:
             self.leg[f"{game}: {k}"] = dict(game=game, arr=legs[k], meta=meta[k], r=1.0, p=float(legs[k].mean()), kind="td", shrunk=float(legs[k].mean()))
         for k in meta:
@@ -133,9 +134,11 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
     from league_spm import load_cfg, skill_points, kicker_ev
     cfg = load_cfg()
     games = games_unplayed()
-    global QB_OUT_TEAMS
+    global QB_OUT_TEAMS, BACKUP_QBS
     env_ = pd.read_csv(os.path.join(run_market, "w4_team_environment.csv"))
     QB_OUT_TEAMS = set(env_[env_.p_start_qb < 0.5].team) if "p_start_qb" in env_.columns else set()
+    _P0 = pd.read_pickle(os.path.join(run_market, "proj_all.pkl"))
+    BACKUP_QBS = set(_P0[(_P0.pos == "QB") & _P0.team.isin(QB_OUT_TEAMS) & (_P0.p_active >= 0.5)].player)
     # --- games
     GE = pd.read_csv(os.path.join(run_market, "w4_game_environment.csv")); GM = pd.read_csv(os.path.join(run_model, "w4_game_environment.csv")).set_index(["away", "home"])
     sched = pd.read_parquet(NFLV + "games.parquet"); sched = sched[(sched.season == season) & (sched.week == week)].set_index(["away_team", "home_team"])
@@ -244,7 +247,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
     w("\n**Kickers (this league: FG 3, XP 1; ranked by team implied points, the only validated signal; differences are within noise)**: " + "; ".join(f"{r.team} {r.k_ev:.1f}" for r in kk.itertuples()) + "\n")
     # --- TD boards
     TD = pd.read_csv(os.path.join(run_market, "w4_td_markets.csv")).dropna(subset=["prob"])
-    TD = TD[TD.game.isin([f"{a}@{h}" for a, h in games])]
+    TD = TD[TD.game.isin([f"{a}@{h}" for a, h in games]) & ~TD.player.isin(BACKUP_QBS)]
     A = TD[TD.market == "anytime_td"].sort_values("prob", ascending=False)
     w("## 6. Touchdown boards (anytime counts rushing and receiving TDs; fair odds; 'play at' = fair + 12% cushion)\n")
     A2 = A.assign(fair=[T.american(p) for p in A.prob], playat=[T.play_price(p) for p in A.prob])
@@ -315,6 +318,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
     w("3. **Backup-QB games** (flagged `backup QB` in the singles table): BAL (Huntley), TB (Daniels), PHI (McKee). The backup is modeled at 92% of starter efficiency with the team's YPA, so his environment looks too generous (Huntley 8.0 YPA). The model-only track does not discount the backup at all, so ignore model-only gaps on those games.")
     w("4. **Caleb Williams (CHI) is Questionable** (hamstring, full practice): modeled 65% active with Bagent covering the rest. CHI skill-player props depend on that call; decide after the 1 PM ET inactives.")
     w("5. Minor: Odell Beckham Jr. (listed NYG, now MIN) and Kaytron Allen (listed WAS, now MIA) carry small stale-team shares; about two dozen practice-squad or inactive players (e.g. Zach Ertz) carry small volumes at 100% active.")
+    w("   Backup QBs (" + ", ".join(sorted(BACKUP_QBS)) + ") are left out of the touchdown boards and parlay legs: the engine gives a fill-in QB the generic backup rushing profile (about 0.35 rush TD), which is not credible for a QB with no carries.")
     w("6. Nothing here is priced: no book prices and no touchdown prices. A PLAY is a lean at an assumed -110, not an edge. Send a screenshot of any board and I will re-price against the real numbers.\n")
     w("Method: `apex-weekly run` both tracks, `espn_inactives.py`, `espn_props.py`, `slate_full.py sim/render`, `team_tables.py` (box score, play-by-play and PFR advanced), `league_spm.py`.")
     return "\n".join(L), S, A, P
