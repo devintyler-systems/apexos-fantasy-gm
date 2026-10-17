@@ -362,7 +362,7 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 
 ## 7. Single-line screen (DraftKings lines via ESPN, assumed -110)
 
-467 lines screened: **99 PLAY**, 158 LEAN. PLAY = shrunk probability about 55.4%+ (about 61% raw), active 95%+, side cleared in at least half of the player's games. 'Agree' = the model-only track picks the same side.
+467 lines screened: **92 PLAY**, 165 LEAN. PLAY = shrunk probability about 55.4%+ (about 61% raw), active 95%+, side cleared in at least half of the player's games. 'Agree' = the model-only track picks the same side.
 
 | label | game | player | market | side | line | model_p | shrunk | fair | log | agree | caution |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -389,8 +389,8 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 | PLAY | BAL@CLE | Jerry Jeudy | rec | OVER | 1.5 | 74% | 62% | -163 | 3/4 | yes | backup QB |
 | PLAY | DAL@GB | Javonte Williams | rush_yds | UNDER | 68.5 | 74% | 62% | -162 | 4/5 | yes |  |
 | PLAY | HOU@JAX | Brian Thomas Jr. | rec | OVER | 1.5 | 73% | 62% | -161 | 3/5 | yes |  |
-| PLAY | NO@NYG | Malachi Fields | rec | OVER | 1.5 | 73% | 61% | -160 | 5/5 | yes |  |
-| PLAY | NO@NYG | Malik Nabers | rec_yds | UNDER | 72.5 | 73% | 61% | -159 | 3/5 | yes |  |
+| PLAY | NO@NYG | Malachi Fields | rec | OVER | 1.5 | 73% | 61% | -160 | 5/5 | yes | fill-in QB (Dart on IR) |
+| PLAY | NO@NYG | Malik Nabers | rec_yds | UNDER | 72.5 | 73% | 61% | -159 | 3/5 | yes | fill-in QB (Dart on IR) |
 | PLAY | PIT@TB | Germie Bernard | rec | UNDER | 4.5 | 72% | 61% | -158 | 3/4 | yes | backup QB |
 | PLAY | NYJ@NE | Romeo Doubs | rec | OVER | 2.5 | 72% | 61% | -156 | 3/5 | yes |  |
 | PLAY | DAL@GB | Jordan Love | rush_yds | UNDER | 6.5 | 72% | 61% | -155 | 4/4 | yes |  |
@@ -403,10 +403,8 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 | PLAY | LAC@KC | Oronde Gadsden II | rec_yds | OVER | 13.5 | 70% | 60% | -151 | 3/5 | yes |  |
 | PLAY | NYJ@NE | Hunter Henry | rec | OVER | 2.5 | 70% | 60% | -151 | 4/5 | yes |  |
 | PLAY | ARI@LA | Michael Wilson | rec_yds | UNDER | 60.5 | 70% | 60% | -149 | 3/5 | yes |  |
-| PLAY | NO@NYG | Najee Harris | rush_yds | UNDER | 28.5 | 69% | 60% | -147 | 2/4 | yes |  |
+| PLAY | NO@NYG | Najee Harris | rush_yds | UNDER | 28.5 | 69% | 60% | -147 | 2/4 | yes | fill-in QB (Dart on IR) |
 | PLAY | CAR@PHI | Makai Lemon | rec | OVER | 1.5 | 69% | 59% | -147 | 4/5 | yes | backup QB |
-| PLAY | CHI@ATL | Colston Loveland | rec_yds | UNDER | 38.5 | 69% | 59% | -147 | 4/5 | yes |  |
-| PLAY | CHI@ATL | Rome Odunze | rec | OVER | 2.5 | 69% | 59% | -146 | 4/5 | yes |  |
 | PLAY | ARI@LA | Kendrick Bourne | rec | UNDER | 3.5 | 68% | 59% | -145 | 2/4 | yes |  |
 | PLAY | CAR@PHI | Bryce Young | pass_yds | OVER | 236.5 | 68% | 59% | -145 | 4/4 | yes | backup QB |
 | PLAY | HOU@JAX | Trevor Lawrence | rush_yds | UNDER | 13.5 | 68% | 59% | -145 | 3/5 | yes |  |
@@ -434,10 +432,7 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 | PLAY | HOU@JAX | Trevor Lawrence | rush_att | UNDER | 3.5 | 64% | 57% | -134 | 4/5 | yes |  |
 | PLAY | BUF@LV | Mike Washington Jr. | rush_yds | OVER | 13.5 | 64% | 57% | -133 | 3/5 | yes |  |
 | PLAY | LAC@KC | Patrick Mahomes | rush_yds | UNDER | 16.5 | 64% | 57% | -133 | 2/4 | yes |  |
-| PLAY | CHI@ATL | D'Andre Swift | rush_att | OVER | 15.5 | 64% | 57% | -133 | 3/5 | yes |  |
-| PLAY | CHI@ATL | Luther Burden III | rec | UNDER | 4.5 | 64% | 57% | -133 | 3/5 | yes |  |
 | PLAY | NO@NYG | Noah Fant | rec_yds | OVER | 9.5 | 64% | 57% | -133 | 2/3 | yes |  |
-| PLAY | CHI@ATL | D'Andre Swift | rec | UNDER | 2.5 | 64% | 57% | -132 | 3/5 | yes |  |
 | PLAY | HOU@JAX | C.J. Stroud | pass_yds | OVER | 255.5 | 64% | 57% | -132 | 4/5 | yes |  |
 | PLAY | TEN@IND | Daniel Jones | pass_yds | UNDER | 230.5 | 64% | 57% | -132 | 3/5 | yes |  |
 | PLAY | NO@NYG | Juwan Johnson | rec_yds | OVER | 41.5 | 64% | 57% | -131 | 4/5 | yes |  |
@@ -447,16 +442,14 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 | PLAY | TEN@IND | Elic Ayomanor | rec_yds | OVER | 16.5 | 63% | 57% | -130 | 3/5 | yes |  |
 | PLAY | CAR@PHI | Chuba Hubbard | rec | UNDER | 2.5 | 63% | 57% | -130 | 2/4 | yes | backup QB |
 | PLAY | CAR@PHI | Tetairoa McMillan | rec_yds | OVER | 63.5 | 63% | 56% | -129 | 3/4 | yes | backup QB |
-| PLAY | NO@NYG | Cam Skattebo | rec | OVER | 1.5 | 63% | 56% | -129 | 3/4 | yes |  |
+| PLAY | NO@NYG | Cam Skattebo | rec | OVER | 1.5 | 63% | 56% | -129 | 3/4 | yes | fill-in QB (Dart on IR) |
 | PLAY | BUF@LV | Ray Davis | rush_yds | UNDER | 10.5 | 63% | 56% | -129 | 3/3 | yes |  |
 | PLAY | LAC@KC | Kimani Vidal | rec | UNDER | 1.5 | 63% | 56% | -129 | 2/3 | yes |  |
 | PLAY | WAS@SF | Brock Purdy | pass_cmp | UNDER | 21.5 | 62% | 56% | -128 | 4/5 | yes |  |
 | PLAY | LAC@KC | Keaton Mitchell | rec_yds | UNDER | 15.5 | 62% | 56% | -128 | 2/4 | yes |  |
-| PLAY | CHI@ATL | Cole Kmet | rec | UNDER | 1.5 | 62% | 56% | -128 | 3/5 | yes |  |
 | PLAY | DAL@GB | Jordan Love | pass_yds | OVER | 271.5 | 62% | 56% | -128 | 3/5 | yes |  |
-| PLAY | CHI@ATL | Colston Loveland | rec | UNDER | 3.5 | 62% | 56% | -127 | 3/5 | yes |  |
 | PLAY | WAS@SF | Stefon Diggs | rec | UNDER | 4.5 | 62% | 56% | -127 | 2/4 | yes |  |
-| PLAY | NO@NYG | Cam Skattebo | rec_yds | OVER | 9.5 | 62% | 56% | -127 | 3/4 | yes |  |
+| PLAY | NO@NYG | Cam Skattebo | rec_yds | OVER | 9.5 | 62% | 56% | -127 | 3/4 | yes | fill-in QB (Dart on IR) |
 | PLAY | BUF@LV | Kirk Cousins | pass_att | UNDER | 36.5 | 62% | 56% | -127 | 4/5 | yes |  |
 | PLAY | TEN@IND | Daniel Jones | pass_att | OVER | 30.5 | 62% | 56% | -126 | 5/5 | yes |  |
 | PLAY | WAS@SF | Brock Purdy | pass_att | UNDER | 30.5 | 62% | 56% | -126 | 4/5 | yes |  |
@@ -471,7 +464,7 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 | LEAN | PIT@TB | Jalon Daniels | pass_att | OVER | 28.5 | 77% | 64% | -176 | 0/3 | yes | backup QB |
 | LEAN | CHI@ATL | Bijan Robinson | rush_att | UNDER | 18.5 | 75% | 63% | -168 | 2/5 | yes |  |
 | LEAN | LAC@KC | Charlie Kolar | rec_yds | UNDER | 21.5 | 75% | 63% | -167 | 1/2 | yes |  |
-| LEAN | NO@NYG | Cam Skattebo | rush_att | UNDER | 13.5 | 74% | 62% | -162 | 2/5 | yes |  |
+| LEAN | NO@NYG | Cam Skattebo | rush_att | UNDER | 13.5 | 74% | 62% | -162 | 2/5 | yes | fill-in QB (Dart on IR) |
 | LEAN | CAR@PHI | Darren Waller | rec | OVER | 2.5 | 73% | 62% | -161 | 3/4 | yes | backup QB |
 | LEAN | LAC@KC | Emmett Johnson | rec | UNDER | 1.5 | 73% | 62% | -160 | 1/3 | yes |  |
 | LEAN | DAL@GB | Dak Prescott | rush_yds | UNDER | 10.5 | 73% | 62% | -160 | 1/4 | yes |  |
@@ -485,11 +478,11 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 | LEAN | BAL@CLE | Tyler Huntley | pass_att | OVER | 26.5 | 70% | 60% | -150 | 1/2 | yes | backup QB |
 | LEAN | BUF@LV | Josh Allen | rush_att | UNDER | 7.5 | 70% | 60% | -150 | 2/5 | yes |  |
 | LEAN | HOU@JAX | Brian Thomas Jr. | rec_yds | OVER | 17.5 | 69% | 59% | -147 | 2/5 | yes |  |
+| LEAN | CHI@ATL | Colston Loveland | rec_yds | UNDER | 38.5 | 69% | 59% | -147 | 4/5 | yes | QB Questionable (65%) |
 | LEAN | PIT@TB | Jaylen Warren | rush_att | UNDER | 14.5 | 69% | 59% | -146 | 2/5 | yes | backup QB |
+| LEAN | CHI@ATL | Rome Odunze | rec | OVER | 2.5 | 69% | 59% | -146 | 4/5 | yes | QB Questionable (65%) |
 | LEAN | BAL@CLE | Tyler Huntley | pass_cmp | OVER | 17.5 | 68% | 59% | -145 | 1/2 | yes | backup QB |
 | LEAN | WAS@SF | Jayden Daniels | rush_att | UNDER | 6.5 | 68% | 59% | -145 | 1/3 | yes |  |
-| LEAN | BAL@CLE | Rashod Bateman | rec | OVER | 1.5 | 68% | 59% | -143 | 4/5 | yes | backup QB |
-| LEAN | LAC@KC | Quentin Johnston | rec | OVER | 2.5 | 67% | 59% | -142 | 1/4 | yes |  |
 
 ## 8. Parlays across the slate (fair odds; legs from different games are independent, same-game legs use the joint simulation)
 
@@ -501,19 +494,19 @@ Pool: PLAY/LEAN single-line legs (shrunk), anytime-TD legs (12-60%), QB 1+ and 2
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| WAS@SF: Rachaad White rec U2.5 + WAS@SF: Brock Purdy pass TD 1+ | 61.7% | 77.1% | -161 | -123 |
-| PIT@TB: Jalon Daniels pass_cmp O17.5 + WAS@SF: Brock Purdy pass TD 1+ | 61.3% | 68.5% | -159 | -121 |
-| WAS@SF: Rachaad White rec U2.5 + ARI@LA: Matthew Stafford pass TD 1+ | 60.8% | 75.9% | -155 | -119 |
-| ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Brock Purdy pass TD 1+ | 60.7% | 74.7% | -155 | -118 |
+| WAS@SF: Rachaad White rec U2.5 + WAS@SF: Brock Purdy pass TD 1+ | 47.4% | 77.1% | +111 | +136 |
+| WAS@SF: Rachaad White rec U2.5 + ARI@LA: Matthew Stafford pass TD 1+ | 47.0% | 75.9% | +113 | +139 |
+| WAS@SF: Rachaad White rec U2.5 + DAL@GB: Jordan Love pass TD 1+ | 46.6% | 75.1% | +114 | +140 |
+| ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Brock Purdy pass TD 1+ | 46.6% | 74.7% | +115 | +140 |
 
 **Touchdown-led (at least one TD leg, longer shot)**
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 54.5% | 54.5% | -120 | +105 |
-| WAS@SF: Christian McCaffrey anytime TD + ARI@LA: Matthew Stafford pass TD 1+ | 53.1% | 53.1% | -113 | +111 |
-| WAS@SF: Christian McCaffrey anytime TD + DAL@GB: Jordan Love pass TD 1+ | 52.5% | 52.5% | -111 | +113 |
-| ARI@LA: Puka Nacua anytime TD + ARI@LA: Matthew Stafford pass TD 1+ | 52.0% | 52.0% | -108 | +115 |
+| WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 41.9% | 54.5% | +139 | +168 |
+| WAS@SF: Christian McCaffrey anytime TD + ARI@LA: Matthew Stafford pass TD 1+ | 41.0% | 53.1% | +144 | +173 |
+| WAS@SF: Christian McCaffrey anytime TD + DAL@GB: Jordan Love pass TD 1+ | 40.7% | 52.5% | +146 | +175 |
+| WAS@SF: Rachaad White rec U2.5 + WAS@SF: Brock Purdy pass TD 2+ | 40.7% | 60.6% | +146 | +175 |
 
 ### 3-leg
 
@@ -521,19 +514,19 @@ Pool: PLAY/LEAN single-line legs (shrunk), anytime-TD legs (12-60%), QB 1+ and 2
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| WAS@SF: Rachaad White rec U2.5 + PIT@TB: Jalon Daniels pass_cmp O17.5 + WAS@SF: Brock Purdy pass TD 1+ | 40.5% | 56.5% | +147 | +176 |
-| WAS@SF: Rachaad White rec U2.5 + ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Brock Purdy pass TD 1+ | 40.1% | 61.6% | +149 | +179 |
-| WAS@SF: Rachaad White rec U2.5 + BUF@LV: Dalton Kincaid rec U4.5 + WAS@SF: Brock Purdy pass TD 1+ | 40.0% | 61.4% | +150 | +180 |
-| WAS@SF: Rachaad White rec U2.5 + PIT@TB: Jalon Daniels pass_cmp O17.5 + ARI@LA: Matthew Stafford pass TD 1+ | 39.9% | 55.7% | +151 | +181 |
+| WAS@SF: Rachaad White rec U2.5 + ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Brock Purdy pass TD 1+ | 30.8% | 61.6% | +225 | +264 |
+| WAS@SF: Rachaad White rec U2.5 + BUF@LV: Dalton Kincaid rec U4.5 + WAS@SF: Brock Purdy pass TD 1+ | 30.7% | 61.4% | +226 | +265 |
+| WAS@SF: Rachaad White rec U2.5 + CHI@ATL: Michael Penix Jr. pass_att U30.5 + WAS@SF: Brock Purdy pass TD 1+ | 30.6% | 67.8% | +227 | +266 |
+| WAS@SF: Rachaad White rec U2.5 + DAL@GB: Jordan Love rush_att U2.5 + WAS@SF: Brock Purdy pass TD 1+ | 30.5% | 60.7% | +228 | +267 |
 
 **Touchdown-led (at least one TD leg, longer shot)**
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| WAS@SF: Rachaad White rec U2.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 36.0% | 45.0% | +178 | +211 |
-| PIT@TB: Jalon Daniels pass_cmp O17.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 35.8% | 40.0% | +179 | +213 |
-| ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 35.4% | 43.6% | +182 | +216 |
-| BUF@LV: Dalton Kincaid rec U4.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 35.3% | 43.4% | +183 | +217 |
+| WAS@SF: Rachaad White rec U2.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 27.6% | 45.0% | +262 | +305 |
+| ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 27.2% | 43.6% | +268 | +312 |
+| WAS@SF: Rachaad White rec U2.5 + WAS@SF: Christian McCaffrey anytime TD + ARI@LA: Matthew Stafford pass TD 1+ | 27.1% | 43.9% | +269 | +313 |
+| BUF@LV: Dalton Kincaid rec U4.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 27.1% | 43.4% | +269 | +313 |
 
 ### 4-leg
 
@@ -541,49 +534,48 @@ Pool: PLAY/LEAN single-line legs (shrunk), anytime-TD legs (12-60%), QB 1+ and 2
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| WAS@SF: Rachaad White rec U2.5 + PIT@TB: Jalon Daniels pass_cmp O17.5 + ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Brock Purdy pass TD 1+ | 26.3% | 45.2% | +280 | +325 |
-| WAS@SF: Rachaad White rec U2.5 + PIT@TB: Jalon Daniels pass_cmp O17.5 + BUF@LV: Dalton Kincaid rec U4.5 + WAS@SF: Brock Purdy pass TD 1+ | 26.3% | 45.0% | +281 | +326 |
-| CHI@ATL: Drake London rec U6.5 + WAS@SF: Rachaad White rec U2.5 + CHI@ATL: Michael Penix Jr. pass_cmp U20.5 + WAS@SF: Brock Purdy pass TD 1+ | 26.2% | 55.7% | +281 | +327 |
-| WAS@SF: Rachaad White rec U2.5 + CHI@ATL: Michael Penix Jr. pass_att U30.5 + PIT@TB: Jalon Daniels pass_cmp O17.5 + WAS@SF: Brock Purdy pass TD 1+ | 26.2% | 49.7% | +282 | +328 |
+| CHI@ATL: Drake London rec U6.5 + WAS@SF: Rachaad White rec U2.5 + CHI@ATL: Michael Penix Jr. pass_cmp U20.5 + WAS@SF: Brock Purdy pass TD 1+ | 20.1% | 55.7% | +397 | +456 |
+| CHI@ATL: Drake London rec U6.5 + WAS@SF: Rachaad White rec U2.5 + CHI@ATL: Michael Penix Jr. pass_cmp U20.5 + ARI@LA: Matthew Stafford pass TD 1+ | 20.0% | 54.9% | +401 | +461 |
+| WAS@SF: Rachaad White rec U2.5 + ARI@LA: Jacoby Brissett rush_yds O7.5 + BUF@LV: Dalton Kincaid rec U4.5 + WAS@SF: Brock Purdy pass TD 1+ | 20.0% | 49.1% | +401 | +461 |
+| WAS@SF: Rachaad White rec U2.5 + CHI@ATL: Michael Penix Jr. pass_att U30.5 + ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Brock Purdy pass TD 1+ | 19.9% | 54.2% | +403 | +464 |
 
 **Touchdown-led (at least one TD leg, longer shot)**
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| WAS@SF: Rachaad White rec U2.5 + PIT@TB: Jalon Daniels pass_cmp O17.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 23.6% | 33.0% | +323 | +374 |
-| WAS@SF: Rachaad White rec U2.5 + ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 23.4% | 36.0% | +327 | +379 |
-| WAS@SF: Rachaad White rec U2.5 + BUF@LV: Dalton Kincaid rec U4.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 23.3% | 35.8% | +328 | +380 |
-| PIT@TB: Jalon Daniels pass_cmp O17.5 + ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 23.3% | 32.0% | +330 | +382 |
+| WAS@SF: Rachaad White rec U2.5 + ARI@LA: Jacoby Brissett rush_yds O7.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 18.0% | 36.0% | +457 | +523 |
+| WAS@SF: Rachaad White rec U2.5 + BUF@LV: Dalton Kincaid rec U4.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 17.9% | 35.8% | +458 | +525 |
+| WAS@SF: Rachaad White rec U2.5 + CHI@ATL: Michael Penix Jr. pass_att U30.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 17.8% | 39.6% | +460 | +528 |
+| WAS@SF: Rachaad White rec U2.5 + DAL@GB: Jordan Love rush_att U2.5 + WAS@SF: Christian McCaffrey anytime TD + WAS@SF: Brock Purdy pass TD 1+ | 17.8% | 35.4% | +462 | +530 |
 
 ### Quarterback passing-TD ladder (calibrated market: the model beat the books here in W4; fair odds)
 
-| QB | 1+ | 2+ |
+Raw simulation probability, with the 50/50-shrunk figure used in parlays in brackets. Treat anything above 85% raw as 'very likely', not a number to price. Backup QBs are not listed.
+
+| QB | 1+ raw (shrunk) | 2+ raw (shrunk) |
 |---|---|---|
-| Brock Purdy | 93% (-1427) | 74% (-281) |
-| Matthew Stafford | 92% (-1124) | 70% (-234) |
-| Jordan Love | 91% (-990) | 67% (-199) |
-| Kirk Cousins | 86% (-624) | 57% (-131) |
-| Drake Maye | 83% (-504) | 53% (-113) |
-| Tyler Shough | 82% (-448) | 50% (-101) |
-| Aaron Rodgers | 81% (-423) | 47% (+115) |
-| Dak Prescott | 79% (-382) | 44% (+126) |
-| Josh Allen | 79% (-367) | 44% (+126) |
-| Jameis Winston | 79% (-366) | 43% (+130) |
-| Trevor Lawrence | 78% (-363) | 44% (+130) |
-| Patrick Mahomes | 78% (-359) | 45% (+124) |
-| Jayden Daniels | 77% (-330) | 42% (+140) |
-| Jacoby Brissett | 75% (-301) | 38% (+160) |
-| Tyler Huntley | 74% (-280) | 37% (+171) |
-| Michael Penix Jr. | 72% (-257) | 36% (+181) |
-| Tanner McKee | 72% (-254) | 33% (+200) |
-| Bryce Young | 70% (-238) | 33% (+203) |
-| Cam Ward | 69% (-218) | 31% (+227) |
-| C.J. Stroud | 66% (-198) | 28% (+258) |
-| Deshaun Watson | 66% (-196) | 27% (+269) |
-| Daniel Jones | 65% (-184) | 28% (+264) |
-| Geno Smith | 64% (-177) | 26% (+284) |
-| Justin Herbert | 62% (-166) | 24% (+319) |
-| Jalon Daniels | 60% (-153) | 22% (+346) |
+| Brock Purdy | 93% (72%) | 74% (62%) |
+| Matthew Stafford | 92% (71%) | 70% (60%) |
+| Jordan Love | 91% (70%) | 67% (58%) |
+| Kirk Cousins | 86% (68%) | 57% (53%) |
+| Drake Maye | 83% (67%) | 53% (52%) |
+| Tyler Shough | 82% (66%) | 50% (50%) |
+| Aaron Rodgers | 81% (65%) | 47% (48%) |
+| Dak Prescott | 79% (65%) | 44% (47%) |
+| Josh Allen | 79% (64%) | 44% (47%) |
+| Jameis Winston | 79% (64%) | 43% (47%) |
+| Trevor Lawrence | 78% (64%) | 44% (47%) |
+| Patrick Mahomes | 78% (64%) | 45% (47%) |
+| Jayden Daniels | 77% (63%) | 42% (46%) |
+| Jacoby Brissett | 75% (63%) | 38% (44%) |
+| Michael Penix Jr. | 72% (61%) | 36% (43%) |
+| Bryce Young | 70% (60%) | 33% (42%) |
+| Cam Ward | 69% (59%) | 31% (40%) |
+| C.J. Stroud | 66% (58%) | 28% (39%) |
+| Deshaun Watson | 66% (58%) | 27% (39%) |
+| Daniel Jones | 65% (57%) | 28% (39%) |
+| Geno Smith | 64% (57%) | 26% (38%) |
+| Justin Herbert | 62% (56%) | 24% (37%) |
 
 ## 9. This league (SPAMML) view
 
@@ -607,9 +599,11 @@ Two QA agents (data audit, model sanity) reviewed the first run. Fixed before th
 1. **Marvin Harrison Jr. (HOU) is not projected.** Traded players are dropped by the stale-team rule (DECISIONS #13), so HOU's target shares sum to about 0.92 and Collins, Hutchinson and Boutte are over-credited. HOU receiving props are removed from the single-line screen and from every parlay.
 2. **A.J. Brown (NE)**: roster file says reserve, injury report says Questionable (ankle, limited). He is not projected; NE target shares are the thinnest on the slate (0.69), so NE pass catchers are inflated if he plays.
 3. **Backup-QB games** (flagged `backup QB` in the singles table): BAL (Huntley), TB (Daniels), PHI (McKee). The backup is modeled at 92% of starter efficiency with the team's YPA, so his environment looks too generous (Huntley 8.0 YPA). The model-only track does not discount the backup at all, so ignore model-only gaps on those games.
-4. **Caleb Williams (CHI) is Questionable** (hamstring, full practice): modeled 65% active with Bagent covering the rest. CHI skill-player props depend on that call; decide after the 1 PM ET inactives.
-5. Minor: Odell Beckham Jr. (listed NYG, now MIN) and Kaytron Allen (listed WAS, now MIA) carry small stale-team shares; about two dozen practice-squad or inactive players (e.g. Zach Ertz) carry small volumes at 100% active.
+4. **Caleb Williams (CHI) is Questionable** (hamstring, full practice): modeled 65% active with Bagent covering the rest. CHI skill-player singles are capped at LEAN with a caution flag and kept out of parlays; decide after the 1 PM ET inactives.
+   **NYG** is flagged too: Jaxson Dart is on IR and Jameis Winston starts, so NYG pass-catcher and rushing singles carry the same fill-in caution.
+5. Anytime-TD board: eight RBs sit at 61% or more (Kyren Williams 71%). That is the TD v2 multipliers plus floor on a high-scoring slate; the W9 postmortem checks the top bins, so size these as ranked leans. Probabilities are conditional on playing, so discount by the p_active column (Evans, Samuel 81%). Several players show both a TD play and an under on rushing volume (Javonte Williams, Bijan, Taylor); pick one side per player.
+6. Minor: Odell Beckham Jr. (listed NYG, now MIN) and Kaytron Allen (listed WAS, now MIA) carry small stale-team shares; about two dozen practice-squad or inactive players (e.g. Zach Ertz) carry small volumes at 100% active.
    Backup QBs (Jalon Daniels, Tanner McKee, Tyler Huntley) are left out of the touchdown boards and parlay legs: the engine gives a fill-in QB the generic backup rushing profile (about 0.35 rush TD), which is not credible for a QB with no carries.
-6. Nothing here is priced: no book prices and no touchdown prices. A PLAY is a lean at an assumed -110, not an edge. Send a screenshot of any board and I will re-price against the real numbers.
+7. Nothing here is priced: no book prices and no touchdown prices. A PLAY is a lean at an assumed -110, not an edge. Send a screenshot of any board and I will re-price against the real numbers.
 
 Method: `apex-weekly run` both tracks, `espn_inactives.py`, `espn_props.py`, `slate_full.py sim/render`, `team_tables.py` (box score, play-by-play and PFR advanced), `league_spm.py`.

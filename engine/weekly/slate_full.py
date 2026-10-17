@@ -35,6 +35,8 @@ def sim_all(lines):
 # Known identity gaps (Week 6 audit): HOU WR2 Marvin Harrison Jr. is not projected (traded players are dropped by the stale-team rule, DECISIONS #13), so HOU receiving shares are overstated.
 EXCLUDE = {("HOU", "rec"), ("HOU", "rec_yds")}
 QB_OUT_TEAMS = set()      # teams whose projected QB1 is out; set by render()
+CAUTION = {"NYG": "fill-in QB (Dart on IR)", "CHI": "QB Questionable (65%)"}   # extra per-team flags from the red-team pass
+DEMOTE = {"CHI"}          # PLAY -> LEAN and kept out of parlays until the QB is confirmed
 BACKUP_QBS = set()        # fill-in QBs on those teams: they inherit the generic backup rushing profile (about 0.35 rush TD), so their anytime-TD numbers are not published
 
 
@@ -59,11 +61,14 @@ def _game_pool(away, home):
         S["game"] = f"{away}@{home}"
         S.loc[[(r.team, r.market) in EXCLUDE for r in S.itertuples()], "label"] = ""
         S["caution"] = "backup QB" if ({away, home} & QB_OUT_TEAMS) else ""
+        for t_, c_ in CAUTION.items():
+            S.loc[S.team == t_, "caution"] = (S.caution + " " + c_).str.strip()
+        S.loc[S.team.isin(DEMOTE) & (S.label == "PLAY"), "label"] = "LEAN"
     n = mk["n"]
     legs = {k: np.unpackbits(v)[:n].astype(bool) for k, v in mk["legs"].items()}
     fav = {}
     for r in S.itertuples() if len(S) else []:
-        if r.label == "" or r.n_log < 3 or r.model_p >= 0.85: continue
+        if r.label == "" or r.n_log < 3 or r.model_p >= 0.85 or r.player in BACKUP_QBS or r.team in DEMOTE: continue
         nm = f"{r.player} {r.market} {r.side[0]}{r.line}"
         if nm in legs:
             raw = (r.p_over if r.side == "OVER" else r.p_under) / max(1 - r.p_push, 1e-6)
@@ -84,8 +89,9 @@ class Pool:
         for k in sorted(td, key=lambda x: -meta[x]["p"])[:td_max]:
             self.leg[f"{game}: {k}"] = dict(game=game, arr=legs[k], meta=meta[k], r=1.0, p=float(legs[k].mean()), kind="td", shrunk=float(legs[k].mean()))
         for k in meta:
-            if meta[k]["market"] == "pass_td" and k.endswith(("1+", "2+")):
-                self.leg[f"{game}: {k}"] = dict(game=game, arr=legs[k], meta=meta[k], r=1.0, p=float(legs[k].mean()), kind="td" if k.endswith("2+") else "qb1", shrunk=float(legs[k].mean()))
+            if meta[k]["market"] == "pass_td" and k.endswith(("1+", "2+")) and meta[k]["player"] not in BACKUP_QBS:
+                p0 = float(legs[k].mean()); sh = 0.5 + 0.5 * (p0 - 0.5)      # same 50/50 shrink as the line legs
+                self.leg[f"{game}: {k}"] = dict(game=game, arr=legs[k], meta=meta[k], r=sh / max(p0, 1e-6), p=p0, kind="td" if k.endswith("2+") else "qb1", shrunk=sh)
 
     def joint(self, names):
         by = {}
@@ -298,9 +304,11 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
     for k, v in qbl:
         byqb.setdefault(v["meta"]["player"], {})[k.rsplit(" ", 1)[-1]] = v["p"]
     w("### Quarterback passing-TD ladder (calibrated market: the model beat the books here in W4; fair odds)\n")
-    w("| QB | 1+ | 2+ |\n|---|---|---|")
+    w("Raw simulation probability, with the 50/50-shrunk figure used in parlays in brackets. Treat anything above 85% raw as 'very likely', not a number to price. Backup QBs are not listed.\n")
+    w("| QB | 1+ raw (shrunk) | 2+ raw (shrunk) |\n|---|---|---|")
+    sh_ = lambda v: 0.5 + 0.5 * (v - 0.5)
     for qb, d in sorted(byqb.items(), key=lambda kv: -kv[1].get("1+", 0)):
-        w(f"| {qb} | " + " | ".join(f"{d[t]:.0%} ({T.american(d[t]):+d})" if t in d else "" for t in ("1+", "2+")) + " |")
+        w(f"| {qb} | " + " | ".join(f"{d[t]:.0%} ({sh_(d[t]):.0%})" if t in d else "" for t in ("1+", "2+")) + " |")
     w("")
     w("## 9. This league (SPAMML) view\n")
     w("League points use expected TDs, so the player tables above (`League pts` column) are the lineup and waiver inputs; `apex-weekly waiver --run <run_dir> --roster ... --available ...` turns them into add/drop moves under the written rule (DECISIONS #27). "
@@ -316,10 +324,12 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
     w("1. **Marvin Harrison Jr. (HOU) is not projected.** Traded players are dropped by the stale-team rule (DECISIONS #13), so HOU's target shares sum to about 0.92 and Collins, Hutchinson and Boutte are over-credited. HOU receiving props are removed from the single-line screen and from every parlay.")
     w("2. **A.J. Brown (NE)**: roster file says reserve, injury report says Questionable (ankle, limited). He is not projected; NE target shares are the thinnest on the slate (0.69), so NE pass catchers are inflated if he plays.")
     w("3. **Backup-QB games** (flagged `backup QB` in the singles table): BAL (Huntley), TB (Daniels), PHI (McKee). The backup is modeled at 92% of starter efficiency with the team's YPA, so his environment looks too generous (Huntley 8.0 YPA). The model-only track does not discount the backup at all, so ignore model-only gaps on those games.")
-    w("4. **Caleb Williams (CHI) is Questionable** (hamstring, full practice): modeled 65% active with Bagent covering the rest. CHI skill-player props depend on that call; decide after the 1 PM ET inactives.")
-    w("5. Minor: Odell Beckham Jr. (listed NYG, now MIN) and Kaytron Allen (listed WAS, now MIA) carry small stale-team shares; about two dozen practice-squad or inactive players (e.g. Zach Ertz) carry small volumes at 100% active.")
+    w("4. **Caleb Williams (CHI) is Questionable** (hamstring, full practice): modeled 65% active with Bagent covering the rest. CHI skill-player singles are capped at LEAN with a caution flag and kept out of parlays; decide after the 1 PM ET inactives.")
+    w("   **NYG** is flagged too: Jaxson Dart is on IR and Jameis Winston starts, so NYG pass-catcher and rushing singles carry the same fill-in caution.")
+    w("5. Anytime-TD board: eight RBs sit at 61% or more (Kyren Williams 71%). That is the TD v2 multipliers plus floor on a high-scoring slate; the W9 postmortem checks the top bins, so size these as ranked leans. Probabilities are conditional on playing, so discount by the p_active column (Evans, Samuel 81%). Several players show both a TD play and an under on rushing volume (Javonte Williams, Bijan, Taylor); pick one side per player.")
+    w("6. Minor: Odell Beckham Jr. (listed NYG, now MIN) and Kaytron Allen (listed WAS, now MIA) carry small stale-team shares; about two dozen practice-squad or inactive players (e.g. Zach Ertz) carry small volumes at 100% active.")
     w("   Backup QBs (" + ", ".join(sorted(BACKUP_QBS)) + ") are left out of the touchdown boards and parlay legs: the engine gives a fill-in QB the generic backup rushing profile (about 0.35 rush TD), which is not credible for a QB with no carries.")
-    w("6. Nothing here is priced: no book prices and no touchdown prices. A PLAY is a lean at an assumed -110, not an edge. Send a screenshot of any board and I will re-price against the real numbers.\n")
+    w("7. Nothing here is priced: no book prices and no touchdown prices. A PLAY is a lean at an assumed -110, not an edge. Send a screenshot of any board and I will re-price against the real numbers.\n")
     w("Method: `apex-weekly run` both tracks, `espn_inactives.py`, `espn_props.py`, `slate_full.py sim/render`, `team_tables.py` (box score, play-by-play and PFR advanced), `league_spm.py`.")
     return "\n".join(L), S, A, P
 
