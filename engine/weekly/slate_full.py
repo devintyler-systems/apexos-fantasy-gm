@@ -23,7 +23,8 @@ from paths import NFLV, OUT
 def games_unplayed():
     import run_all as R
     from params import SCHED, PLAYED
-    return [(g.away, g.home) for g in SCHED.itertuples() if (g.away, g.home) not in PLAYED]
+    only = {x for x in os.environ.get("APEX_ONLY_GAMES", "").split(",") if x}      # e.g. ARI@LA,LAC@KC: restrict a rerun to the games still to come
+    return [(g.away, g.home) for g in SCHED.itertuples() if (g.away, g.home) not in PLAYED and (not only or f"{g.away}@{g.home}" in only)]
 
 
 def sim_all(lines):
