@@ -23,7 +23,8 @@ from paths import NFLV, OUT
 def games_unplayed():
     import run_all as R
     from params import SCHED, PLAYED
-    return [(g.away, g.home) for g in SCHED.itertuples() if (g.away, g.home) not in PLAYED]
+    only = {x for x in os.environ.get("APEX_ONLY_GAMES", "").split(",") if x}      # e.g. ARI@LA,LAC@KC: restrict a rerun to the games still to come
+    return [(g.away, g.home) for g in SCHED.itertuples() if (g.away, g.home) not in PLAYED and (not only or f"{g.away}@{g.home}" in only)]
 
 
 def sim_all(lines):
@@ -159,6 +160,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
     played_rows = GE[GE.note.astype(str).str.contains("PLAYED", na=False)]
     for r in GE[~GE.note.astype(str).str.contains("PLAYED", na=False)].itertuples():
         a, h = r.away, r.home
+        if (a, h) not in games: continue
         m = GM.loc[(a, h)] if (a, h) in GM.index else None
         s = sched.loc[(a, h)] if (a, h) in sched.index else None
         mkt = f"{h} {-s.spread_line:+.1f} / {s.total_line}" if s is not None else ""
@@ -166,6 +168,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
         w(f"| {a}@{h}{note} | {r.date} {r.time_edt} | {mkt} | {a} {getattr(r, a + '_pts_mean'):.1f}, {h} {getattr(r, h + '_pts_mean'):.1f} | {a} {r.away_win_prob:.0%} / {h} {r.home_win_prob:.0%} | {r.total_mean:.1f} | "
           + (f"{a} {m[a + '_pts_mean']:.1f}, {h} {m[h + '_pts_mean']:.1f} | {a} {m.away_win_prob:.0%}" if m is not None else "") + f" | {h} {r.fair_spread_home:+.1f} |")
     for r in played_rows.itertuples():
+        if os.environ.get("APEX_ONLY_GAMES"): break
         sc_ = sched.loc[(r.away, r.home)] if (r.away, r.home) in sched.index else None
         if sc_ is not None and pd.notna(sc_.away_score):
             w(f"\nAlready played: {r.away}@{r.home} final {r.away} {int(sc_.away_score)}, {r.home} {int(sc_.home_score)} (market {r.home} {-sc_.spread_line:+.1f}, total {sc_.total_line}; projected {getattr(r, r.away + '_pts_mean'):.1f}-{getattr(r, r.home + '_pts_mean'):.1f}).")
@@ -224,7 +227,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
             w("\n**Softest pass coverage faced** (passer rating allowed): " + "; ".join(f"{r.team} vs {r.opp} ({r.opp_rating:.0f})" for r in soft.itertuples()) + "\n")
     # --- players
     P = pd.read_pickle(os.path.join(run_market, "proj_all.pkl"))
-    P = P[~P.played.astype(bool)].copy()
+    P = P[~P.played.astype(bool) & P.game.isin([f"{a}@{h}" for a, h in games])].copy()
     S0 = skill_points(P, cfg)
     P = P.merge(S0[["player", "team", "ev"]].rename(columns={"ev": "league_ev"}), on=["player", "team"], how="left")
     for c in ("pass_td_mean", "rush_td_mean", "rec_td_mean", "rec_mean", "rec_yds_mean", "rush_yds_mean", "pass_yds_mean", "pass_cmp_mean"):
