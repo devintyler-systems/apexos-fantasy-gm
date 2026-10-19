@@ -1,0 +1,29 @@
+team,opp,home,game,note,pts_mean,p25,p50,p75,p90,win_prob,fair_ml
+SEA,DEN,False,SEA@DEN,PLAYED (final score in nflverse),23.341,16.0,23.0,30.0,37.0,0.54,-117
+DEN,SEA,True,SEA@DEN,PLAYED (final score in nflverse),21.908,14.0,21.0,28.0,34.0,0.46,117
+HOU,JAX,False,HOU@JAX,PLAYED (final score in nflverse),19.828,13.0,20.0,26.0,33.0,0.385,159
+JAX,HOU,True,HOU@JAX,PLAYED (final score in nflverse),23.656,17.0,23.0,30.0,37.0,0.615,-159
+CHI,ATL,False,CHI@ATL,PLAYED (final score in nflverse),23.543,17.0,23.0,30.0,37.0,0.505,-102
+ATL,CHI,True,CHI@ATL,PLAYED (final score in nflverse),23.535,17.0,23.0,30.0,37.0,0.495,102
+BAL,CLE,False,BAL@CLE,PLAYED (final score in nflverse),24.318,17.0,24.0,31.0,38.0,0.581,-139
+CLE,BAL,True,BAL@CLE,PLAYED (final score in nflverse),21.449,14.0,20.0,27.0,34.0,0.419,139
+TEN,IND,False,TEN@IND,PLAYED (final score in nflverse),17.397,10.0,17.0,24.0,30.0,0.243,311
+IND,TEN,True,TEN@IND,PLAYED (final score in nflverse),27.029,20.0,27.0,34.0,40.0,0.757,-311
+NYJ,NE,False,NYJ@NE,PLAYED (final score in nflverse),16.829,10.0,16.0,23.0,28.0,0.251,298
+NE,NYJ,True,NYJ@NE,PLAYED (final score in nflverse),25.827,17.0,26.0,33.0,40.0,0.749,-298
+NO,NYG,False,NO@NYG,PLAYED (final score in nflverse),21.3,14.0,20.0,27.0,34.0,0.417,140
+NYG,NO,True,NO@NYG,PLAYED (final score in nflverse),24.249,17.0,24.0,31.0,37.0,0.583,-140
+CAR,PHI,False,CAR@PHI,PLAYED (final score in nflverse),22.202,16.0,22.0,29.0,35.0,0.476,110
+PHI,CAR,True,CAR@PHI,PLAYED (final score in nflverse),22.949,16.0,23.0,30.0,37.0,0.524,-110
+PIT,TB,False,PIT@TB,PLAYED (final score in nflverse),22.08,16.0,21.0,29.0,34.0,0.494,102
+TB,PIT,True,PIT@TB,PLAYED (final score in nflverse),22.321,16.0,22.0,29.0,36.0,0.506,-102
+ARI,LA,False,ARI@LA,PLAYED (final score in nflverse),20.76,13.0,20.0,27.0,34.0,0.278,259
+LA,ARI,True,ARI@LA,PLAYED (final score in nflverse),29.22,21.0,29.0,37.0,44.0,0.722,-259
+LAC,KC,False,LAC@KC,PLAYED (final score in nflverse),17.889,10.0,17.0,24.0,30.0,0.288,247
+KC,LAC,True,LAC@KC,PLAYED (final score in nflverse),25.678,17.0,26.0,33.0,40.0,0.712,-247
+BUF,LV,False,BUF@LV,PLAYED (final score in nflverse),28.758,21.0,28.0,37.0,44.0,0.625,-167
+LV,BUF,True,BUF@LV,PLAYED (final score in nflverse),24.136,17.0,24.0,30.0,37.0,0.375,167
+DAL,GB,False,DAL@GB,PLAYED (final score in nflverse),24.605,17.0,24.0,31.0,38.0,0.462,116
+GB,DAL,True,DAL@GB,PLAYED (final score in nflverse),26.021,19.0,26.0,34.0,40.0,0.538,-116
+WAS,SF,False,WAS@SF,,20.153,13.0,20.0,27.0,33.0,0.248,303
+SF,WAS,True,WAS@SF,,29.776,22.0,30.0,38.0,44.0,0.752,-303
