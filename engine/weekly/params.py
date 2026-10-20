@@ -80,11 +80,14 @@ def _apply_roster_out(o, week):
     (Week 4 2026: British Brooks went on IR the morning of the games while the report still listed him; Odell Beckham Jr. was released).
     Only used when the roster snapshot for that week is a full roster (current season); historical roster files are sparse, so backtests are unchanged."""
     try:
-        r = pd.read_parquet(N + f"roster_{SEASON}.parquet"); r = r[(r.game_type == "REG") & (r.week == week)]
+        R_ = pd.read_parquet(N + f"roster_{SEASON}.parquet"); R_ = R_[R_.game_type == "REG"]; r = R_[R_.week == week]
     except Exception:
         return o
     if len(r) < 1000:
         return o
+    miss = R_[~R_.team.isin(set(r.team)) & (R_.week < week)]      # a team on bye last week has no row in the newest snapshot: use its own latest one (2026 W7: MIA Achane, MIN Mason on IR)
+    if len(miss):
+        r = pd.concat([r, miss[miss.week == miss.groupby("team").week.transform("max")]], ignore_index=True)
     r = r[r.position.isin(["QB", "RB", "FB", "WR", "TE"])].copy()
     r["nkey"] = r.full_name.map(norm_name); r["team"] = r.team.map(tm)
     live = set(zip(r[r.status.isin(["ACT", "DEV", "INA"])].nkey, r[r.status.isin(["ACT", "DEV", "INA"])].team))     # same player re-signed by the same team stays live
