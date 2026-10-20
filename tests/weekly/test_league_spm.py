@@ -98,3 +98,18 @@ def test_moves_end_to_end_and_no_double_claim():
     assert by[("WT", "Warren")]["add"] == "Star" and by[("WT", "Warren")].act is True   # 1.1 clears the irreversible threshold
     assert by[("WT", "Johnson")]["add"] == "Kraft" and by[("WT", "Johnson")].act is False   # 0.3 does not
     assert mv[mv.act]["add"].is_unique
+
+
+def test_slate_overrides_stale_fantrax_bye_and_reads_sectioned_roster(tmp_path):
+    p = tmp_path / "roster.csv"
+    p.write_text('"","Offense"\n"ID","Pos","Player","Team","Eligible","Status","Opponent"\n'
+                 '"*1*","QB","Jalen Hurts","PHI","QB","Act","@CAR Sun 1:00PM"\n\n'
+                 '"","Kicking"\n"ID","Pos","Player","Team","Eligible","Status","Opponent"\n'
+                 '"*2*","K","Will Reichard","MIN","K","Act","Bye"\n\n'
+                 '"","Defense/Special Teams"\n"ID","Pos","Player","Team","Eligible","Status","Opponent"\n'
+                 '"*3*","DST","Philadelphia","","DST","Act","DAL Mon 8:15PM"\n')
+    fx = L.read_fantrax(str(p), CFG)
+    assert list(fx.slot) == ["QB", "K", "DST"] and fx.loc[2, "team"] == "PHI" and bool(fx.loc[1, "bye"])
+    out = L.attach_ev(fx, L.skill_points(_P(), CFG), {"PHI": 21.0, "MIN": 24.0}, {"MIN": "will reichard"}, CFG)
+    assert out.loc[1, "ev"] == pytest.approx(L.kicker_ev(24.0, CFG))      # MIN is on the slate: Fantrax's stale "Bye" is ignored
+    assert out.loc[0, "ev"] > 0

@@ -88,9 +88,42 @@ def ytd_td_rate(stats):
 
 
 # ---------------------------------------------------------------- Fantrax
+DST_TEAMS = {"arizona": "ARI", "atlanta": "ATL", "baltimore": "BAL", "buffalo": "BUF", "carolina": "CAR", "chicago": "CHI", "cincinnati": "CIN",
+             "cleveland": "CLE", "dallas": "DAL", "denver": "DEN", "detroit": "DET", "green bay": "GB", "houston": "HOU", "indianapolis": "IND",
+             "jacksonville": "JAX", "kansas city": "KC", "las vegas": "LV", "la chargers": "LAC", "la rams": "LA", "miami": "MIA", "minnesota": "MIN",
+             "new england": "NE", "new orleans": "NO", "ny giants": "NYG", "ny jets": "NYJ", "philadelphia": "PHI", "pittsburgh": "PIT",
+             "san francisco": "SF", "seattle": "SEA", "tampa bay": "TB", "tennessee": "TEN", "washington": "WAS"}
+
+
+def _read_raw(path):
+    """Fantrax exports come in two shapes: one flat table, or the team-roster export with stacked sections
+    ("","Offense" / header / rows / blank / "","Kicking" ...) whose position column is `Pos`."""
+    with open(path, newline="", encoding="utf-8-sig") as fh:
+        head = fh.readline()
+    if not head.startswith('"",'):
+        return pd.read_csv(path)
+    import csv
+    frames, cols = [], None
+    with open(path, newline="", encoding="utf-8-sig") as fh:
+        for row in csv.reader(fh):
+            if not row or not any(x.strip() for x in row):
+                cols = None
+            elif row[0] == "" and len(row) == 2:
+                cols = None
+            elif cols is None:
+                cols = row
+            else:
+                frames.append(dict(zip(cols, row)))
+    f = pd.DataFrame(frames)
+    return f.rename(columns={"Pos": "Position"})
+
+
 def read_fantrax(path, cfg):
-    f = pd.read_csv(path)
+    f = _read_raw(path)
     f["player"] = f["Player"].astype(str)
+    if "DST" in set(f["Position"]):    # DST rows carry a city name and no team code
+        miss = f["Position"].eq("DST") & f["Team"].isna() | f["Position"].eq("DST") & f["Team"].astype(str).str.strip().eq("")
+        f.loc[miss, "Team"] = f.loc[miss, "Player"].map(lambda n: DST_TEAMS.get(str(n).strip().lower(), ""))
     f["team"] = f["Team"].map(lambda t: norm_team(t, cfg))
     f["slot"] = f["Position"].map(SLOT)
     st = f["Status"].astype(str)
@@ -102,14 +135,16 @@ def read_fantrax(path, cfg):
 
 
 def attach_ev(fx, S, team_pts, kickers, cfg):
-    """League points for each Fantrax row. Bye or not on the slate = 0. Kickers: only the team's current kicker is valid."""
+    """League points for each Fantrax row. Bye or not on the slate = 0 (slate, not Fantrax's Opponent column, decides). Kickers: only the team's current kicker is valid."""
     S_key = S.set_index("key")
     nk = S.groupby("nkey").size()
     out = []
     for _, r in fx.iterrows():
         ev, note, exp_tds = np.nan, "", np.nan
-        if r.bye:
-            ev, note = 0.0, "bye"
+        # the nflverse slate governs byes: Fantrax's Opponent column can still show last week's bye (W7: CIN, DET, MIA, MIN)
+        off_slate = bool(team_pts) and bool(r.team) and r.team not in team_pts
+        if r.slot in ("K", "DST") and (off_slate or (r.bye and not team_pts)):
+            ev, note = 0.0, "bye / no game left on the slate" + (" (Fantrax says bye)" if r.bye else "")
         elif r.slot == "DST":
             ev = cfg["dst_ev"]
             note = "DST scores TDs and safeties only; ~flat"
@@ -129,7 +164,7 @@ def attach_ev(fx, S, team_pts, kickers, cfg):
                 row = S[S.nkey == r.nkey].iloc[0]
                 note = "team differs from projection (trade?)"
             if row is None:
-                ev, note = np.nan, (note or "no projection (bye, inactive, or not in universe)")
+                ev, note = (0.0, "bye / no game left on the slate") if (r.bye and (off_slate or not team_pts)) else (np.nan, note or "no projection (inactive or not in universe)")
             else:
                 ev, exp_tds = float(row["ev"]), float(row["exp_tds"])
         out.append((ev, exp_tds, note))
