@@ -20,6 +20,14 @@ import tnf_full as T
 from paths import NFLV, OUT
 
 
+def fillin_qbs(season, week):
+    """Depth-chart QB1 who is not the team's 2026 completions leader (a fill-in starter): {team: player}. Their team's pass-game singles carry a caution flag and they are kept off TD boards and parlays."""
+    d = pd.read_parquet(NFLV + f"depth_charts_{season}.parquet"); d = d[(d.dt == d.dt.max()) & (d.pos_abb == "QB") & (d.pos_rank == 1)]
+    st = pd.read_parquet(NFLV + f"stats_player_week_{season}.parquet"); st = st[st.week < week]
+    lead = st.groupby(["team", "player_display_name"]).completions.sum().reset_index().sort_values("completions", ascending=False).groupby("team").head(1).set_index("team").player_display_name
+    return {r.team: r.player_name for r in d.itertuples() if r.team in lead.index and lead[r.team] != r.player_name}
+
+
 def games_unplayed():
     import run_all as R
     from params import SCHED, PLAYED
@@ -33,11 +41,12 @@ def sim_all(lines):
         T.sim(a, h, lines, tag)
 
 
-# Known identity gaps (Week 6 audit): HOU WR2 Marvin Harrison Jr. is not projected (traded players are dropped by the stale-team rule, DECISIONS #13), so HOU receiving shares are overstated.
-EXCLUDE = {("HOU", "rec"), ("HOU", "rec_yds")}
+# Week 6 excluded HOU receiving (Marvin Harrison Jr. was dropped by the stale-team rule); the Week 7 audit found him projected on HOU, so nothing is excluded now.
+EXCLUDE = set()
 QB_OUT_TEAMS = set()      # teams whose projected QB1 is out; set by render()
-CAUTION = {"NYG": "fill-in QB (Dart on IR)", "CHI": "QB Questionable (65%)"}   # extra per-team flags from the red-team pass
-DEMOTE = {"CHI"}          # PLAY -> LEAN and kept out of parlays until the QB is confirmed
+CAUTION = {}              # per-team flags, set by render() from the depth chart (fill-in QBs)
+CAUTION_ALL = {}
+DEMOTE = set()            # PLAY -> LEAN and kept out of parlays (teams whose QB status is unconfirmed); empty unless the operator sets it
 BACKUP_QBS = set()        # fill-in QBs on those teams: they inherit the generic backup rushing profile (about 0.35 rush TD), so their anytime-TD numbers are not published
 
 
@@ -138,7 +147,7 @@ def _tab(df, cols, fmt=None, n=None):
     return "\n".join(out)
 
 
-def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_scorecard=None):
+def render(run_market, run_model, tables, out_path, season=2026, week=int(os.environ.get("APEX_TARGET_WEEK", 7)), tnf_scorecard=None):
     from league_spm import load_cfg, skill_points, kicker_ev
     cfg = load_cfg()
     games = games_unplayed()
@@ -147,6 +156,10 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
     QB_OUT_TEAMS = set(env_[env_.p_start_qb < 0.5].team) if "p_start_qb" in env_.columns else set()
     _P0 = pd.read_pickle(os.path.join(run_market, "proj_all.pkl"))
     BACKUP_QBS = set(_P0[(_P0.pos == "QB") & _P0.team.isin(QB_OUT_TEAMS) & (_P0.p_active >= 0.5)].player)
+    FILL = fillin_qbs(season, week)
+    BACKUP_QBS |= set(FILL.values())
+    CAUTION.update({t: f"fill-in QB ({q})" for t, q in FILL.items()})
+    CAUTION_ALL.update(FILL)
     # --- games
     GE = pd.read_csv(os.path.join(run_market, "w4_game_environment.csv")); GM = pd.read_csv(os.path.join(run_model, "w4_game_environment.csv")).set_index(["away", "home"])
     sched = pd.read_parquet(NFLV + "games.parquet"); sched = sched[(sched.season == season) & (sched.week == week)].set_index(["away_team", "home_team"])
@@ -176,24 +189,24 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
     # --- team tables
     off = pd.read_csv(os.path.join(tables, "team_offense.csv"), index_col=0); dfn = pd.read_csv(os.path.join(tables, "team_defense.csv"), index_col=0)
     dvp = pd.read_csv(os.path.join(tables, "dvp.csv")); mu = pd.read_csv(os.path.join(tables, "matchups.csv"))
-    w("\n## 2. Team offense (through Week 5, per game)\n")
+    w(f"\n## 2. Team offense (through Week {week - 1}, per game)\n")
     o = off.sort_values("pts", ascending=False).reset_index()
     w(_tab(o, ["team", "g", "pts", "plays", "pass_rate", "pass_yds", "rush_yds", "td_per_g", "pass_epa", "rush_epa", "rz_td_pct", "turnovers"],
            {"pass_rate": lambda v: f"{v:.0%}", "rz_td_pct": lambda v: f"{v:.0%}", "pts": lambda v: f"{v:.1f}", "plays": lambda v: f"{v:.0f}", "pass_yds": lambda v: f"{v:.0f}", "rush_yds": lambda v: f"{v:.0f}",
             "td_per_g": lambda v: f"{v:.1f}", "pass_epa": lambda v: f"{v:+.2f}", "rush_epa": lambda v: f"{v:+.2f}", "turnovers": lambda v: f"{v:.1f}"}))
-    w("\n## 3. Team defense (through Week 5, per game allowed; rank 1 = allows the most)\n")
+    w(f"\n## 3. Team defense (through Week {week - 1}, per game allowed; rank 1 = allows the most)\n")
     dd = dfn.sort_values("pts_allowed", ascending=False).reset_index().rename(columns={"opponent_team": "team", "index": "team"})
     dd["team"] = dd.iloc[:, 0]
     w(_tab(dd, ["team", "g", "pts_allowed", "pass_yds", "rush_yds", "td_allowed_pg", "pass_epa_allowed", "rush_epa_allowed", "rz_td_pct_allowed", "sacks", "takeaways"],
            {"pts_allowed": lambda v: f"{v:.1f}", "pass_yds": lambda v: f"{v:.0f}", "rush_yds": lambda v: f"{v:.0f}", "td_allowed_pg": lambda v: f"{v:.1f}", "pass_epa_allowed": lambda v: f"{v:+.2f}",
             "rush_epa_allowed": lambda v: f"{v:+.2f}", "rz_td_pct_allowed": lambda v: f"{v:.0%}", "sacks": lambda v: f"{v:.1f}", "takeaways": lambda v: f"{v:.1f}"}))
-    w("\n## 4. Defense versus position (touchdowns allowed per game to the position, with the Week 6 opponent list)\n")
-    w("Rank 1 = most TDs allowed. League TD points = 6 x TDs. Five games of data: descriptive, noisy.\n")
+    w(f"\n## 4. Defense versus position (touchdowns allowed per game to the position, with the Week {week} opponent list)\n")
+    w("Rank 1 = most TDs allowed. League TD points = 6 x TDs. Six games of data: descriptive, noisy.\n")
     for pos in ("QB", "RB", "WR", "TE"):
         x = dvp[dvp.pos == pos].sort_values("tds_pg", ascending=False)
         top = x.head(8)
         w(f"**{pos}** most TDs allowed: " + "; ".join(f"{r.defense} {r.tds_pg:.1f} TD, {r.ppr_pg:.1f} PPR" for r in top.itertuples()) + ". Fewest: " + "; ".join(f"{r.defense} {r.tds_pg:.1f}" for r in x.tail(5).itertuples()) + ".\n")
-    w("**Week 6 matchup edges** (team vs the opponent's rank in TDs allowed to that position; top 6 per position):\n")
+    w(f"**Week {week} matchup edges** (team vs the opponent's rank in TDs allowed to that position; top 6 per position):\n")
     for pos in ("QB", "RB", "WR", "TE"):
         c = f"opp_{pos}_td_rk"
         x = mu.dropna(subset=[c]).sort_values(c).head(6)
@@ -204,7 +217,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
     if os.path.exists(os.path.join(tables, "adv_defense.csv")):
         ad = pd.read_csv(os.path.join(tables, "adv_defense.csv"), index_col=0).reset_index().rename(columns={"index": "team"})
         ao = pd.read_csv(os.path.join(tables, "adv_offense.csv"), index_col=0).reset_index().rename(columns={"index": "team"})
-        w("## 4b. Advanced team stats (Pro Football Reference advanced tabs, via the nflverse copy; per game through Week 5)\n")
+        w(f"## 4b. Advanced team stats (Pro Football Reference advanced tabs, via the nflverse copy; per game through Week {week - 1})\n")
         w("pro-football-reference.com serves a bot challenge (HTTP 403) to scripted requests, so the same PFR advanced data is read from the nflverse mirror. Defense coverage columns are what each defense allowed on targets against it; "
           "pass rush columns are what it generated. Sorted by passer rating allowed (highest = weakest coverage).\n")
         d1 = ad.sort_values("rating_allowed", ascending=False)
@@ -317,22 +330,19 @@ def render(run_market, run_model, tables, out_path, season=2026, week=6, tnf_sco
     w("## 9. This league (SPAMML) view\n")
     w("League points use expected TDs, so the player tables above (`League pts` column) are the lineup and waiver inputs; `apex-weekly waiver --run <run_dir> --roster ... --available ...` turns them into add/drop moves under the written rule (DECISIONS #27). "
       "Kickers: rank by team implied points only. DST is worth about 1 point a game for everyone in this league.\n")
-    w("## 10. Thursday night scorecard (SEA@DEN, final DEN 17, SEA 14; screen published before kickoff)\n")
-    w("| Group | Result | Expected |\n|---|---|---|\n| PLAY singles | **10 of 10** | 58% each |\n| LEAN singles | 10 of 16 (62%) | 57% |\n| Other lines | 13 of 23 (57%) | 54% |\n| Parlays (9 published, 3 per tier) | **0 of 9** | 4% to 38% |\n")
-    w("What it says: the 10 PLAY singles were mostly one bet (DEN's passing game staying small in a 31-point game against a 40.5 total), so 10 of 10 is a correlated cluster, not ten independent wins. "
-      "Every parlay failed on a touchdown or QB-passing-TD leg: the game had **0 passing TDs** and 3 rushing TDs (Dobbins, Holani, Harvey; the model had 31%, 21%, 21% on them), and Dobbins' under 1.5 catches (3 catches) sank three tickets. "
-      "One game proves nothing, but it is why this report caps each ticket at one QB passing-TD leg.\n")
-    w("## 11. Known gaps and audit results (read before betting)\n")
-    w("Two QA agents (data audit, model sanity) reviewed the first run. Fixed before this version: **PHI's fill-in QB** was the released Andy Dalton (the engine only knew QBs with attempts); it is now Tanner McKee (DECISIONS #31). "
-      "Remaining, by how much they change a pick:\n")
-    w("1. **Marvin Harrison Jr. (HOU) is not projected.** Traded players are dropped by the stale-team rule (DECISIONS #13), so HOU's target shares sum to about 0.92 and Collins, Hutchinson and Boutte are over-credited. HOU receiving props are removed from the single-line screen and from every parlay.")
-    w("2. **A.J. Brown (NE)**: roster file says reserve, injury report says Questionable (ankle, limited). He is not projected; NE target shares are the thinnest on the slate (0.69), so NE pass catchers are inflated if he plays.")
-    w("3. **Backup-QB games** (flagged `backup QB` in the singles table): BAL (Huntley), TB (Daniels), PHI (McKee). The backup is modeled at 92% of starter efficiency with the team's YPA, so his environment looks too generous (Huntley 8.0 YPA). The model-only track does not discount the backup at all, so ignore model-only gaps on those games.")
-    w("4. **Caleb Williams (CHI) is Questionable** (hamstring, full practice): modeled 65% active with Bagent covering the rest. CHI skill-player singles are capped at LEAN with a caution flag and kept out of parlays; decide after the 1 PM ET inactives.")
-    w("   **NYG** is flagged too: Jaxson Dart is on IR and Jameis Winston starts, so NYG pass-catcher and rushing singles carry the same fill-in caution.")
-    w("5. Anytime-TD board: eight RBs sit at 61% or more (Kyren Williams 71%). That is the TD v2 multipliers plus floor on a high-scoring slate; the W9 postmortem checks the top bins, so size these as ranked leans. Probabilities are conditional on playing, so discount by the p_active column (Evans, Samuel 81%). Several players show both a TD play and an under on rushing volume (Javonte Williams, Bijan, Taylor); pick one side per player.")
-    w("6. Minor: Odell Beckham Jr. (listed NYG, now MIN) and Kaytron Allen (listed WAS, now MIA) carry small stale-team shares; about two dozen practice-squad or inactive players (e.g. Zach Ertz) carry small volumes at 100% active.")
-    w("   Backup QBs (" + ", ".join(sorted(BACKUP_QBS)) + ") are left out of the touchdown boards and parlay legs: the engine gives a fill-in QB the generic backup rushing profile (about 0.35 rush TD), which is not credible for a QB with no carries.")
+    w(f"## 10. Last week's scorecard (Week {week - 1}, graded in POSTMORTEM_2026_W{week - 1:02d}.md)\n")
+    w("| Group | Result | Expected |\n|---|---|---|\n| PLAY singles | 58.5% (n=94) | 59.7% |\n| LEAN rush and passing counts | 61.9% (n=63) | 56.0% |\n| LEAN receiving | **35.2% (n=105)** | 56.4% |\n| Anytime TD board, 204 active non-QB players | 38 scored | 40.6 predicted |\n| QB passing-TD ladder | 1+: 21 vs 19.0, 2+: 11 vs 10.4 | calibrated |\n| Parlays | 9 of 48 | 14.7 |\n")
+    w("What it says: where the model disagrees with a receiving line, the line was right, so receiving LEANs are no longer published (this report has none) and receiving PLAYs are flagged thin. Rush and passing-count lines and the QB passing-TD ladder held up. "
+      "Parlays failed together on shared scripts: each ticket here holds at most one QB passing-TD leg, and every touchdown leg is shown raw next to the shrunk number.\n")
+    w(f"## 11. Known gaps and audit results (read before betting)\n")
+    w("Two QA agents (data audit, model sanity) reviewed the Thursday-window run; the full-slate run was re-checked at each window. Checked clean for Week 7: QB1 against the depth chart for all 28 teams, no bye-team rows, Marvin Harrison Jr. projected on HOU, A.J. Brown projected with a normal NE share, Monangai (CHI) Out with his carries to Swift. Remaining, by how much they change a pick:\n")
+    fill = ", ".join(f"{t} ({q})" for t, q in sorted(CAUTION_ALL.items())) if CAUTION_ALL else "none"
+    w(f"1. **Fill-in quarterbacks (depth-chart QB1 who is not the 2026 completions leader):** {fill}. The backup is modeled at 92% of starter efficiency with the team's YPA and the model-only track does not discount him, so pass-game singles for these teams carry a caution flag and the QBs are left out of touchdown boards and parlay legs.")
+    w("2. **Carries leak to 'other'.** The vacated-role candidate (DECISIONS #35) did not move the 27-slate backtest, so the engine is unchanged: team RBs get about 70% of team carries in the projection against about 80% in practice, so rushing props for backs on teams with a lead back Out (CHI) are understated, not overstated.")
+    w("3. **SF@ATL** now has a spread and total in nflverse (SF -2.5, 49.5); the market track is anchored to it. **DAL@PHI** (Monday) has no injury report yet: availability there is the default prior, rerun after Friday.")
+    w("4. **Availability prior.** Healthy players with no designation carry p_active of about 0.95 (fitted prior), so A.J. Brown's anytime TD is 5% below his conditional number. Inactives (about 90 minutes before each kickoff) replace the prior with certainty.")
+    w("5. Anytime-TD board: the 0.10 to 0.20 bin was over-predicted 2.4x in Week 6 in the sim board (frozen-run board: predicted 15.0% vs 9.1% actual, n=55) and the top ten hit 70% against 64% predicted; the W9 postmortem checks the floor. Probabilities are conditional on playing, so discount by the p_active column.")
+    w("6. Minor: about two dozen practice-squad or inactive players carry small volumes at 100% active (e.g. players listed IR/PUP who appear in the unmatched-names report).")
     w("7. Nothing here is priced: no book prices and no touchdown prices. A PLAY is a lean at an assumed -110, not an edge. Send a screenshot of any board and I will re-price against the real numbers.\n")
     w("Method: `apex-weekly run` both tracks, `espn_inactives.py`, `espn_props.py`, `slate_full.py sim/render`, `team_tables.py` (box score, play-by-play and PFR advanced), `league_spm.py`.")
     return "\n".join(L), S, A, P
