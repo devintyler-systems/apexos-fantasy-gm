@@ -33,6 +33,20 @@ BE110 = 110 / 210
 CUSHION = 1.12
 
 
+def rb_out_teams(season, week):
+    """Teams with a running back Out (injury report or the manual-out file). The engine has no with/without role model, so RB rush lines on those teams are not published (W6: Washington backs 15 carries vs 24 normal; W7 red-team: CHI Roschon Johnson 8% to exceed 7.5 carries with 13 last week)."""
+    out = set()
+    try:
+        ij = pd.read_parquet(NFLV + f"injuries_{season}.parquet"); ij = ij[(ij.week == week) & (ij.position == "RB") & (ij.report_status == "Out")]
+        out |= set(ij.team)
+    except Exception:
+        pass
+    mo = os.environ.get("APEX_MANUAL_OUT")
+    if mo and os.path.exists(mo):
+        m = pd.read_csv(mo); out |= set(m[m.pos == "RB"].team)
+    return out
+
+
 def american(p):
     if p is None or np.isnan(p):
         return 0
@@ -173,6 +187,7 @@ def render(away, home, out_path):
     # singles
     junk = S.market.isin(["rush_yds", "rush_att"]) & ~S.pos.isin(["QB", "RB"])
     S.loc[junk | (S.model_p >= 0.85) | ((S.n_log < 2) & (S.label == "LEAN")), "label"] = ""
+    S.loc[S.market.isin(["rush_yds", "rush_att"]) & (S.pos == "RB") & S.team.isin(rb_out_teams(int(os.environ.get("APEX_SEASON", 2026)), int(os.environ.get("APEX_TARGET_WEEK", 7)))), "label"] = ""
     S.loc[(S.label == "LEAN") & S.market.isin(["rec", "rec_yds"]), "label"] = ""      # W6: LEAN receiving props hit 35% on 105 lines (POSTMORTEM_2026_W06 3.3); never published
     P = S[S.label != ""].sort_values(["label", "shrunk"], ascending=[False, False])
     w("## Singles (main lines)\n")
@@ -222,11 +237,19 @@ def render(away, home, out_path):
         a = legs[names[0]].copy()
         for x in names[1:]: a &= legs[x]
         j = float(a.mean())
-        return j, j * float(np.prod([fav[x]["r"] if x in fav else 1.0 for x in names]))
+        return j, j * float(np.prod([_r(x) for x in names]))
+
+    def _r(x):
+        """parlay shrink factor of a leg: lines carry their fitted shrink; anytime-TD legs shrink only downward (a 50/50 shrink would lift a longshot); the raw sim stays in the 'Raw sim' column"""
+        if x in fav: return fav[x]["r"]
+        if meta[x]["market"] == "any_td":
+            p0 = meta[x]["p"]; return min(p0, 0.5 + 0.5 * (p0 - 0.5)) / max(p0, 1e-6)
+        return 1.0
 
     def okset(names):
         pl = [meta[x]["player"] for x in names if meta[x]["player"] != "GAME"]
-        return len(set(pl)) == len(pl) and sum(meta[x]["kind"] == "game" for x in names) <= 1
+        vol = [meta[x]["side"] for x in names if meta[x]["kind"] == "line"]      # W6: one volume/yardage line per script side (all unders, or all overs) per ticket
+        return len(set(pl)) == len(pl) and sum(meta[x]["kind"] == "game" for x in names) <= 1 and len(set(vol)) == len(vol)
 
     def search(pool, sizes, lo, hi, need_td=False, rank="p", top=3):
         res = []
@@ -236,7 +259,7 @@ def render(away, home, out_path):
                 if need_td and not any(meta[x]["kind"] == "td" for x in combo): continue
                 j, js = shr(combo)
                 if lo <= js <= hi:
-                    res.append((combo, js, j, js / np.prod([meta[x]["p"] * (fav[x]["r"] if x in fav else 1.0) for x in combo])))
+                    res.append((combo, js, j, js / np.prod([meta[x]["p"] * (_r(x)) for x in combo])))
         res.sort(key=(lambda t: -t[1]) if rank == "p" else (lambda t: -t[3]))
         out, seen = [], set()
         for c, js, j, u in res:

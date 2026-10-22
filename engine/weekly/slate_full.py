@@ -62,6 +62,7 @@ def _game_pool(away, home):
         S["side"], S["shrunk"], S["model_p"], S["label"], S["log"] = [x[0] for x in res], [x[1] for x in res], [x[2] for x in res], [x[3] for x in res], [x[4] for x in res]
         junk = S.market.isin(["rush_yds", "rush_att"]) & ~S.pos.isin(["QB", "RB"])
         S.loc[junk | (S.model_p >= 0.85) | ((S.n_log < 2) & (S.label == "LEAN")), "label"] = ""
+        S.loc[S.market.isin(["rush_yds", "rush_att"]) & (S.pos == "RB") & S.team.isin(T.rb_out_teams(int(os.environ.get("APEX_SEASON", 2026)), int(os.environ.get("APEX_TARGET_WEEK", 7)))), "label"] = ""
         S.loc[(S.label == "LEAN") & S.market.isin(["rec", "rec_yds"]), "label"] = ""      # W6: LEAN receiving props hit 35% on 105 lines (POSTMORTEM_2026_W06 3.3); never published
         if md is not None and len(md["singles"]):
             M = md["singles"].set_index(["player", "market"])
@@ -98,11 +99,21 @@ class Pool:
             self.leg[f"{game}: {nm}"] = dict(game=game, arr=legs[nm], meta=meta[nm], r=fav[nm]["r"], p=float(legs[nm].mean()), kind="line", shrunk=fav[nm]["shrunk"])
         td = [k for k in meta if meta[k]["kind"] == "td" and meta[k]["market"] == "any_td" and td_lo <= meta[k]["p"] <= td_hi and meta[k]["player"] not in BACKUP_QBS]
         for k in sorted(td, key=lambda x: -meta[x]["p"])[:td_max]:
-            self.leg[f"{game}: {k}"] = dict(game=game, arr=legs[k], meta=meta[k], r=1.0, p=float(legs[k].mean()), kind="td", shrunk=float(legs[k].mean()))
+            p0 = float(legs[k].mean()); sh = min(p0, 0.5 + 0.5 * (p0 - 0.5))      # TD legs shrink only downward (a 50/50 shrink would raise a longshot); the table shows raw next to shrunk
+            self.leg[f"{game}: {k}"] = dict(game=game, arr=legs[k], meta=meta[k], r=sh / max(p0, 1e-6), p=p0, kind="td", shrunk=sh)
         for k in meta:
             if meta[k]["market"] == "pass_td" and k.endswith(("1+", "2+")) and meta[k]["player"] not in BACKUP_QBS:
                 p0 = float(legs[k].mean()); sh = 0.5 + 0.5 * (p0 - 0.5)      # same 50/50 shrink as the line legs
                 self.leg[f"{game}: {k}"] = dict(game=game, arr=legs[k], meta=meta[k], r=sh / max(p0, 1e-6), p=p0, kind="td" if k.endswith("2+") else "qb1", shrunk=sh)
+
+    def _cluster(self, x):
+        """Script cluster of a leg: volume/yardage lines go by (game, side) (a rush-attempt under, a pass-attempt under and a catch under are the same low-volume script), touchdown legs by (game, team), game legs by game."""
+        L = self.leg[x]; m = L["meta"]
+        if m["kind"] == "td":
+            return (L["game"], "td", m.get("team", m["player"]))
+        if m["kind"] == "game":
+            return (L["game"], "game")
+        return (L["game"], "vol", m.get("side"))
 
     def joint(self, names):
         by = {}
@@ -117,6 +128,9 @@ class Pool:
 
     def ok(self, names):
         if sum(self.leg[x]["meta"]["market"] == "pass_td" for x in names) > 1:      # one QB passing-TD leg per ticket keeps the lists from collapsing onto QB legs
+            return False
+        cl = [self._cluster(x) for x in names]      # W6: legs that share a script sink together; at most one leg per script cluster per ticket
+        if len(set(cl)) != len(cl):
             return False
         pl = [self.leg[x]["meta"]["player"] for x in names]
         key = [(self.leg[x]["game"], self.leg[x]["meta"]["player"], self.leg[x]["meta"]["market"]) for x in names]
