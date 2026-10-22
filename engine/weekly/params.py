@@ -294,7 +294,11 @@ def build_roster_v4(team):
     for c in ("tsh", "csh", "tgt", "rec", "ryds", "rtd", "car", "cyds", "ctd", "n"): d["l_" + c] = d.pfr_id.map(LAST[c]) if c in LAST else np.nan
     d["l_team"] = d.pfr_id.map(LAST["team"]); d["same_team"] = np.where(d.l_team.isna(), np.nan, (d.l_team == team).astype(float))
     # rank among the team's skill players by observed per-game share (as in the backtest)
-    d["trk"] = d.tsh_pg.rank(ascending=False, method="first"); d["crk"] = d.csh_pg.rank(ascending=False, method="first")
+    if os.environ.get("APEX_RANK_ACTIVE", "1") != "0":      # DECISIONS #38: role priors by rank among players who can play (an Out starter no longer holds the rank-1 or rank-2 slot of the role table); APEX_RANK_ACTIVE=0 reproduces the old ranks
+        _act = d.p_active >= 0.5
+        d["trk"] = d.tsh_pg.where(_act, -1.0).rank(ascending=False, method="first"); d["crk"] = d.csh_pg.where(_act, -1.0).rank(ascending=False, method="first")
+    else:
+        d["trk"] = d.tsh_pg.rank(ascending=False, method="first"); d["crk"] = d.csh_pg.rank(ascending=False, method="first")
     def shr_share(kind):
         obs = d["tsh_pg" if kind == "tgt" else "csh_pg"].values; last = d["l_tsh" if kind == "tgt" else "l_csh"].values; rk = d["trk" if kind == "tgt" else "crk"].clip(upper=6).values
         out = np.zeros(len(d))
@@ -311,6 +315,9 @@ def build_roster_v4(team):
     d["tgt_sh"] = shr_share("tgt"); d["car_sh"] = shr_share("car")
     for _k, _m in ({} if os.environ.get("APEX_NOMULT") else _CAL.get("share_mult", {})).items():      # position-level share calibration from 2023-25 weeks 4-12 backtests
         _kind, _pos = _k.split("_"); _col = "tgt_sh" if _kind == "tgt" else "car_sh"; d.loc[d.pos == _pos, _col] = d.loc[d.pos == _pos, _col] * _m
+    _gc, _gt = float(os.environ.get("APEX_CAR_GAMMA", 1.0)), float(os.environ.get("APEX_TGT_GAMMA", 1.0))      # candidate: concentrate shares on the top of the depth chart (backtest: lead back carry share 0.48 projected vs 0.53 actual)
+    if _gc != 1.0: _m = d.pos == "RB"; d.loc[_m, "car_sh"] = d.loc[_m, "car_sh"] ** _gc
+    if _gt != 1.0: _m = d.pos.isin(["WR", "TE", "RB"]); d.loc[_m, "tgt_sh"] = d.loc[_m, "tgt_sh"] ** _gt
     d.attrs["tsum_raw"] = float(d.tgt_sh.sum()); d.attrs["csum_raw"] = float(d.car_sh.sum())
     oth = max(T - d.Receiving_Tgt.sum(), 0); other_sh = (oth + 18 * OTHER_TGT) / (T + 18)
     oth_c = max(R - d.Rushing_Att.sum(), 0); other_car = (oth_c + 12 * OTHER_CAR) / (R + 12)

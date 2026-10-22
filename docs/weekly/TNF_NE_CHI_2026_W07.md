@@ -13,6 +13,7 @@
 1. Pulled: every CHI RB rush line (engine has no with/without role model), all receiving LEANs, Roschon Johnson as a longshot, 5 of 9 first-draft parlays plus all push-exposed spread legs.
 2. Downgraded to thin (do not use in tickets): Swift rec_yds U20.5 (exactly 3/6; last two games over), Caleb Williams pass_cmp U21.5 and pass_yds U246.5, Maye pass_yds U249.5 (line +19 toward the over, model did not move), Maye pass_cmp U20.5, Henderson rush yards O24.5, all receiving PLAYs on NE (W6 receiving PLAY hit 52%, n=48).
 3. Record fix: Henderson rec O0.5 is 3 of 5 games, not 3 of 4.
+4. Model note: after the 22:49Z freeze the engine's role-table ranking was fixed (DECISIONS #38). Re-run on the same inputs, NE and CHI projections moved by under 1 carry (Roschon Johnson 3.8 to 4.3 carries), so these picks stand. The Rotowire feed has Johnson at 33.7 rush yards against our 18.1, which is why CHI RB rush lines stay unpublished.
 
 
 **Read this first.** Lines are DraftKings via ESPN (no prices, no touchdown markets). Singles are screened at an assumed -110 after shrinking the model 50/50 toward the market; a PLAY needs about 61% model probability, active 95%+, and the side hitting in at least half of the player's games this season. Touchdown and parlay prices are FAIR odds from the joint simulation; 'play at' adds a 12% cushion. The W4 and W5 postmortems found no edge over the books on yardage and count props; anytime-TD probabilities are calibrated. Treat everything here as a ranked lean, not a lock.
