@@ -11,6 +11,7 @@ CAL = json.load(open(CONF+"calibration_params.json"))
 # Team-volume dispersion and target-share cap. APEX_VOLFILE overrides the file (used by the backtests to compare variants).
 # Defaults reproduce the pre-2026-10-05 behaviour so an absent file changes nothing.
 import os as _os
+VAC = bool(int(_os.environ.get("APEX_VAC", 0)))      # candidate: vacated-role redistribution (off = baseline, byte-identical)
 VOL = dict(plays_sd=4.0, pr_margin_slope=0.0022, pr_extra_sd=0.0, pr_cap=0.08, plays_lo=42, plays_hi=85, tgt_share_cap=0.0)
 _vf = _os.environ.get("APEX_VOLFILE", CONF + "volume_params.json")
 if _os.path.exists(_vf):
@@ -166,6 +167,8 @@ def play_side(rng, t, sd, ns):
         sh = w0 / w0.sum()
     G = rng.gamma(np.maximum(ALPHA_T * sh, 1e-3)[None, :], 1.0, size=(ns, K + 1))
     wts = G * act * hair[None, :]
+    if VAC:      # vacated targets go to active peers: the 'other' bucket keeps its fraction instead of growing when peers are Out (DECISIONS #35 candidate)
+        wts[:, K] *= (sh[None, :K] * act[:, :K]).sum(axis=1) / sh[:K].sum()
     wts = wts / wts.sum(axis=1, keepdims=True)
     tg = _alloc(rng, att, wts)
     ceff = np.clip(catch[None, :] * np.exp(0.07 * z)[:, None], .2, .95)
@@ -193,6 +196,8 @@ def play_side(rng, t, sd, ns):
     qb_idx = [i for i, r in rus.iterrows() if r.pos == "QB" and r.player == (qbs.loc[0, "player"] if len(qbs) else "")]
     bk = np.zeros((ns, 1))
     car_w = rng.gamma(np.maximum(ALPHA_C * sh_c, 1e-3)[None, :], 1.0, size=(ns, R + 1)) * act_c
+    if VAC and R > 0:      # same rule for carries: the lead back's vacated carries go to active backs, not to 'other'
+        car_w[:, R] *= (sh_c[None, :R] * act_c[:, :R]).sum(axis=1) / sh_c[:R].sum()
     if qb_idx:
         qi = qb_idx[0]
         car_w[:, qi] = car_w[:, qi] * start
