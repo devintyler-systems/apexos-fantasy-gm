@@ -1,7 +1,7 @@
 # Week 6 post mortem (2026-10-15 Thursday to 2026-10-19 Monday)
 
-Scope: all 14 games, final (SEA@DEN Thursday, 12 Sunday games, WAS@SF Monday). Per game, the latest frozen run made before kickoff: `2026_w06_*_20261015T2038*` (SEA@DEN), `2026_w06_*_20261017T2239*` (the Sunday-morning freeze; every 1 PM and 4 PM game was graded against it, not against the refreshes), `2026_w06_*_20261019T2255*` (WAS@SF). Reproduce the engine tables with `python engine/weekly/postmortem.py 2026 6`. Pick grading (sections 3.2 to 3.6) used the sims behind the published reports, graded with nflverse box scores plus the ESPN box score for WAS@SF (nflverse had not posted Monday night when this was written).
-Caveats: one week, 14 games. Anything under about 100 observations is a direction, not a result. **Monday night is missing from `postmortem.py` section "availability"** (nflverse snap counts lag), so that table shows 18 WAS@SF players as projected-active with no snap; ignore those rows and rerun the script once nflverse posts the game. No book prices exist for any prop, so nothing here is ROI.
+Scope: all 14 games, final (SEA@DEN Thursday, 12 Sunday games, WAS@SF Monday). Per game, the latest frozen run made before kickoff: `2026_w06_*_20261015T2038*` (SEA@DEN), `2026_w06_*_20261017T2239*` (the Sunday-morning freeze; every 1 PM and 4 PM game was graded against it, not against the refreshes), `2026_w06_*_20261019T2255*` (WAS@SF). Reproduce the engine tables with `python engine/weekly/postmortem.py 2026 6`. Pick grading (sections 3.2 to 3.6) used the sims behind the published reports, graded with nflverse box scores plus the ESPN box score for WAS@SF. Re-run 2026-10-22 once nflverse posted Monday night: the engine tables below are now complete for all 14 games (the availability and volume rows that were incomplete without WAS@SF are corrected; team scores and game-level results did not change).
+Caveats: one week, 14 games. Anything under about 100 observations is a direction, not a result. No book prices exist for any prop, so nothing here is ROI.
 
 ## 1. Headline
 
@@ -9,7 +9,7 @@ The engine is calibrated where it is supposed to be (PLAY singles, passing-TD la
 
 1. **Games: no edge, as before.** Market-anchored team-points RMSE 7.26 vs 7.30 for the DraftKings line it is anchored to; model-only 7.78. Winners: market-anchored 9 of 14, DK 8 of 14, model-only 6 of 14. Actual average total 43.6 against a 45.5 line (-1.9).
 2. **NEW: our LEAN receiving props lost badly.** 105 labeled LEAN receiving lines hit **35%** against 56% expected (both sides: overs and unders alike). LEAN rush and passing lines hit 62% (63 lines). PLAY singles overall hit 58.5% against 59.7% expected (94 lines). This is the strongest signal of the week: where the model disagrees with a receiving line, the line is right.
-3. **NEW: rushing yards are over-projected for the second week running** (+5.5 yards per screened rusher, +10.1 in the player table; W5 was +4.6). The 30 to 50 yard tier was projected 36.9 and ran 25.8.
+3. **NEW: rushing yards are over-projected for the second week running** (+5.5 yards per screened rusher, +9.9 in the player table; W5 was +4.6). The 30 to 50 yard tier was projected 36.9 and ran 25.8.
 4. **Confirmed defect: a vacated role goes to "other", not to the depth chart.** Jacory Croskey-Merritt (lead back, 12 carries a game) was Out. The engine gave the Washington backs 15 carries against a historical 24 and Rachaad White only 7.9 carries. White actually had 7 carries (27 yards), 4 catches, 30 yards and a touchdown, so the receiving unders (the leg that failed) were the real miss; the rushing unders we pulled would have hit. The mechanism is in `params.py` (`oth_c = max(R - Rushing_Att.sum(), 0)`): the missing player's usage is not in the active sum, so it lands in the "other" bucket and is split by a prior instead of going to peers.
 5. **Process:** five of our published recommendations were pulled or downgraded after red-team review before kickoff (section 3.7), and every one that was pulled was right to be pulled.
 
@@ -21,8 +21,8 @@ The engine is calibrated where it is supposed to be (PLAY singles, passing-TD la
 | Rushing / passing-count lines, all labels (n=109) | rush_att 69% (26), rush_yds 66% (38), pass_att 62% (16), pass_cmp 56% (16), pass_yds 54% (13) |
 | QB passing-TD ladder (n=25) | 1+ : sum of probabilities 19.0 vs 21 actual; 2+ : 10.4 vs 11. Calibrated |
 | Anytime TD, top 10 | 7 of 10 scored (predicted 64%): Cook, McCaffrey (2), Walker (2), Taylor, J. Williams, Swift (2), Kittle |
-| Level | team pass TD 1.44 vs 1.42; rush TD 0.94 vs 0.73; rec yds bias +2.9 per player; pass TD bias none |
-| Skill vs a player's own average | rec yds MAE 19.8 vs 20.9 (n=161), rush yds MAE 20.2 vs 22.9 (n=39), pass cmp MAE 4.2 vs 4.7 |
+| Level | team pass TD 1.48 vs 1.43; rush TD 0.94 vs 0.75; rec yds bias +2.1 per player (n=173); pass TD bias none |
+| Skill vs a player's own average | rec yds MAE 19.6 vs 20.9 (n=173), rush yds MAE 19.2 vs 21.7 (n=42), pass cmp MAE 4.3 vs 4.9 (n=27) |
 | Freeze and red team | all six runs verified; red-team pulled five bad picks before kickoff (Hutchinson/Marks HOU rec, Daniels cmp O, the Purdy 93% parlay leg, White rush unders, the Purdy under props) |
 
 ## 3. What failed and what we learned
@@ -49,7 +49,7 @@ Largest misses were results: HOU@JAX (HOU 34-31, total 65 against 42.5), BUF@LV 
 
 By raw model probability: the strongest bin (0.80 and above, n=27) hit 48.1%. Model confidence above 0.60 had no relationship with hit rate. The screen, not the number, is the only thing that works: the gate (log of 3+ games, side cleared in half of recent games) works for rushing and passing counts and fails for receiving.
 
-Bias on all screened lines (model mean minus actual): pass attempts -4.7, pass yards -10.5, completions -2.2, receptions -0.1, receiving yards +0.7, rush attempts +0.4, **rush yards +5.5**. Quarterbacks threw more than projected (team pass attempts 37.0 vs 33.2) and runners ran for less (team rush yards 98.5 vs 118.3).
+Bias on all screened lines (model mean minus actual): pass attempts -4.7, pass yards -10.5, completions -2.2, receptions -0.1, receiving yards +0.7, rush attempts +0.4, **rush yards +5.5**. Quarterbacks threw more than projected (team pass attempts 36.8 vs 33.1) and runners ran for less (team rush yards 97.9 vs 119.3).
 
 The published top-30 prop lists: Sunday 1 PM games 48.3% (n=29, expected 61.3%), Sunday 4 PM through Monday 48.3% (n=29, expected 60.7%). They were 9 receiving legs per list, which is why they missed.
 
@@ -71,9 +71,9 @@ LEAN receiving hit 35% on 105 lines, with OVER 41.5% / UNDER 39.5% on receptions
 All three AM winners were McCaffrey/other anytime TD + a QB 1+ passing-TD leg; the only 3-leg winners were the two Allgeier-under tickets in the refresh. The legs that sank the most tickets: Rachaad White rec U2.5 (21 tickets), Purdy pass TD 2+ (13), Dalton Kincaid rec U4.5 (10), Brissett rush yds O7.5 (6), Jordan Love rush att U2.5 (4). Same-game and same-script legs (running-back rush-attempt unders in a game that turned pass-heavy) failed together. The Thursday screen went 10/10 on PLAYs and 0/9 on parlays for the same reason.
 
 ### 3.6 Volume and availability
-- Team pass attempts 33.2 projected, 37.0 actual (RMSE 8.7, sd 8.1); rush attempts 26.6 vs 25.5; pass yards 242 vs 238; rush yards 118 vs 98.5. Attempts were again unpredictable (correlation 0.22 to 0.0): script, not inputs.
+- Team pass attempts 33.1 projected, 36.8 actual (RMSE 8.5, sd 7.9); rush attempts 26.7 vs 25.4; pass yards 241 vs 241; rush yards 119 vs 97.9. Attempts were again unpredictable (correlation 0.22 to 0.0): script, not inputs.
 - Players with real usage the projection never had: **A.J. Brown (NE, 10 targets)**, Marvin Harrison Jr. (HOU, 4), Travis Hunter (JAX, 4), Will Mallory (IND, 6), Ja'Kobi Lane (BAL, 5), Omar Cooper (NYJ, 7), KeAndre Lambert-Smith (LAC, 9), Audric Estime (CLE, 9 carries), J.J. McCarthy (NYG, 21 attempts and 2 carries; a backup who threw). Both A.J. Brown and Harrison were flagged known gaps before kickoff and kept out of parlays; neither gap was closed.
-- Projected active with usage but no snap (excluding Monday night): Sarratt BAL, Shepard NYJ, Ertz PHI, Gainwell TB, Knight ARI.
+- Projected active with usage but no snap (all 14 games, Monday night included, which adds no new rows): Sarratt BAL, Shepard NYJ, Ertz PHI, Gainwell TB, Knight ARI. Availability calibration, all 369 player rows: p 0.90 to 0.99 played 89.5% (n=57), p of 1.00 played 82.9% (n=293, includes inactive-by-choice depth players).
 - Availability of Evans (Questionable, 50% in the model): played, 3 catches, 94 yards. Diggs (67%): played, 6 catches, 44 yards and a TD. Croskey-Merritt: Out as modeled.
 
 ### 3.7 Monday night (WAS@SF) in detail

@@ -160,7 +160,7 @@ def render(away, home, out_path):
     S["move"] = S.line - S.line_open
     L = []
     w = L.append
-    w(f"# Thursday night: {away} @ {home}, Week 6 2026 (market-anchored track, 20,000 correlated simulations)\n")
+    w(f"# Thursday night: {away} @ {home}, Week {os.environ.get("APEX_TARGET_WEEK", 6)} 2026 (market-anchored track, 20,000 correlated simulations)\n")
     w("**Read this first.** Lines are DraftKings via ESPN (no prices, no touchdown markets). Singles are screened at an assumed -110 after shrinking the model 50/50 toward the market; "
       "a PLAY needs about 61% model probability, active 95%+, and the side hitting in at least half of the player's games this season. Touchdown and parlay prices are FAIR odds from the joint "
       "simulation; 'play at' adds a 12% cushion. The W4 and W5 postmortems found no edge over the books on yardage and count props; anytime-TD probabilities are calibrated. Treat everything here as a ranked lean, not a lock.\n")
