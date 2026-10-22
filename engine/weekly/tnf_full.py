@@ -173,6 +173,7 @@ def render(away, home, out_path):
     # singles
     junk = S.market.isin(["rush_yds", "rush_att"]) & ~S.pos.isin(["QB", "RB"])
     S.loc[junk | (S.model_p >= 0.85) | ((S.n_log < 2) & (S.label == "LEAN")), "label"] = ""
+    S.loc[(S.label == "LEAN") & S.market.isin(["rec", "rec_yds"]), "label"] = ""      # W6: LEAN receiving props hit 35% on 105 lines (POSTMORTEM_2026_W06 3.3); never published
     P = S[S.label != ""].sort_values(["label", "shrunk"], ascending=[False, False])
     w("## Singles (main lines)\n")
     w("Side = the side the model favours; model P is before the 50/50 shrink (passing overs include the +0.08 bias shift); 'season' = games that side cleared the line / games played; "

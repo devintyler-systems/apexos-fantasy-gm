@@ -53,6 +53,7 @@ def _game_pool(away, home):
         S["side"], S["shrunk"], S["model_p"], S["label"], S["log"] = [x[0] for x in res], [x[1] for x in res], [x[2] for x in res], [x[3] for x in res], [x[4] for x in res]
         junk = S.market.isin(["rush_yds", "rush_att"]) & ~S.pos.isin(["QB", "RB"])
         S.loc[junk | (S.model_p >= 0.85) | ((S.n_log < 2) & (S.label == "LEAN")), "label"] = ""
+        S.loc[(S.label == "LEAN") & S.market.isin(["rec", "rec_yds"]), "label"] = ""      # W6: LEAN receiving props hit 35% on 105 lines (POSTMORTEM_2026_W06 3.3); never published
         if md is not None and len(md["singles"]):
             M = md["singles"].set_index(["player", "market"])
             S["agree"] = ["yes" if ((M.p_over.get((r.player, r.market), np.nan) >= .5) == (r.side == "OVER")) else "NO" if (r.player, r.market) in M.index else "" for r in S.itertuples()]
