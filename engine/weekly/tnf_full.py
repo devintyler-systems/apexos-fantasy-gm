@@ -129,7 +129,7 @@ def sim(away, home, lines_csv, tag):
     add(f"{away} to win", A["pts"] > H["pts"], "GAME", "ml", "game"); add(f"{home} to win", H["pts"] > A["pts"], "GAME", "ml", "game")
     if not np.isnan(tl):
         add(f"Total over {tl}", tot > tl, "GAME", "total", "game"); add(f"Total under {tl}", tot < tl, "GAME", "total", "game")
-    if not np.isnan(sp):   # nflverse spread_line = expected home margin
+    if not np.isnan(sp) and sp != round(sp):   # nflverse spread_line = expected home margin; whole-number lines are skipped (a push is neither a win nor a loss, so the fair odds would be wrong)
         hs = -sp
         add(f"{home} {hs:+.1f}", marg + hs > 0, "GAME", "spread", "game"); add(f"{away} {-hs:+.1f}", marg + hs < 0, "GAME", "spread", "game")
     game = dict(away=away, home=home, mkt_spread=sp, mkt_total=tl, away_pts=float(A["pts"].mean()), home_pts=float(H["pts"].mean()), total=mean_tot, p_away=float((A["pts"] > H["pts"]).mean()),
