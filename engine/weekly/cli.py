@@ -60,6 +60,11 @@ def cmd_run(a):
         e["APEX_DELIV"] = DELIV.rstrip("/") + "_" + t
         os.makedirs(e["APEX_OUT"], exist_ok=True)
         os.makedirs(e["APEX_DELIV"], exist_ok=True)
+        if int(e.get("APEX_TARGET_WEEK", 0) or 0):
+            try:
+                _sh("weather_forecast.py", e)      # kickoff weather (NWS) feeds the model-only game total; a failed fetch writes notes and no adjustment
+            except SystemExit as ex:
+                print(f"weather skipped: {ex}")
         for s in PIPELINE:
             _sh(s, e)
         if a.dfs:

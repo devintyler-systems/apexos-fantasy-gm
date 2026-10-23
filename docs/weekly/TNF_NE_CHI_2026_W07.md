@@ -13,9 +13,43 @@
 1. Pulled: every CHI RB rush line (engine has no with/without role model), all receiving LEANs, Roschon Johnson as a longshot, 5 of 9 first-draft parlays plus all push-exposed spread legs.
 2. Downgraded to thin (do not use in tickets): Swift rec_yds U20.5 (exactly 3/6; last two games over), Caleb Williams pass_cmp U21.5 and pass_yds U246.5, Maye pass_yds U249.5 (line +19 toward the over, model did not move), Maye pass_cmp U20.5, Henderson rush yards O24.5, all receiving PLAYs on NE (W6 receiving PLAY hit 52%, n=48).
 3. Record fix: Henderson rec O0.5 is 3 of 5 games, not 3 of 4.
+4. Model note: after the 22:49Z freeze the engine's role-table ranking was fixed (DECISIONS #38). Re-run on the same inputs, NE and CHI projections moved by under 1 carry (Roschon Johnson 3.8 to 4.3 carries), so these picks stand. The Rotowire feed has Johnson at 33.7 rush yards against our 18.1, which is why CHI RB rush lines stay unpublished.
 
 
 **Read this first.** Lines are DraftKings via ESPN (no prices, no touchdown markets). Singles are screened at an assumed -110 after shrinking the model 50/50 toward the market; a PLAY needs about 61% model probability, active 95%+, and the side hitting in at least half of the player's games this season. Touchdown and parlay prices are FAIR odds from the joint simulation; 'play at' adds a 12% cushion. The W4 and W5 postmortems found no edge over the books on yardage and count props; anytime-TD probabilities are calibrated. Treat everything here as a ranked lean, not a lock.
+
+## Re-priced against the six-book prop sheet (23:43Z, 32 minutes before kickoff)
+
+Source: `NFL_Week_7_-_Prop_Odds.xlsx` (DraftKings, FanDuel, BetMGM, BetRivers, Bovada, BetOnline; receptions, receiving yards, rush yards and attempts, pass yards, attempts and TDs; no completions, no anytime or first TD markets). 'Consensus' is the median no-vig probability across books quoting that exact line; 'Price vs consensus' is the expected value of the best quoted price if the consensus is the true probability, so it is the value of line shopping alone, with no opinion from the model.
+
+**What the prices say.** (1) No pick has an edge from price alone: every best price is 2 to 6 percent worse than fair at the consensus. Any value here is a bet that the model beats the six books, and W4 to W6 say it does not on count and yardage markets. (2) The model is the outlier. Mean absolute gap to consensus across the 294 NE@CHI lines is 12 points. The widest are pass attempts (Williams under 32.5: model 80%, books 47%; Maye under 31.5: model 83%, books 51%) and Roschon Johnson (books quote 6.5 to 7.5 carries and 21.5 to 27.5 yards; the model has 4.3 carries). (3) Pass-volume unders are pulled: the model has under-projected team pass attempts by 2.2 per team in 2026 weeks 4 to 6 (32.7 projected vs 34.9 actual; week 6 was 3.6 low) and the books price them as coin flips. (4) Receiving unders stay thin: the model and books are closer at the consensus but W6 receiving PLAYs hit 52%.
+
+| Pick | Best price (book) | Books quoting | Model P | Consensus no-vig P | Gap (pts) | Price vs consensus (EV %) | Verdict |
+|---|---|---|---|---|---|---|---|
+| Drake Maye rush_att UNDER 5.5 | -117 (DraftKings) | 3 | 75% | 51% | +24 | -5.0 | KEEP |
+| Kyle Williams rec UNDER 1.5 | -165 (BetMGM) | 5 | 76% | 60% | +16 | -3.3 | THIN (receiving) |
+| Colston Loveland rec UNDER 4.5 | -160 (BetMGM) | 2 | 73% | 58% | +15 | -5.5 | THIN (receiving) |
+| Caleb Williams pass_att UNDER 32.5 | +101 (DraftKings) | 2 | 80% | 47% | +33 | -5.6 | PULL (pass-volume under: model +2 to +4 attempts low in 2026, books price 50/50) |
+| Drake Maye rush_yds UNDER 27.5 | -113 (FanDuel) | 1 | 71% | 50% | +21 | -5.8 | KEEP |
+| Drake Maye pass_cmp UNDER 20.5 | no line in sheet |  |  |  |  |  | no book line in sheet |
+| Efton Chism III rec UNDER 1.5 | -105 (BetMGM) | 5 | 67% | 49% | +18 | -4.0 | THIN (receiving) |
+| Kyle Williams rec_yds UNDER 19.5 | -110 (DraftKings) | 4 | 69% | 50% | +19 | -4.5 | THIN (receiving) |
+| Colston Loveland rec_yds UNDER 44.5 | -103 (BetOnline.ag) | 3 | 69% | 49% | +20 | -3.2 | THIN (receiving) |
+| Eli Raridon rec UNDER 1.5 | -125 (BetMGM) | 5 | 65% | 54% | +11 | -2.9 | THIN (receiving) |
+| DeMario Douglas rec UNDER 3.5 | -115 (Bovada) | 5 | 70% | 52% | +18 | -2.7 | THIN (receiving) |
+| Efton Chism III rec_yds UNDER 17.5 | -105 (Bovada) | 4 | 63% | 50% | +14 | -3.2 | THIN (receiving) |
+| Eli Raridon rec_yds UNDER 15.5 | -109 (DraftKings) | 6 | 63% | 50% | +13 | -4.1 | THIN (receiving) |
+| D'Andre Swift rec_yds UNDER 20.5 | -105 (BetMGM) | 3 | 64% | 50% | +14 | -2.4 | THIN (receiving) |
+| TreVeyon Henderson rush_att OVER 6.5 | +110 (Bovada) | 3 | 64% | 45% | +19 | -6.1 | KEEP |
+| TreVeyon Henderson rush_yds OVER 24.5 | -110 (Bovada) | 5 | 62% | 50% | +12 | -5.1 | KEEP |
+| Drake Maye pass_yds UNDER 249.5 | -111 (DraftKings) | 1 | 68% | 50% | +19 | -5.4 | PULL (pass-volume under: model +2 to +4 attempts low in 2026, books price 50/50) |
+| Caleb Williams pass_cmp UNDER 21.5 | no line in sheet |  |  |  |  |  | no book line in sheet |
+| TreVeyon Henderson rec OVER 0.5 | -192 (DraftKings) | 5 | 60% | 62% | -3 | -4.9 | THIN (receiving) |
+| Drake Maye pass_att UNDER 31.5 | -108 (BetOnline.ag) | 3 | 83% | 51% | +32 | -1.8 | PULL (pass-volume under: model +2 to +4 attempts low in 2026, books price 50/50) |
+| Caleb Williams pass_yds UNDER 246.5 | no line in sheet |  |  |  |  |  | no book line in sheet |
+| Rhamondre Stevenson rush_yds UNDER 44.5 | no line in sheet |  |  |  |  |  | no book line in sheet |
+
+**Where to use the model tonight:** only the KEEP rows, as small ranked leans (Maye rush attempts and yards unders, Henderson rush overs). Do not bet our Williams passing-TD numbers: the books price Williams over 1.5 passing TDs at -150 to -167 (about 59% no-vig) against 36% in our simulation, and Maye over 1.5 at -120 to -149 against our 53%. The Williams gap is the largest single disagreement on the board and no input we can see explains it.
 
 ## Game
 
@@ -154,18 +188,9 @@ Anytime counts rushing and receiving TDs (QB rushing included). First TD uses ea
 Caleb Williams 30% (fair +239, take at +279 or better); DeMario Douglas 28% (fair +259, take at +302 or better); Colston Loveland 23% (fair +328, take at +380 or better); TreVeyon Henderson 22% (fair +346, take at +400 or better); Rome Odunze 21% (fair +379, take at +436 or better); Roschon Johnson 19% (fair +416, take at +478 or better); Drake Maye 18% (fair +456, take at +523 or better); Eli Raridon 17% (fair +474, take at +543 or better); Kalif Raymond 17% (fair +480, take at +549 or better); Efton Chism III 14% (fair +637, take at +726 or better); Corey Kiner 13% (fair +649, take at +738 or better)
 
 
-## Parlays (same game, joint simulation; curated after two red-team passes)
+## Parlays
 
-Fair odds from the joint simulation after the 50/50 shrink; 'Raw sim' is before it. No book SGP price exists, so only take at the 'play at' price or better. The three Safest tickets share Maye 1+ passing TD, so they are one bet, not three; size the set as one small position.
-
-| Legs | Hit probability | Raw sim | Fair odds | Play at or better | Note |
-|---|---|---|---|---|---|
-| Colston Loveland rec U4.5 + Drake Maye pass TD 1+ | 50.5% | 59.6% | -102 | +122 | different teams, no conflict |
-| Caleb Williams pass_att U32.5 + Drake Maye pass TD 1+ | 50.0% | 65.6% | +100 | +124 | Williams has 3 games of support |
-| Kyle Williams rec U1.5 + Drake Maye pass TD 1+ | 52.0% | 62.3% | -108 | +116 | Williams is Maye's own receiver: size small |
-| Caleb Williams pass_att U32.5 + TreVeyon Henderson rush_att O6.5 + CHI to win | 18.8% | 27.7% | +432 | +496 | low confidence; Henderson is 95% active, so an inactive voids it |
-
-**Pulled by red-team:** every ticket with NE +3.0 or CHI -3.0 (the market line is exactly 3, so a 3-point CHI win pushes and the fair odds do not price it), the ticket with Maye pass attempts U31.5 (2 of 6 games, below the single-bet gate), and the Chism yards under + Maye 2+ TD + total over ticket (legs pull against each other). The parlay builder now drops spread legs at whole-number lines.
+None. The two pass-attempt tickets were pulled with the pass-volume unders; the rest lean on Maye 1+ passing TD or touchdown legs, and the prop sheet carries no 1+ passing-TD or anytime-TD prices, so no ticket can be priced against a book.
 
 ## Line movement since open (DraftKings via ESPN)
 
