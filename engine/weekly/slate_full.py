@@ -177,10 +177,11 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
         for r_ in env_[(env_.p_start_qb < 0.9)].itertuples():
             CAUTION[r_.team] = f"QB1 designation (start probability {r_.p_start_qb:.0%})"
             CAUTION_ALL[r_.team] = f"QB1 uncertain, start probability {r_.p_start_qb:.0%}"
+            DEMOTE.add(r_.team)      # PLAY -> LEAN and out of parlays: the starter-role draws carry no QB-quality adjustment (BAL Huntley and TB Daniels project at or above the starters)
     FILL = fillin_qbs(season, week)
     BACKUP_QBS |= set(FILL.values())
     CAUTION.update({t: f"fill-in QB ({q})" for t, q in FILL.items()})
-    CAUTION_ALL.update(FILL)
+    CAUTION_ALL.update(FILL); DEMOTE.update(FILL)
     # --- games
     GE = pd.read_csv(os.path.join(run_market, "w4_game_environment.csv")); GM = pd.read_csv(os.path.join(run_model, "w4_game_environment.csv")).set_index(["away", "home"])
     sched = pd.read_parquet(NFLV + "games.parquet"); sched = sched[(sched.season == season) & (sched.week == week)].set_index(["away_team", "home_team"])
