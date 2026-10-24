@@ -39,9 +39,13 @@ def p_active(rs, ps, pg):
     if len(x): return float(x.p.iloc[0])
     x = _AV_ROOT[(_AV_ROOT.rs == rs) & (_AV_ROOT.ps == ps)]
     return float(x.p_parent.iloc[0]) if len(x) else 0.9
+from status_overlay import apply_status_overlay
 def build_inj():
     i = pd.read_parquet(N + f"injuries_{SEASON}.parquet"); i = i[(i.game_type == "REG")]
     i = i[i.week == (int(os.environ["APEX_INJ_WEEK"]) if "APEX_INJ_WEEK" in os.environ else i.week.max())].copy(); i["team"] = i.team.map(tm)
+    _ov = os.environ.get("APEX_STATUS_OVERLAY")
+    if _ov and os.path.exists(_ov):
+        i = apply_status_overlay(i, pd.read_csv(_ov, keep_default_na=False), tm)
     i["rs"] = i.report_status.fillna("None"); i["ps"] = i.practice_status.fillna("None").map({"Did Not Participate In Practice":"DNP","Limited Participation in Practice":"LP","Full Participation in Practice":"FP"}).fillna("None")
     i["pg"] = i.position.map(_pgmap).fillna("OTH")
     o = pd.DataFrame(dict(player=i.full_name, pos=i.position, team=i.team, injury=i.report_primary_injury.fillna(i.practice_primary_injury), practice=i.ps, game_status=i.report_status, nkey=i.full_name.map(norm_name)))

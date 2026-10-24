@@ -173,6 +173,10 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     QB_OUT_TEAMS = set(env_[env_.p_start_qb < 0.5].team) if "p_start_qb" in env_.columns else set()
     _P0 = pd.read_pickle(os.path.join(run_market, "proj_all.pkl"))
     BACKUP_QBS = set(_P0[(_P0.pos == "QB") & _P0.team.isin(QB_OUT_TEAMS) & (_P0.p_active >= 0.5)].player)
+    if "p_start_qb" in env_.columns:      # a QB1 with a game designation: every pass-game line for that team carries a caution until the inactives confirm him
+        for r_ in env_[(env_.p_start_qb < 0.9)].itertuples():
+            CAUTION[r_.team] = f"QB1 designation (start probability {r_.p_start_qb:.0%})"
+            CAUTION_ALL[r_.team] = f"QB1 uncertain, start probability {r_.p_start_qb:.0%}"
     FILL = fillin_qbs(season, week)
     BACKUP_QBS |= set(FILL.values())
     CAUTION.update({t: f"fill-in QB ({q})" for t, q in FILL.items()})
