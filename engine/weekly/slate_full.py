@@ -18,6 +18,7 @@ import pandas as pd
 
 import tnf_full as T
 from paths import NFLV, OUT
+from load import norm_name
 
 
 def fillin_qbs(season, week):
@@ -50,6 +51,31 @@ DEMOTE = set()            # PLAY -> LEAN and kept out of parlays (teams whose QB
 BACKUP_QBS = set()        # fill-in QBs on those teams: they inherit the generic backup rushing profile (about 0.35 rush TD), so their anytime-TD numbers are not published
 
 
+_ADJ = {}
+
+
+def _team_atrisk(out_dir):
+    """Teams -> [(nkey, pos, p_active, tgt_share_at_risk, carry_share_at_risk)] for players below 90% likely to play, read from the run's injury log."""
+    if out_dir in _ADJ:
+        return _ADJ[out_dir]
+    d = {}
+    try:
+        a = pd.read_csv(os.path.join(out_dir, "w4_injury_adjustments.csv"))
+        for r in a[a.p_active < 0.9].itertuples():
+            d.setdefault(r.team, []).append((norm_name(r.player), r.pos, float(r.p_active), float(r.tgt_share_at_risk) if r.tgt_share_at_risk == r.tgt_share_at_risk else 0.0, float(r.carry_share_at_risk) if r.carry_share_at_risk == r.carry_share_at_risk else 0.0))
+    except Exception:
+        pass
+    _ADJ[out_dir] = d
+    return d
+
+
+def _recent_usage(season, week):
+    """(nkey, team) -> targets + carries over the last three completed weeks: separates a teammate who was playing until now (a role change) from one who has been gone for weeks (already in the player's log)."""
+    st = pd.read_parquet(NFLV + f"stats_player_week_{season}.parquet"); st = st[(st.week >= week - 3) & (st.week < week)]
+    st = st.assign(k=st.player_display_name.map(norm_name), u=st.targets.fillna(0) + st.carries.fillna(0))
+    return st.groupby(["k", "team"]).u.sum().to_dict()
+
+
 def _game_pool(away, home):
     mk = pickle.load(open(os.path.join(OUT, f"tnf_{away}_{home}_market.pkl"), "rb"))
     try:
@@ -62,7 +88,10 @@ def _game_pool(away, home):
         S["side"], S["shrunk"], S["model_p"], S["label"], S["log"] = [x[0] for x in res], [x[1] for x in res], [x[2] for x in res], [x[3] for x in res], [x[4] for x in res]
         junk = S.market.isin(["rush_yds", "rush_att"]) & ~S.pos.isin(["QB", "RB"])
         S.loc[junk | (S.model_p >= 0.85) | ((S.n_log < 2) & (S.label == "LEAN")), "label"] = ""
-        S.loc[S.market.isin(["rush_yds", "rush_att"]) & (S.pos == "RB") & S.team.isin(T.rb_out_teams(int(os.environ.get("APEX_SEASON", 2026)), int(os.environ.get("APEX_TARGET_WEEK", 7)))), "label"] = ""
+        if os.environ.get("APEX_PASS_UNDER_GATE", "1") != "0":      # DECISIONS #44: 2026 team pass attempts run 2 to 3 above the projection and the Thursday pass-volume unders went 1 of 6; no PLAY/LEAN on a passing attempts, completions or yards UNDER until the level correction is backtested (=0 restores)
+            S.loc[S.market.isin(["pass_att", "pass_cmp", "pass_yds"]) & (S.side == "UNDER"), "label"] = ""
+        if os.environ.get("APEX_RB_OUT_GATE") == "1":      # off by default since the Week 7 Thursday result (DECISIONS #43: the four gated CHI RB lines all won); =1 restores the old rule
+            S.loc[S.market.isin(["rush_yds", "rush_att"]) & (S.pos == "RB") & S.team.isin(T.rb_out_teams(int(os.environ.get("APEX_SEASON", 2026)), int(os.environ.get("APEX_TARGET_WEEK", 7)))), "label"] = ""
         S.loc[(S.label == "LEAN") & S.market.isin(["rec", "rec_yds"]), "label"] = ""      # W6: LEAN receiving props hit 35% on 105 lines (POSTMORTEM_2026_W06 3.3); never published
         if md is not None and len(md["singles"]):
             M = md["singles"].set_index(["player", "market"])
@@ -72,15 +101,32 @@ def _game_pool(away, home):
         S["fair"] = [T.american(p) for p in S.shrunk]
         S["game"] = f"{away}@{home}"
         S.loc[[(r.team, r.market) in EXCLUDE for r in S.itertuples()], "label"] = ""
-        S["caution"] = "backup QB" if ({away, home} & QB_OUT_TEAMS) else ""
+        S["caution"] = ""
+        S["caution"] = ""
         for t_, c_ in CAUTION.items():
             S.loc[S.team == t_, "caution"] = (S.caution + " " + c_).str.strip()
+            S.loc[(S.team != t_) & (S.caution == ""), "caution"] = f"opp QB: {t_} {c_}" if t_ in (away, home) else ""
         S.loc[S.team.isin(DEMOTE) & (S.label == "PLAY"), "label"] = "LEAN"
+        S["flag"] = ""
+        # role change: an UNDER on a teammate of a player who was playing until this week and is now Out or Questionable (his share goes to the others; the line and the log predate that)
+        risk = _team_atrisk(OUT); usage = _recent_usage(int(os.environ.get("APEX_SEASON", 2026)), int(os.environ.get("APEX_TARGET_WEEK", 7)))
+        for i_, r in S.iterrows():
+            if r.label == "" or r.side != "UNDER" or r.market not in ("rec", "rec_yds", "rush_att", "rush_yds"):
+                continue
+            for k_, pos_, pa_, tg_, cs_ in risk.get(r.team, []):
+                if k_ == norm_name(r.player) or usage.get((k_, r.team), 0) <= 0:
+                    continue
+                if (r.pos in ("WR", "TE") and pos_ in ("WR", "TE") and r.market in ("rec", "rec_yds") and tg_ >= 0.10) or (r.pos == "RB" and pos_ == "RB" and cs_ >= 0.20):
+                    S.loc[i_, "label"] = ""; S.loc[i_, "flag"] = "role change"; break
+        # model far from the player's own record (85% for a side that cleared 3 of 6): a lean at most, and never a parlay leg
+        hist = np.where(S.side == "OVER", S.over_games, S.under_games) / np.maximum(S.n_log, 1)
+        gap = (S.label == "PLAY") & (S.model_p - hist >= 0.30) & (S.n_log >= 3)
+        S.loc[gap, "label"] = "LEAN"; S.loc[gap, "flag"] = "model vs own record"
     n = mk["n"]
     legs = {k: np.unpackbits(v)[:n].astype(bool) for k, v in mk["legs"].items()}
     fav = {}
     for r in S.itertuples() if len(S) else []:
-        if r.label == "" or r.n_log < 3 or r.model_p >= 0.85 or r.player in BACKUP_QBS or r.team in DEMOTE: continue
+        if r.label == "" or r.n_log < 3 or r.model_p >= 0.85 or r.player in BACKUP_QBS or r.team in DEMOTE or getattr(r, "flag", ""): continue
         nm = f"{r.player} {r.market} {r.side[0]}{r.line}"
         if nm in legs:
             raw = (r.p_over if r.side == "OVER" else r.p_under) / max(1 - r.p_push, 1e-6)
@@ -170,10 +216,15 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     QB_OUT_TEAMS = set(env_[env_.p_start_qb < 0.5].team) if "p_start_qb" in env_.columns else set()
     _P0 = pd.read_pickle(os.path.join(run_market, "proj_all.pkl"))
     BACKUP_QBS = set(_P0[(_P0.pos == "QB") & _P0.team.isin(QB_OUT_TEAMS) & (_P0.p_active >= 0.5)].player)
+    if "p_start_qb" in env_.columns:      # a QB1 with a game designation: every pass-game line for that team carries a caution until the inactives confirm him
+        for r_ in env_[(env_.p_start_qb < 0.9)].itertuples():
+            CAUTION[r_.team] = f"QB1 designation (start probability {r_.p_start_qb:.0%})"
+            CAUTION_ALL[r_.team] = f"QB1 uncertain, start probability {r_.p_start_qb:.0%}"
+            DEMOTE.add(r_.team)      # PLAY -> LEAN and out of parlays: the starter-role draws carry no QB-quality adjustment (BAL Huntley and TB Daniels project at or above the starters)
     FILL = fillin_qbs(season, week)
     BACKUP_QBS |= set(FILL.values())
     CAUTION.update({t: f"fill-in QB ({q})" for t, q in FILL.items()})
-    CAUTION_ALL.update(FILL)
+    CAUTION_ALL.update(FILL); DEMOTE.update(FILL)
     # --- games
     GE = pd.read_csv(os.path.join(run_market, "w4_game_environment.csv")); GM = pd.read_csv(os.path.join(run_model, "w4_game_environment.csv")).set_index(["away", "home"])
     sched = pd.read_parquet(NFLV + "games.parquet"); sched = sched[(sched.season == season) & (sched.week == week)].set_index(["away_team", "home_team"])
@@ -287,8 +338,9 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     TD = TD[TD.game.isin([f"{a}@{h}" for a, h in games]) & ~TD.player.isin(BACKUP_QBS)]
     A = TD[TD.market == "anytime_td"].sort_values("prob", ascending=False)
     w("## 6. Touchdown boards (anytime counts rushing and receiving TDs; fair odds; 'play at' = fair + 12% cushion)\n")
-    A2 = A.assign(fair=[T.american(p) for p in A.prob], playat=[T.play_price(p) for p in A.prob])
-    w("**Top 30 anytime TD**\n"); w(_tab(A2, ["player", "team", "opp", "pos", "prob", "fair", "playat", "p_active"], {"prob": lambda v: f"{v:.1%}", "fair": lambda v: f"{int(v):+d}", "playat": lambda v: f"{int(v):+d}", "p_active": fp}, n=30))
+    A = A.assign(adj=A.prob * A.p_active.fillna(1.0)).sort_values("adj", ascending=False)      # rank by the probability he scores in this game, not the one conditional on playing
+    A2 = A.assign(fair=[T.american(p) for p in A.prob], playat=[T.play_price(p) for p in A.prob], note=[CAUTION.get(t, ("opp QB: " + CAUTION[o]) if o in CAUTION else "") for t, o in zip(A.team, A.opp)])
+    w("**Top 30 anytime TD** (ranked by probability times chance he plays; 'prob' is conditional on playing)\n"); w(_tab(A2, ["player", "team", "opp", "pos", "prob", "adj", "fair", "playat", "p_active", "note"], {"prob": lambda v: f"{v:.1%}", "adj": lambda v: f"{v:.1%}", "fair": lambda v: f"{int(v):+d}", "playat": lambda v: f"{int(v):+d}", "p_active": fp}, n=30))
     X2 = TD[TD.market == "2plus_td"].sort_values("prob", ascending=False).head(10); X2 = X2.assign(fair=[T.american(p) for p in X2.prob])
     w("\n**2+ TD (top 10)**\n"); w(_tab(X2, ["player", "team", "opp", "prob", "fair"], {"prob": lambda v: f"{v:.1%}", "fair": lambda v: f"{int(v):+d}"}))
     F1 = TD[TD.market == "first_td"].sort_values("prob", ascending=False).head(10); F1 = F1.assign(fair=[T.american(p) for p in F1.prob])
@@ -308,10 +360,13 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     play = S[S.label == "PLAY"].sort_values("shrunk", ascending=False)
     lean = S[S.label == "LEAN"].sort_values("shrunk", ascending=False)
     w("## 7. Single-line screen (DraftKings lines via ESPN, assumed -110)\n")
-    w(f"{len(S)} lines screened: **{len(play)} PLAY**, {len(lean)} LEAN. PLAY = shrunk probability about 55.4%+ (about 61% raw), active 95%+, side cleared in at least half of the player's games. 'Agree' = the model-only track picks the same side.\n")
-    cols = ["label", "game", "player", "market", "side", "line", "model_p", "shrunk", "fair", "log", "agree", "caution"]
+    nthin = int(((play.market.isin(["rec", "rec_yds"]))).sum())
+    w(f"{len(S)} lines screened: **{len(play)} PLAY** ({nthin} receiving, tagged thin: W6 receiving lines hit 35 to 52 percent, Thursday 7 of 11), {len(lean)} LEAN (the {min(25, len(lean))} best shown). Pulled by rule: receiving LEANs, pass-volume UNDERs, UNDERs on a teammate of a player now Out or Questionable ('role change'). PLAY = shrunk probability about 55.4%+ (about 61% raw), active 95%+, side cleared in at least half of the player's games. 'Agree' = the model-only track picks the same side.\n")
+    cols = ["label", "game", "player", "market", "side", "line", "model_p", "shrunk", "fair", "log", "agree", "flag", "caution"]
     fm = {"model_p": lambda v: f"{v:.0%}", "shrunk": lambda v: f"{v:.0%}", "fair": lambda v: f"{int(v):+d}", "line": lambda v: f"{v}"}
-    w(_tab(pd.concat([play, lean.head(25)]), cols, fm))
+    shown = pd.concat([play, lean.head(25)]).copy()
+    shown["label"] = np.where((shown.label == "PLAY") & shown.market.isin(["rec", "rec_yds"]), "PLAY (thin)", shown.label)
+    w(_tab(shown, cols, fm))
     w("\n## 8. Parlays across the slate (fair odds; legs from different games are independent, same-game legs use the joint simulation)\n")
     w("Pool: PLAY/LEAN single-line legs (shrunk), anytime-TD legs (12-60%), QB 1+ and 2+ passing TD legs. Hit probability is after the single-leg shrink. A real same-game parlay usually pays less than the product of its legs, so only take it at or better than 'play at'. "
       "Singles are in section 7; the best single touchdown plays are in section 6.\n")
@@ -345,15 +400,15 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     w("League points use expected TDs, so the player tables above (`League pts` column) are the lineup and waiver inputs; `apex-weekly waiver --run <run_dir> --roster ... --available ...` turns them into add/drop moves under the written rule (DECISIONS #27). "
       "Kickers: rank by team implied points only. DST is worth about 1 point a game for everyone in this league.\n")
     w(f"## 10. Last week's scorecard (Week {week - 1}, graded in POSTMORTEM_2026_W{week - 1:02d}.md)\n")
-    w("| Group | Result | Expected |\n|---|---|---|\n| PLAY singles | 58.5% (n=94) | 59.7% |\n| LEAN rush and passing counts | 61.9% (n=63) | 56.0% |\n| LEAN receiving | **35.2% (n=105)** | 56.4% |\n| Anytime TD board, 204 active non-QB players | 38 scored | 40.6 predicted |\n| QB passing-TD ladder | 1+: 21 vs 19.0, 2+: 11 vs 10.4 | calibrated |\n| Parlays | 9 of 48 | 14.7 |\n")
+    w("| Group | Result | Expected |\n|---|---|---|\n| PLAY singles | 58.5% (n=94) | 59.7% |\n| LEAN rush and passing counts | 61.9% (n=63) | 56.0% |\n| LEAN receiving | **35.2% (n=105)** | 56.4% |\n| Anytime TD board, 204 active non-QB players | 38 scored | 40.6 predicted |\n| QB passing-TD ladder | 1+: 21 vs 19.0, 2+: 11 vs 10.4 | calibrated |\n| Parlays | 9 of 48 | 14.7 |\n\nThursday Week 7 (NE@CHI, graded in `TNF_NE_CHI_2026_W07_SCORECARD.md`): published singles 11 of 22 (50%, +0.43 units at best of six books), pass-volume unders 1 of 6, CHI RB lines withheld by the old gate 4 of 4.\n")
     w("What it says: where the model disagrees with a receiving line, the line was right, so receiving LEANs are no longer published (this report has none) and receiving PLAYs are flagged thin. Rush and passing-count lines and the QB passing-TD ladder held up. "
       "Parlays failed together on shared scripts: each ticket here holds at most one QB passing-TD leg, and every touchdown leg is shown raw next to the shrunk number.\n")
     w(f"## 11. Known gaps and audit results (read before betting)\n")
-    w("Two QA agents (data audit, model sanity) reviewed the Thursday-window run; the full-slate run was re-checked at each window. Checked clean for Week 7: QB1 against the depth chart for all 28 teams, no bye-team rows, Marvin Harrison Jr. projected on HOU, A.J. Brown projected with a normal NE share, Monangai (CHI) Out with his carries to Swift. Remaining, by how much they change a pick:\n")
+    w("Two QA agents (data audit, model sanity) reviewed the Thursday-window run; the full-slate run was re-checked at each window. Each window is audited before it is frozen (QB1 against the depth chart, bye-team rows, Out players and their volume, team codes, unmatched names); the verdicts are in the run notes of the frozen manifest. Remaining, by how much they change a pick:\n")
     fill = ", ".join(f"{t} ({q})" for t, q in sorted(CAUTION_ALL.items())) if CAUTION_ALL else "none"
     w(f"1. **Fill-in quarterbacks (depth-chart QB1 who is not the 2026 completions leader):** {fill}. The backup is modeled at 92% of starter efficiency with the team's YPA and the model-only track does not discount him, so pass-game singles for these teams carry a caution flag and the QBs are left out of touchdown boards and parlay legs.")
-    w("2. **Carries leak to 'other'.** The vacated-role candidate (DECISIONS #35) did not move the 27-slate backtest, so the engine is unchanged: team RBs get about 70% of team carries in the projection against about 80% in practice, so rushing props for backs on teams with a lead back Out (CHI) are understated, not overstated.")
-    w("3. **SF@ATL** now has a spread and total in nflverse (SF -2.5, 49.5); the market track is anchored to it. **DAL@PHI** (Monday) has no injury report yet: availability there is the default prior, rerun after Friday.")
+    w("2. **Carries leak to 'other'.** The vacated-role candidate (DECISIONS #35) did not move the 27-slate backtest, so the engine is unchanged: team RBs get about 70% of team carries in the projection against about 80% in practice, so rushing props are not inflated for backs on teams with a lead back Out. Since the Thursday result (DECISIONS #43) these lines are no longer withheld; compare them with any book number you have.")
+    w("3. **SF@ATL** now has a spread and total in nflverse (SF -2.5, 49.5); the market track is anchored to it. **DAL@PHI** (Monday): rerun after Saturday's report; until a team has injury rows its availability is the default prior (see `injury_report_coverage.csv` in the frozen run).")
     w("4. **Availability prior.** Healthy players with no designation carry p_active of about 0.95 (fitted prior), so A.J. Brown's anytime TD is 5% below his conditional number. Inactives (about 90 minutes before each kickoff) replace the prior with certainty.")
     w("5. Anytime-TD board: the 0.10 to 0.20 bin was over-predicted 2.4x in Week 6 in the sim board (frozen-run board: predicted 15.0% vs 9.1% actual, n=55) and the top ten hit 70% against 64% predicted; the W9 postmortem checks the floor. Probabilities are conditional on playing, so discount by the p_active column.")
     w("6. Minor: about two dozen practice-squad or inactive players carry small volumes at 100% active (e.g. players listed IR/PUP who appear in the unmatched-names report).")
