@@ -1,16 +1,17 @@
-"""Game-designation overlay for teams whose NFL report has not reached the nflverse feed (see apply_status_overlay)."""
+"""Game-designation overlay for players whose NFL report has not reached the nflverse feed (see apply_status_overlay)."""
 import pandas as pd
 
 from load import norm_name
 
 
 def apply_status_overlay(i, m, team_map):
-    """Operator-supplied game designations (APEX_STATUS_OVERLAY=<csv: player,team,pos,report_status,source,as_of_utc>) for teams whose NFL report is not in the nflverse feed yet (it lags the Friday
+    """Operator-supplied game designations (APEX_STATUS_OVERLAY=<csv: player,team,pos,report_status,source,as_of_utc>) for players whose NFL report is not in the nflverse feed yet (it lags the Friday
     report by hours). Only teams with NO report_status in `i` are touched, so the NFL feed governs the moment it carries a team. A matching player row gets the designation (practice status stays the
     nflverse one); an unmatched player is added with no practice row. The fitted availability table turns (designation, practice, position) into p_active exactly as for nflverse rows."""
     m = m[m.report_status.isin(["Out", "Doubtful", "Questionable"])].copy()
     m["team"] = m.team.map(lambda t: team_map.get(t, t) if hasattr(team_map, "get") else t); m["nkey"] = m.player.map(norm_name)
-    have = set(i.loc[i.report_status.notna(), "team"]); m = m[~m.team.isin(have)]
+    have = set(zip(i.loc[i.report_status.notna(), "full_name"].map(norm_name), i.loc[i.report_status.notna(), "team"]))      # the NFL feed governs a player it already carries (nflverse can hold a team's Outs and still lack its Questionables)
+    m = m[[(a, b) not in have for a, b in zip(m.nkey, m.team)]]
     if not len(m):
         return i
     i = i.copy(); i["nkey"] = i.full_name.map(norm_name); key = dict(zip(zip(m.nkey, m.team), m.report_status))

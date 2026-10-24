@@ -21,9 +21,12 @@ def test_overlay_sets_designation_for_teams_without_an_nfl_report_and_adds_unmat
     assert "Deebo Samuel Sr." in set(out.full_name)
 
 
-def test_nfl_feed_governs_a_team_it_already_covers():
+def test_nfl_feed_governs_a_player_it_already_carries_and_the_overlay_fills_the_rest_of_that_team():
     out = apply_status_overlay(_inj(), _ov(), {})
-    assert out[out.full_name == "Tyreek Hill"].report_status.iloc[0] == "Questionable"      # NE already has designations: overlay ignored
+    assert out[out.full_name == "Tyreek Hill"].report_status.iloc[0] == "Questionable"      # the NFL row is kept, the overlay's Out is ignored
+    extra = pd.DataFrame([dict(player="Rhamondre Stevenson", team="NE", pos="RB", report_status="Questionable")])
+    out2 = apply_status_overlay(_inj(), pd.concat([_ov(), extra]), {})
+    assert out2[out2.full_name == "Rhamondre Stevenson"].report_status.iloc[0] == "Questionable"      # a team with some NFL rows still gets overlay rows for players the feed lacks
 
 
 def test_only_out_doubtful_questionable_are_used():
