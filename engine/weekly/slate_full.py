@@ -35,7 +35,21 @@ def games_unplayed():
     import run_all as R
     from params import SCHED, PLAYED
     only = {x for x in os.environ.get("APEX_ONLY_GAMES", "").split(",") if x}      # e.g. ARI@LA,LAC@KC: restrict a rerun to the games still to come
-    return [(g.away, g.home) for g in SCHED.itertuples() if (g.away, g.home) not in PLAYED and (not only or f"{g.away}@{g.home}" in only)]
+    started = _started_games()
+    return [(g.away, g.home) for g in SCHED.itertuples() if (g.away, g.home) not in PLAYED and (g.away, g.home) not in started and (not only or f"{g.away}@{g.home}" in only)]
+
+
+def _started_games():
+    """Games whose kickoff has passed (nflverse gameday/gametime are Eastern; EDT until the first Sunday of November): a started game is never a pickable game. APEX_INCLUDE_STARTED=1 turns this off."""
+    if os.environ.get("APEX_INCLUDE_STARTED") == "1":
+        return set()
+    g = pd.read_parquet(NFLV + "games.parquet"); g = g[(g.season == int(os.environ.get("APEX_SEASON", 2026))) & (g.week == int(os.environ.get("APEX_TARGET_WEEK", 7)))]
+    now = dt.datetime.now(dt.timezone.utc); out = set()
+    for r in g.itertuples():
+        t = dt.datetime.strptime(f"{r.gameday} {r.gametime}", "%Y-%m-%d %H:%M"); fn = dt.date(t.year, 11, 1); sun = fn + dt.timedelta(days=(6 - fn.weekday()) % 7)
+        if (t + dt.timedelta(hours=4 if t.date() < sun else 5)).replace(tzinfo=dt.timezone.utc) <= now:
+            out.add((r.away_team, r.home_team))
+    return out
 
 
 def sim_all(lines):
@@ -304,6 +318,9 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     _man = os.environ.get("APEX_MANUAL_OUT", ""); _ov = os.environ.get("APEX_STATUS_OVERLAY", "")
     w(f"**Inputs used (UTC).** ESPN game-summary Outs (5 names per team cap, not the official inactives): {_asof(_man, 'as_of_utc') if _man else 'not supplied'}. Sleeper status overlay (newer Out replaces the NFL row): {_asof(_ov, 'as_of_utc') if _ov else 'not supplied'}. "
       f"nflverse depth charts: {_dc_asof()}; nflverse injuries: no timestamp in the feed. Lines: ESPN/DraftKings fetched {_lines_asof()} (no prices; the per-line `last_updated_utc` stamps run ahead of the fetch time and their zone is unverified, so no recency claim is made from them). Official inactives: **not used** (the ESPN feed carries injuries, not the NFL inactive list). Code: git {_git()}.\n")
+    _st = sorted(f"{x}@{y}" for x, y in _started_games())
+    if _st:
+        w(f"**Started or finished, excluded from picks:** {', '.join(_st)}.\n")
     w("## 1. Predicted scores\n")
     w("| Game | Kickoff ET | Market (spread / total) | Market-anchored score | Win prob | Total | Model-only score | Model-only win | Fair spread |\n|---|---|---|---|---|---|---|---|---|")
     played_rows = GE[GE.note.astype(str).str.contains("PLAYED", na=False)]
