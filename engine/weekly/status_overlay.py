@@ -11,7 +11,11 @@ def apply_status_overlay(i, m, team_map):
     m = m[m.report_status.isin(["Out", "Doubtful", "Questionable"])].copy()
     m["team"] = m.team.map(lambda t: team_map.get(t, t) if hasattr(team_map, "get") else t); m["nkey"] = m.player.map(norm_name)
     have = set(zip(i.loc[i.report_status.notna(), "full_name"].map(norm_name), i.loc[i.report_status.notna(), "team"]))      # the NFL feed governs a player it already carries (nflverse can hold a team's Outs and still lack its Questionables)
-    m = m[[(a, b) not in have for a, b in zip(m.nkey, m.team)]]
+    if "override" in m.columns:      # a status newer than the NFL report (an upgrade to Out after the Friday designation) replaces the NFL row for that player
+        keep = m.override.astype(str).str.lower().isin(["1", "true"])
+    else:
+        keep = pd.Series(False, index=m.index)
+    m = m[[(a, b) not in have or k for a, b, k in zip(m.nkey, m.team, keep)]]
     if not len(m):
         return i
     i = i.copy(); i["nkey"] = i.full_name.map(norm_name); key = dict(zip(zip(m.nkey, m.team), m.report_status))

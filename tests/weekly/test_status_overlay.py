@@ -32,3 +32,9 @@ def test_nfl_feed_governs_a_player_it_already_carries_and_the_overlay_fills_the_
 def test_only_out_doubtful_questionable_are_used():
     out = apply_status_overlay(_inj(), _ov(), {})
     assert "Zach Charbonnet" not in set(out.full_name)
+
+
+def test_newer_overlay_status_replaces_the_nfl_row_when_flagged():
+    ov = pd.concat([_ov(), pd.DataFrame([dict(player="Tyreek Hill", team="NE", pos="WR", report_status="Out", override=True)])])
+    out = apply_status_overlay(_inj(), ov, {})
+    assert out[out.full_name == "Tyreek Hill"].report_status.iloc[0] == "Out"
