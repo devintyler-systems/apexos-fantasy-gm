@@ -218,7 +218,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     BACKUP_QBS = set(_P0[(_P0.pos == "QB") & _P0.team.isin(QB_OUT_TEAMS) & (_P0.p_active >= 0.5)].player)
     if "p_start_qb" in env_.columns:      # a QB1 with a game designation: every pass-game line for that team carries a caution until the inactives confirm him
         for r_ in env_[(env_.p_start_qb < 0.9)].itertuples():
-            CAUTION[r_.team] = f"QB1 designation (start probability {r_.p_start_qb:.0%})"
+            CAUTION[r_.team] = (f"QB1 designation (start probability {r_.p_start_qb:.0%})" if r_.p_start_qb >= 0.05 else "fill-in QB (QB1 Out)")
             CAUTION_ALL[r_.team] = f"QB1 uncertain, start probability {r_.p_start_qb:.0%}"
             DEMOTE.add(r_.team)      # PLAY -> LEAN and out of parlays: the starter-role draws carry no QB-quality adjustment (BAL Huntley and TB Daniels project at or above the starters)
     FILL = fillin_qbs(season, week)
@@ -234,6 +234,14 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
       "Props use DraftKings lines via ESPN: lines only, **no prices and no touchdown prices**. Singles are screened at an assumed -110 after shrinking the model 50/50 toward 50%; touchdown and parlay prices are FAIR odds from the joint "
       "simulation, 'play at' adds a 12% cushion. The W4 and W5 postmortems found no edge over the books on yardage and count props and calibrated anytime-TD probabilities, so read everything as a ranked lean. "
       "TD v2 multipliers and the anytime-TD floor (0.06, DECISIONS #29-30) are live.\n")
+    def _asof(path, col):
+        try:
+            return str(pd.read_csv(path)[col].max())
+        except Exception:
+            return "not supplied"
+    _man = os.environ.get("APEX_MANUAL_OUT", ""); _ov = os.environ.get("APEX_STATUS_OVERLAY", "")
+    w(f"**Inputs used (UTC).** ESPN game-summary Outs (5 names per team cap, not the official inactives): {_asof(_man, 'as_of_utc') if _man else 'not supplied'}. Sleeper status overlay (newer Out replaces the NFL row): {_asof(_ov, 'as_of_utc') if _ov else 'not supplied'}. "
+      "nflverse injuries and depth charts: latest published (no timestamp in the feed). Lines: ESPN/DraftKings (no prices). Official inactives: **not used** (about 90 minutes before each kickoff).\n")
     w("## 1. Predicted scores\n")
     w("| Game | Kickoff ET | Market (spread / total) | Market-anchored score | Win prob | Total | Model-only score | Model-only win | Fair spread |\n|---|---|---|---|---|---|---|---|---|")
     played_rows = GE[GE.note.astype(str).str.contains("PLAYED", na=False)]
@@ -404,11 +412,11 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     w("What it says: where the model disagrees with a receiving line, the line was right, so receiving LEANs are no longer published (this report has none) and receiving PLAYs are flagged thin. Rush and passing-count lines and the QB passing-TD ladder held up. "
       "Parlays failed together on shared scripts: each ticket here holds at most one QB passing-TD leg, and every touchdown leg is shown raw next to the shrunk number.\n")
     w(f"## 11. Known gaps and audit results (read before betting)\n")
-    w("Two QA agents (data audit, model sanity) reviewed the Thursday-window run; the full-slate run was re-checked at each window. Each window is audited before it is frozen (QB1 against the depth chart, bye-team rows, Out players and their volume, team codes, unmatched names); the verdicts are in the run notes of the frozen manifest. Remaining, by how much they change a pick:\n")
+    w("Three agents (data audit, model sanity, red-team) reviewed this run before it was frozen. Each window is audited before it is frozen (QB1 against the depth chart, bye-team rows, Out players and their volume, team codes, unmatched names); the verdicts are in the run notes of the frozen manifest. Remaining, by how much they change a pick:\n")
     fill = ", ".join(f"{t} ({q})" for t, q in sorted(CAUTION_ALL.items())) if CAUTION_ALL else "none"
     w(f"1. **Fill-in quarterbacks (depth-chart QB1 who is not the 2026 completions leader):** {fill}. The backup is modeled at 92% of starter efficiency with the team's YPA and the model-only track does not discount him, so pass-game singles for these teams carry a caution flag and the QBs are left out of touchdown boards and parlay legs.")
     w("2. **Carries leak to 'other'.** The vacated-role candidate (DECISIONS #35) did not move the 27-slate backtest, so the engine is unchanged: team RBs get about 70% of team carries in the projection against about 80% in practice, so rushing props are not inflated for backs on teams with a lead back Out. Since the Thursday result (DECISIONS #43) these lines are no longer withheld; compare them with any book number you have.")
-    w("3. **SF@ATL** now has a spread and total in nflverse (SF -2.5, 49.5); the market track is anchored to it. **DAL@PHI** (Monday): rerun after Saturday's report; until a team has injury rows its availability is the default prior (see `injury_report_coverage.csv` in the frozen run).")
+    w("3. **DAL@PHI** (Monday 8:15 PM ET) runs on this window's inputs, which stop on Sunday morning: treat its availability as provisional and use the Monday rerun. The raw `w4_*` files in the frozen run still contain the played NE@CHI rows (flagged PLAYED); this report excludes them.")
     w("4. **Availability prior.** Healthy players with no designation carry p_active of about 0.95 (fitted prior), so A.J. Brown's anytime TD is 5% below his conditional number. Inactives (about 90 minutes before each kickoff) replace the prior with certainty.")
     w("5. Anytime-TD board: the 0.10 to 0.20 bin was over-predicted 2.4x in Week 6 in the sim board (frozen-run board: predicted 15.0% vs 9.1% actual, n=55) and the top ten hit 70% against 64% predicted; the W9 postmortem checks the floor. Probabilities are conditional on playing, so discount by the p_active column.")
     w("6. Minor: about two dozen practice-squad or inactive players carry small volumes at 100% active (e.g. players listed IR/PUP who appear in the unmatched-names report).")
