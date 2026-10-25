@@ -1,11 +1,40 @@
-player,market,side,reason
-Jalen Royals,rec_yds,UNDER,KC Rice and B. Smith Out (red-team 2026-10-25)
-Patrick Mahomes,rush_yds,UNDER,KC Rice and B. Smith Out
-Xavier Worthy,rec_yds,UNDER,KC Rice Out
-Gunnar Helm,rec,UNDER,TEN Ridley Questionable
-Emanuel Wilson,rec,UNDER,SEA Charbonnet and Wright Out
-Tory Horton,rec,UNDER,SEA Charbonnet and Wright Out
-Samaje Perine,rush_yds,UNDER,duplicate of rush_att under with a 2.7-yard margin
-Drake London,rec_yds,UNDER,ATL Zaccheaus Questionable
-Jahan Dotson,rec,UNDER,ATL Zaccheaus Questionable
-Matthew Golden,rec,UNDER,GB Melton Questionable and DET secondary Out
+player,market,side,action,reason
+Jalen Royals,rec_yds,UNDER,pull,KC Rice and B. Smith Out (red-team 2026-10-25)
+Patrick Mahomes,rush_yds,UNDER,pull,KC Rice and B. Smith Out
+Xavier Worthy,rec_yds,UNDER,pull,KC Rice Out
+Gunnar Helm,rec,UNDER,pull,TEN Ridley Questionable
+Emanuel Wilson,rec,UNDER,pull,SEA Charbonnet and Wright Out
+Tory Horton,rec,UNDER,pull,SEA Charbonnet and Wright Out
+Samaje Perine,rush_yds,UNDER,pull,duplicate of rush_att under with a 2.7-yard margin
+Drake London,rec_yds,UNDER,pull,ATL Zaccheaus Questionable
+Jahan Dotson,rec,UNDER,pull,ATL Zaccheaus Questionable
+Matthew Golden,rec,UNDER,pull,GB Melton Questionable and DET secondary Out
+George Holani,rush_yds,OVER,pull,"line fell 31 pct, model 1.78x his average, 3 of 6"
+Germie Bernard,rec,UNDER,pull,"PIT WRs Pittman, Wilson and Skowronek Out; 9 and 12 targets in W5-W6"
+Jaylin Noel,rec,UNDER,pull,last three games all over 2.5; Dell return risk
+Dohnte Meyers,rec_yds,OVER,pull,"line fell 37 pct, 29 pct snaps"
+Austin Hooper,rec,OVER,pull,snap share fell to 13 pct; zero-target games dropped from the log
+Greg Dulcich,rec_yds,OVER,pull,2 of 5 once the zero-target game is counted
+Woody Marks,rec,UNDER,downgrade,"lone HOU back, 4 of 6"
+Javonte Williams,rush_att,UNDER,downgrade,"Monday, provisional inputs"
+Jacoby Brissett,rush_yds,OVER,downgrade,model 1.86x his average; same bet lost in W6
+Quinshon Judkins,rush_att,UNDER,downgrade,last three games 18/17/14; carries under-allocated
+Samaje Perine,rush_att,UNDER,downgrade,W5 spike in a CIN win; CIN favored
+Tommy Tremble,rec,OVER,downgrade,line fell 40 pct with no explanation; Waller back
+Emmett Johnson,rush_yds,OVER,downgrade,yards from two long runs
+C.J. Stroud,rush_yds,OVER,downgrade,model 1.69x his average; HOU 10.5-point favorite
+Jalen Coker,rec_yds,UNDER,downgrade,2 of 4
+Jake Ferguson,rec_yds,OVER,downgrade,Monday; model 1.72x his average
+Sione Vaki,rush_yds,OVER,downgrade,2 of 4; snap share 17-35 pct
+Tony Pollard,rush_att,UNDER,downgrade,carries rising 14 then 19; Spears Questionable
+Devaughn Vele,rec_yds,UNDER,downgrade,3 of 6
+Blake Corum,rush_att,UNDER,downgrade,3 of 6
+CeeDee Lamb,rec,UNDER,downgrade,Monday; 3 of 6
+Garrett Wilson,rec_yds,UNDER,downgrade,3 of 6; line rose 6
+AJ Dillon,rush_att,OVER,downgrade,0 carries in W6; real log 3 of 5
+Ashton Jeanty,rush_att,OVER,downgrade,hinges on LV inactives
+Malik Willis,rush_att,UNDER,downgrade,shrunk 56 pct vs the 55.4 pct cut
+RJ Harvey,rush_yds,OVER,downgrade,model 1.47x his average; Coleman and Dobbins compete
+Elic Ayomanor,rec_yds,OVER,downgrade,3 of 6; Ridley Questionable
+Woody Marks,anytime_td,*,downgrade,TD in 2 of 6 games; carry lines 0 of 6
+Chase Brown,anytime_td,*,downgrade,one TD in five games

@@ -66,6 +66,17 @@ WITHHOLD = _withheld()
 WH = set(WITHHOLD.player)
 
 
+def _td_downgraded():
+    f = os.environ.get("APEX_RT_PULL")
+    if not f or not os.path.exists(f):
+        return set()
+    rt = pd.read_csv(f)
+    return set(rt.player[(rt.market == "anytime_td") & (rt.get("action", "pull") == "downgrade")])
+
+
+TD_DOWN = _td_downgraded()
+
+
 def _team_atrisk(out_dir):
     """Teams -> [(nkey, pos, p_active, tgt_share_at_risk, carry_share_at_risk)] for players below 90% likely to play, read from the run's injury log."""
     if out_dir in _ADJ:
@@ -138,9 +149,14 @@ def _game_pool(away, home):
         S.loc[wh, "label"] = ""; S.loc[wh, "flag"] = "withheld"
         # red-team pulls for this window (config/weekly/redteam_pulls_*.csv via APEX_RT_PULL): lines the gates miss because the teammate's absence predates the 3-week usage window
         if os.environ.get("APEX_RT_PULL"):
-            rt = pd.read_csv(os.environ["APEX_RT_PULL"]); kk = set(zip(rt.player, rt.market, rt.side))
-            hit = [(r.player, r.market, r.side) in kk for r in S.itertuples()]
+            rt = pd.read_csv(os.environ["APEX_RT_PULL"]); act = rt["action"] if "action" in rt else pd.Series("pull", index=rt.index)
+            FAM = {"rec": "rec", "rec_yds": "rec", "rush_att": "rush", "rush_yds": "rush"}      # a verdict on one line of a thesis covers its sibling (receptions/receiving yards, carries/rushing yards)
+            fam = lambda m: FAM.get(m, m)
+            pulls = set(zip(rt.player[act == "pull"], rt.market[act == "pull"].map(fam), rt.side[act == "pull"])); downs = set(zip(rt.player[act == "downgrade"], rt.market[act == "downgrade"].map(fam), rt.side[act == "downgrade"]))
+            hit = [(r.player, fam(r.market), r.side) in pulls for r in S.itertuples()]
             S.loc[hit, "label"] = ""; S.loc[hit, "flag"] = "red-team pull"
+            dn = [(r.player, fam(r.market), r.side) in downs and r.label == "PLAY" for r in S.itertuples()]
+            S.loc[dn, "label"] = "LEAN"; S.loc[dn, "flag"] = "red-team downgrade"
         # a player who is not 90% likely to play carries no published line (the verdict would be conditional on a designation that resolves at the inactives)
         shaky = (S.label != "") & (S.pa < 0.90)
         S.loc[shaky, "label"] = ""; S.loc[shaky, "flag"] = "availability"
@@ -171,7 +187,7 @@ class Pool:
     def add_game(self, game, legs, meta, fav, td_max=8, td_lo=0.12, td_hi=0.60):
         for nm in fav:
             self.leg[f"{game}: {nm}"] = dict(game=game, arr=legs[nm], meta=meta[nm], r=fav[nm]["r"], p=float(legs[nm].mean()), kind="line", shrunk=fav[nm]["shrunk"])
-        td = [k for k in meta if meta[k]["kind"] == "td" and meta[k]["market"] == "any_td" and td_lo <= meta[k]["p"] <= td_hi and meta[k]["player"] not in BACKUP_QBS and meta[k]["player"] not in WH]
+        td = [k for k in meta if meta[k]["kind"] == "td" and meta[k]["market"] == "any_td" and td_lo <= meta[k]["p"] <= td_hi and meta[k]["player"] not in BACKUP_QBS and meta[k]["player"] not in WH and meta[k]["player"] not in TD_DOWN]
         for k in sorted(td, key=lambda x: -meta[x]["p"])[:td_max]:
             p0 = float(legs[k].mean()); sh = min(p0, 0.5 + 0.5 * (p0 - 0.5))      # TD legs shrink only downward (a 50/50 shrink would raise a longshot); the table shows raw next to shrunk
             self.leg[f"{game}: {k}"] = dict(game=game, arr=legs[k], meta=meta[k], r=sh / max(p0, 1e-6), p=p0, kind="td", shrunk=sh)
@@ -478,6 +494,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     w("2. **Carries leak to 'other'.** The vacated-role candidate (DECISIONS #35) did not move the 27-slate backtest, so the engine is unchanged: team RBs get about 70% of team carries in the projection against about 80% in practice, so rushing props are not inflated for backs on teams with a lead back Out. Since the Thursday result (DECISIONS #43) these lines are no longer withheld; compare them with any book number you have.")
     w("3. **DAL@PHI** (Monday 8:15 PM ET) runs on this window's inputs, which stop on Sunday morning: treat its availability as provisional and use the Monday rerun. The raw `w4_*` files in the frozen run still contain the played NE@CHI rows (flagged PLAYED); this report excludes them.")
     w("3b. **Known biases to price in.** QB over/under props and QB fantasy points run about 5 to 7 percent low (the sim gives the starter 93 percent of team yards, attempts and completions; starters took 97 to 98 percent in 2023-26; a backtest candidate, not changed this week). Team rush yards run 4 to 5 percent high and ATL, NYG, BAL and PHI backs are under-allocated carries (6 or more carries go to an unlisted bucket), so read rushing props for those teams as uncertain. Team touchdowns run about 6 percent light against 2026 weeks 1 to 6. The model-only track disagrees with the market by 4.5 or more points of margin in CIN@BAL, DAL@PHI and NYG@HOU: a diagnostic, not a pick source.")
+    w("3c. **Log hit rates drop zero-usage games** (a game with no target or carry is missing from the 'log' column), which flatters OVERs on low-volume players; red-team corrected Hooper, Dillon and Dulcich by hand. **No model-versus-market gap flags:** there are no prices, so no no-vig anchor exists to measure a gap against.")
     w("4. **Availability prior.** Healthy players with no designation carry p_active of about 0.95 (fitted prior), so A.J. Brown's anytime TD is 5% below his conditional number. Inactives (about 90 minutes before each kickoff) replace the prior with certainty.")
     w("5. Anytime-TD board: the 0.10 to 0.20 bin was over-predicted 2.4x in Week 6 in the sim board (frozen-run board: predicted 15.0% vs 9.1% actual, n=55) and the top ten hit 70% against 64% predicted; the W9 postmortem checks the floor. Probabilities are conditional on playing, so discount by the p_active column.")
     w("6. Minor: about two dozen practice-squad or inactive players carry small volumes at 100% active (e.g. players listed IR/PUP who appear in the unmatched-names report).")
