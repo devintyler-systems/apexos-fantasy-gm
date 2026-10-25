@@ -116,12 +116,21 @@ def _game_pool(away, home):
             for k_, pos_, pa_, tg_, cs_ in risk.get(r.team, []):
                 if k_ == norm_name(r.player) or usage.get((k_, r.team), 0) <= 0:
                     continue
-                if (r.pos in ("WR", "TE") and pos_ in ("WR", "TE") and r.market in ("rec", "rec_yds") and tg_ >= 0.10) or (r.pos == "RB" and pos_ == "RB" and cs_ >= 0.20):
+                if (r.market in ("rec", "rec_yds") and tg_ >= 0.10) or (r.market in ("rush_att", "rush_yds") and cs_ >= 0.20):      # any teammate's share (RB catches, QB scrambles included) goes to the others
                     S.loc[i_, "label"] = ""; S.loc[i_, "flag"] = "role change"; break
         # model far from the player's own record (85% for a side that cleared 3 of 6): a lean at most, and never a parlay leg
         hist = np.where(S.side == "OVER", S.over_games, S.under_games) / np.maximum(S.n_log, 1)
         gap = (S.label == "PLAY") & (S.model_p - hist >= 0.30) & (S.n_log >= 3)
         S.loc[gap, "label"] = "LEAN"; S.loc[gap, "flag"] = "model vs own record"
+        # a player who is not 90% likely to play carries no published line (the verdict would be conditional on a designation that resolves at the inactives)
+        shaky = (S.label != "") & (S.pa < 0.90)
+        S.loc[shaky, "label"] = ""; S.loc[shaky, "flag"] = "availability"
+        # one thesis, one line: rec/rec_yds and rush_att/rush_yds on the same player and side are the same bet; the lower-ranked one is a LEAN, flagged, and not a parlay leg
+        fam = S.market.map({"rec": "rec", "rec_yds": "rec", "rush_att": "rush", "rush_yds": "rush"})
+        live = S[(S.label == "PLAY") & fam.notna()].assign(fam=fam).sort_values("shrunk", ascending=False)
+        dup = live[live.duplicated(["player", "side", "fam"], keep="first")].index
+        S.loc[dup, "label"] = "LEAN"; S.loc[dup, "flag"] = "same bet as sibling line"
+        S.loc[(S.label == "LEAN") & S.market.isin(["rec", "rec_yds"]), "label"] = ""      # receiving LEANs stay unpublished after every demotion above (POSTMORTEM_2026_W06 3.3)
     n = mk["n"]
     legs = {k: np.unpackbits(v)[:n].astype(bool) for k, v in mk["legs"].items()}
     fav = {}
