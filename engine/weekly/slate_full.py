@@ -9,6 +9,8 @@ Per-game screening logic (shrink, gate, bias shift, fair odds, 'play at' cushion
 a probability or a FAIR price. Cross-game parlay legs are independent by construction; same-game legs use the joint simulation.
 """
 import argparse
+import datetime as dt
+import subprocess
 import itertools
 import os
 import pickle
@@ -52,6 +54,16 @@ BACKUP_QBS = set()        # fill-in QBs on those teams: they inherit the generic
 
 
 _ADJ = {}
+
+
+def _withheld():
+    """Players with no usable projection or role this window (APEX_WITHHOLD=<csv: player,team,reason>): no line, TD or parlay leg is published for them."""
+    f = os.environ.get("APEX_WITHHOLD")
+    return pd.read_csv(f) if f and os.path.exists(f) else pd.DataFrame(columns=["player", "team", "reason"])
+
+
+WITHHOLD = _withheld()
+WH = set(WITHHOLD.player)
 
 
 def _team_atrisk(out_dir):
@@ -122,6 +134,8 @@ def _game_pool(away, home):
         hist = np.where(S.side == "OVER", S.over_games, S.under_games) / np.maximum(S.n_log, 1)
         gap = (S.label == "PLAY") & (S.model_p - hist >= 0.30) & (S.n_log >= 3)
         S.loc[gap, "label"] = "LEAN"; S.loc[gap, "flag"] = "model vs own record"
+        wh = S.player.isin(WH)
+        S.loc[wh, "label"] = ""; S.loc[wh, "flag"] = "withheld"
         # red-team pulls for this window (config/weekly/redteam_pulls_*.csv via APEX_RT_PULL): lines the gates miss because the teammate's absence predates the 3-week usage window
         if os.environ.get("APEX_RT_PULL"):
             rt = pd.read_csv(os.environ["APEX_RT_PULL"]); kk = set(zip(rt.player, rt.market, rt.side))
@@ -157,7 +171,7 @@ class Pool:
     def add_game(self, game, legs, meta, fav, td_max=8, td_lo=0.12, td_hi=0.60):
         for nm in fav:
             self.leg[f"{game}: {nm}"] = dict(game=game, arr=legs[nm], meta=meta[nm], r=fav[nm]["r"], p=float(legs[nm].mean()), kind="line", shrunk=fav[nm]["shrunk"])
-        td = [k for k in meta if meta[k]["kind"] == "td" and meta[k]["market"] == "any_td" and td_lo <= meta[k]["p"] <= td_hi and meta[k]["player"] not in BACKUP_QBS]
+        td = [k for k in meta if meta[k]["kind"] == "td" and meta[k]["market"] == "any_td" and td_lo <= meta[k]["p"] <= td_hi and meta[k]["player"] not in BACKUP_QBS and meta[k]["player"] not in WH]
         for k in sorted(td, key=lambda x: -meta[x]["p"])[:td_max]:
             p0 = float(legs[k].mean()); sh = min(p0, 0.5 + 0.5 * (p0 - 0.5))      # TD legs shrink only downward (a 50/50 shrink would raise a longshot); the table shows raw next to shrunk
             self.leg[f"{game}: {k}"] = dict(game=game, arr=legs[k], meta=meta[k], r=sh / max(p0, 1e-6), p=p0, kind="td", shrunk=sh)
@@ -248,6 +262,24 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
       "Props use DraftKings lines via ESPN: lines only, **no prices and no touchdown prices**. Singles are screened at an assumed -110 after shrinking the model 50/50 toward 50%; touchdown and parlay prices are FAIR odds from the joint "
       "simulation, 'play at' adds a 12% cushion. The W4 and W5 postmortems found no edge over the books on yardage and count props and calibrated anytime-TD probabilities, so read everything as a ranked lean. "
       "TD v2 multipliers and the anytime-TD floor (0.06, DECISIONS #29-30) are live.\n")
+    def _dc_asof():
+        try:
+            return str(pd.read_parquet(NFLV + "depth_charts_2026.parquet", columns=["dt"]).dt.max())
+        except Exception:
+            return "not read"
+
+    def _lines_asof():
+        try:
+            return dt.datetime.fromtimestamp(os.path.getmtime(os.environ["APEX_LINES_FILE"]), dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
+        except Exception:
+            return "time not recorded"
+
+    def _git():
+        try:
+            return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=os.path.dirname(__file__), text=True).strip()
+        except Exception:
+            return "unknown"
+
     def _asof(path, col):
         try:
             return str(pd.read_csv(path)[col].max())
@@ -255,7 +287,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
             return "not supplied"
     _man = os.environ.get("APEX_MANUAL_OUT", ""); _ov = os.environ.get("APEX_STATUS_OVERLAY", "")
     w(f"**Inputs used (UTC).** ESPN game-summary Outs (5 names per team cap, not the official inactives): {_asof(_man, 'as_of_utc') if _man else 'not supplied'}. Sleeper status overlay (newer Out replaces the NFL row): {_asof(_ov, 'as_of_utc') if _ov else 'not supplied'}. "
-      "nflverse injuries and depth charts: latest published (no timestamp in the feed). Lines: ESPN/DraftKings (no prices). Official inactives: **not used** (about 90 minutes before each kickoff).\n")
+      f"nflverse depth charts: {_dc_asof()}; nflverse injuries: no timestamp in the feed. Lines: ESPN/DraftKings fetched {_lines_asof()} (no prices; the per-line `last_updated_utc` stamps run ahead of the fetch time and their zone is unverified, so no recency claim is made from them). Official inactives: **not used** (the ESPN feed carries injuries, not the NFL inactive list). Code: git {_git()}.\n")
     w("## 1. Predicted scores\n")
     w("| Game | Kickoff ET | Market (spread / total) | Market-anchored score | Win prob | Total | Model-only score | Model-only win | Fair spread |\n|---|---|---|---|---|---|---|---|---|")
     played_rows = GE[GE.note.astype(str).str.contains("PLAYED", na=False)]
@@ -357,7 +389,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     w("\n**Kickers (this league: FG 3, XP 1; ranked by team implied points, the only validated signal; differences are within noise)**: " + "; ".join(f"{r.team} {r.k_ev:.1f}" for r in kk.itertuples()) + "\n")
     # --- TD boards
     TD = pd.read_csv(os.path.join(run_market, "w4_td_markets.csv")).dropna(subset=["prob"])
-    TD = TD[TD.game.isin([f"{a}@{h}" for a, h in games]) & ~TD.player.isin(BACKUP_QBS)]
+    TD = TD[TD.game.isin([f"{a}@{h}" for a, h in games]) & ~TD.player.isin(BACKUP_QBS) & ~TD.player.isin(WH)]
     A = TD[TD.market == "anytime_td"].sort_values("prob", ascending=False)
     w("## 6. Touchdown boards (anytime counts rushing and receiving TDs; fair odds; 'play at' = fair + 12% cushion)\n")
     A = A.assign(adj=A.prob * A.p_active.fillna(1.0)).sort_values("adj", ascending=False)      # rank by the probability he scores in this game, not the one conditional on playing
@@ -425,8 +457,22 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     w("| Group | Result | Expected |\n|---|---|---|\n| PLAY singles | 58.5% (n=94) | 59.7% |\n| LEAN rush and passing counts | 61.9% (n=63) | 56.0% |\n| LEAN receiving | **35.2% (n=105)** | 56.4% |\n| Anytime TD board, 204 active non-QB players | 38 scored | 40.6 predicted |\n| QB passing-TD ladder | 1+: 21 vs 19.0, 2+: 11 vs 10.4 | calibrated |\n| Parlays | 9 of 48 | 14.7 |\n\nThursday Week 7 (NE@CHI, graded in `TNF_NE_CHI_2026_W07_SCORECARD.md`): published singles 11 of 22 (50%, +0.43 units at best of six books), pass-volume unders 1 of 6, CHI RB lines withheld by the old gate 4 of 4.\n")
     w("What it says: where the model disagrees with a receiving line, the line was right, so receiving LEANs are no longer published (this report has none) and receiving PLAYs are flagged thin. Rush and passing-count lines and the QB passing-TD ladder held up. "
       "Parlays failed together on shared scripts: each ticket here holds at most one QB passing-TD leg, and every touchdown leg is shown raw next to the shrunk number.\n")
+    w("## 10b. Lines with no projection, and players withheld\n")
+    try:
+        L_ = pd.read_csv(os.environ["APEX_LINES_FILE"]).drop_duplicates(["player", "team", "market", "line_current"])
+        L_ = L_[L_.game.isin([f"{a}@{h}" for a, h in games])]
+        PA = pd.read_pickle(os.path.join(run_market, "proj_all.pkl")); have = set(zip(PA.player.map(norm_name), PA.team))
+        un = L_[[(norm_name(p), t) not in have for p, t in zip(L_.player, L_.team)]]
+        grp = un.groupby(["player", "team", "game"]).market.apply(lambda m: ", ".join(sorted(set(x.replace("player_", "") for x in m)))).reset_index()
+        w(f"{len(grp)} players have posted lines but no projection row (not on the 2026 stats universe, injured/exempt, or name mismatch). Nothing is published for them:\n")
+        w(_tab(grp, ["player", "team", "game", "market"], {}))
+    except Exception as ex:
+        w(f"(unmatched-lines list not available: {type(ex).__name__})\n")
+    if len(WITHHOLD):
+        w("\n**Withheld on purpose** (no line, touchdown or parlay leg):\n"); w(_tab(WITHHOLD, ["player", "team", "reason"], {}))
+    w("")
     w(f"## 11. Known gaps and audit results (read before betting)\n")
-    w("Three agents (data audit, model sanity, red-team) reviewed this run before it was frozen. Each window is audited before it is frozen (QB1 against the depth chart, bye-team rows, Out players and their volume, team codes, unmatched names); the verdicts are in the run notes of the frozen manifest. Remaining, by how much they change a pick:\n")
+    w("Each window is audited before it is frozen by a data audit, a model sanity check and a red-team pass (QB1 against the depth chart, bye-team rows, Out players and their volume, team codes, unmatched names); the audit verdicts are written into the run notes of the frozen manifest. Remaining, by how much they change a pick:\n")
     fill = ", ".join(f"{t} ({q})" for t, q in sorted(CAUTION_ALL.items())) if CAUTION_ALL else "none"
     w(f"1. **Fill-in quarterbacks (depth-chart QB1 who is not the 2026 completions leader):** {fill}. The backup is modeled at 92% of starter efficiency with the team's YPA and the model-only track does not discount him, so pass-game singles for these teams carry a caution flag and the QBs are left out of touchdown boards and parlay legs.")
     w("2. **Carries leak to 'other'.** The vacated-role candidate (DECISIONS #35) did not move the 27-slate backtest, so the engine is unchanged: team RBs get about 70% of team carries in the projection against about 80% in practice, so rushing props are not inflated for backs on teams with a lead back Out. Since the Thursday result (DECISIONS #43) these lines are no longer withheld; compare them with any book number you have.")

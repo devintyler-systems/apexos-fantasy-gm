@@ -88,3 +88,10 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - Quarterback quality (trailing EPA per dropback difference): explains 11 percent of the line-minus-model margin gap (correlation 0.27); a margin term of 10 points per EPA/dropback improves MAE only 10.12 to 10.08, larger terms worsen it.
 - The line-minus-model total gap correlates with wind (-0.23 points per mph, R2 0.13) in the lab; the production model-only track already carries a fitted weather term.
 - Conclusion: no ship. Re-tuning a points-based ridge cannot close a 0.6-point margin gap; the line contains information (roster and injury news, preseason priors, sharp money) the ratings lack. Next candidates carry new information: starting-QB-aware offense ratings with availability, injury-weighted unit strength, preseason win-total priors if a source exists, and totals-only blend (lab total blend weight 0.2 vs 0.0 in the full backtest).
+
+## 50. 9:30 AM window audit fixes (2026-10-25)
+- Data audit D1: Josh Jacobs (GB RB1 on the depth chart, ACT on the roster, no 2026 games) has no projection row while the book posts lines on him. GB running backs (Jacobs, Lloyd, K. Johnson, Strong, Brooks) are withheld from lines, touchdown boards and parlays (`config/weekly/withhold_2026_w07.csv`, `APEX_WITHHOLD`). Open engine item: a player on the roster with no current-season games and a posted line needs a prior from last season's role, not silence.
+- Section 10b of the slate report lists every posted line with no projection row (Kirk, Jacobs, Herbert, Dell this window) and every withheld player; the report header now carries depth-chart time, line fetch time and the code commit.
+- Line-file stamps (`last_updated_utc`) run ahead of the fetch time and their zone is unverified; no recency claim is made from them. The lines input is deduplicated (1080 to 493 rows, played game dropped) before the slate sim.
+- Official inactives were not used: the ESPN feed carries injuries (5 names per team), not the NFL inactive list. Open item: a real inactive-list source for T-90.
+- Frozen: `2026_w07_{market,model}_20261025T1211*`.
