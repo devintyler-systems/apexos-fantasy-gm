@@ -444,6 +444,8 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
         pool.add_game(f"{a}@{h}", legs, meta, fav)
         if len(S): allS.append(S)
     S = pd.concat(allS, ignore_index=True)
+    if os.environ.get("APEX_DUMP_SINGLES"):
+        S.to_csv(os.environ["APEX_DUMP_SINGLES"], index=False)      # every screened line with its label and flag, for ad hoc top-N tables
     play = S[S.label == "PLAY"].sort_values("shrunk", ascending=False)
     lean = S[S.label == "LEAN"].sort_values("shrunk", ascending=False)
     w("## 7. Single-line screen (DraftKings lines via ESPN, assumed -110)\n")
