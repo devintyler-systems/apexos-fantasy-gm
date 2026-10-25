@@ -2,23 +2,25 @@
 
 **How to read this.** Two simulation tracks, always labeled: MARKET-ANCHORED (nflverse spread/total as the team-points prior) and MODEL-ONLY (ratings and weather, no lines). Player numbers are the market-anchored track unless stated. Props use DraftKings lines via ESPN: lines only, **no prices and no touchdown prices**. Singles are screened at an assumed -110 after shrinking the model 50/50 toward 50%; touchdown and parlay prices are FAIR odds from the joint simulation, 'play at' adds a 12% cushion. The W4 and W5 postmortems found no edge over the books on yardage and count props and calibrated anytime-TD probabilities, so read everything as a ranked lean. TD v2 multipliers and the anytime-TD floor (0.06, DECISIONS #29-30) are live.
 
+**Inputs used (UTC).** ESPN game-summary Outs (5 names per team cap, not the official inactives): 2026-10-25T01:46:37Z. Sleeper status overlay (newer Out replaces the NFL row): 2026-10-25T01:35:01+00:00. nflverse injuries and depth charts: latest published (no timestamp in the feed). Lines: ESPN/DraftKings (no prices). Official inactives: **not used** (about 90 minutes before each kickoff).
+
 ## 1. Predicted scores
 
 | Game | Kickoff ET | Market (spread / total) | Market-anchored score | Win prob | Total | Model-only score | Model-only win | Fair spread |
 |---|---|---|---|---|---|---|---|---|
-| PIT@NO (INTL neutral site) | 2026-10-25 09:30 | NO +3.0 / 44.5 | PIT 23.6, NO 20.7 | PIT 58% / NO 42% | 44.2 | PIT 24.6, NO 22.2 | PIT 56% | NO +3.0 |
-| SF@ATL | 2026-10-25 13:00 | ATL +2.5 / 49.5 | SF 25.9, ATL 23.5 | SF 57% / ATL 43% | 49.4 | SF 25.8, ATL 22.5 | SF 59% | ATL +3.0 |
-| CIN@BAL | 2026-10-25 13:00 | BAL +1.5 / 48.5 | CIN 24.9, BAL 23.5 | CIN 54% / BAL 46% | 48.4 | CIN 23.7, BAL 26.3 | CIN 42% | BAL +1.0 |
-| TB@CAR | 2026-10-25 13:00 | CAR -2.5 / 44.5 | TB 21.0, CAR 23.5 | TB 43% / CAR 57% | 44.5 | TB 20.8, CAR 25.7 | TB 36% | CAR -3.0 |
-| NYG@HOU | 2026-10-25 13:00 | HOU -10.5 / 43.5 | NYG 16.5, HOU 27.0 | NYG 22% / HOU 78% | 43.5 | NYG 19.7, HOU 25.1 | NYG 35% | HOU -11.0 |
-| IND@MIN | 2026-10-25 13:00 | MIN -6.5 / 41.5 | IND 17.4, MIN 23.9 | IND 31% / MIN 69% | 41.3 | IND 20.7, MIN 24.4 | IND 39% | MIN -7.0 |
-| MIA@NYJ | 2026-10-25 13:00 | NYJ -4.5 / 39.5 | MIA 17.5, NYJ 22.0 | MIA 37% / NYJ 63% | 39.5 | MIA 18.8, NYJ 22.0 | MIA 41% | NYJ -4.0 |
-| CLE@TEN | 2026-10-25 13:00 | TEN +2.5 / 36.5 | CLE 19.4, TEN 17.0 | CLE 57% / TEN 43% | 36.4 | CLE 19.0, TEN 17.7 | CLE 54% | TEN +3.0 |
-| DEN@ARI | 2026-10-25 16:05 | ARI +4.5 / 43.5 | DEN 23.9, ARI 19.5 | DEN 63% / ARI 37% | 43.4 | DEN 23.5, ARI 21.2 | DEN 57% | ARI +4.0 |
-| GB@DET | 2026-10-25 16:25 | DET -3.0 / 53.5 | GB 25.2, DET 28.3 | GB 42% / DET 58% | 53.5 | GB 22.9, DET 27.9 | GB 36% | DET -3.0 |
-| LA@LV | 2026-10-25 16:25 | LV +3.0 / 48.5 | LA 25.6, LV 22.7 | LA 58% / LV 42% | 48.3 | LA 25.0, LV 23.0 | LA 56% | LV +3.0 |
-| KC@SEA | 2026-10-25 20:20 | SEA -2.5 / 42.5 | KC 20.0, SEA 22.4 | KC 43% / SEA 57% | 42.4 | KC 21.5, SEA 24.1 | KC 42% | SEA -3.0 |
-| DAL@PHI | 2026-10-26 20:15 | PHI +4.5 / 44.5 | DAL 24.5, PHI 19.8 | DAL 63% / PHI 37% | 44.4 | DAL 23.0, PHI 23.8 | DAL 48% | PHI +4.0 |
+| PIT@NO (INTL neutral site) | 2026-10-25 09:30 | NO +3.0 / 43.5 | PIT 23.1, NO 20.2 | PIT 58% / NO 42% | 43.3 | PIT 24.6, NO 22.3 | PIT 57% | NO +3.0 |
+| SF@ATL | 2026-10-25 13:00 | ATL +2.5 / 50.5 | SF 26.4, ATL 23.9 | SF 57% / ATL 43% | 50.4 | SF 25.8, ATL 22.5 | SF 59% | ATL +3.0 |
+| CIN@BAL | 2026-10-25 13:00 | BAL +3.0 / 46.5 | CIN 24.7, BAL 21.7 | CIN 58% / BAL 42% | 46.5 | CIN 23.7, BAL 26.4 | CIN 42% | BAL +3.0 |
+| TB@CAR | 2026-10-25 13:00 | CAR -3.0 / 44.5 | TB 20.8, CAR 23.8 | TB 41% / CAR 59% | 44.5 | TB 20.7, CAR 25.7 | TB 36% | CAR -3.0 |
+| NYG@HOU | 2026-10-25 13:00 | HOU -10.0 / 42.5 | NYG 16.3, HOU 26.1 | NYG 23% / HOU 77% | 42.4 | NYG 19.8, HOU 25.2 | NYG 34% | HOU -10.0 |
+| IND@MIN | 2026-10-25 13:00 | MIN -6.5 / 41.5 | IND 17.4, MIN 24.0 | IND 30% / MIN 70% | 41.5 | IND 20.7, MIN 24.4 | IND 39% | MIN -7.0 |
+| MIA@NYJ | 2026-10-25 13:00 | NYJ -4.5 / 39.5 | MIA 17.5, NYJ 21.9 | MIA 37% / NYJ 63% | 39.4 | MIA 18.7, NYJ 22.0 | MIA 41% | NYJ -4.0 |
+| CLE@TEN | 2026-10-25 13:00 | TEN +2.5 / 36.5 | CLE 19.3, TEN 17.0 | CLE 57% / TEN 43% | 36.3 | CLE 19.0, TEN 17.6 | CLE 54% | TEN +3.0 |
+| DEN@ARI | 2026-10-25 16:05 | ARI +4.5 / 43.5 | DEN 23.9, ARI 19.4 | DEN 63% / ARI 37% | 43.3 | DEN 23.4, ARI 21.1 | DEN 57% | ARI +4.0 |
+| GB@DET | 2026-10-25 16:25 | DET -3.5 / 54.5 | GB 25.4, DET 29.0 | GB 41% / DET 59% | 54.4 | GB 22.7, DET 27.8 | GB 36% | DET -4.0 |
+| LA@LV | 2026-10-25 16:25 | LV +3.0 / 48.5 | LA 25.7, LV 22.7 | LA 59% / LV 41% | 48.4 | LA 24.9, LV 23.1 | LA 56% | LV +3.0 |
+| KC@SEA | 2026-10-25 20:20 | SEA -3.0 / 42.5 | KC 19.8, SEA 22.7 | KC 41% / SEA 59% | 42.5 | KC 21.7, SEA 24.2 | KC 43% | SEA -3.0 |
+| DAL@PHI | 2026-10-26 20:15 | PHI +4.5 / 43.5 | DAL 23.9, PHI 19.5 | DAL 62% / PHI 38% | 43.4 | DAL 23.3, PHI 23.9 | DAL 48% | PHI +4.0 |
 
 Already played: NE@CHI final NE 24, CHI 30 (market CHI -3.0, total 50.5; projected 23.7-26.7).
 
@@ -203,93 +205,93 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 
 | player | team | opp | p_active | pass_cmp_mean | pass_yds_mean | pass_td_mean | rush_yds_mean | rush_td_mean | any_td_pct | league_ev | dk |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Brock Purdy | SF | ATL | 100% | 20.4 | 216.9 | 1.81 | 17.7 | 0.21 | 19% | 12.1 | 17.9 |
-| Jordan Love | GB | DET | 98% | 22.9 | 288.7 | 1.91 | 5.1 | 0.07 | 7% | 11.6 | 18.1 |
-| C.J. Stroud | HOU | NYG | 100% | 20.6 | 239.3 | 1.69 | 21.1 | 0.23 | 21% | 11.5 | 18.5 |
-| Matthew Stafford | LA | LV | 100% | 23.7 | 259.6 | 1.81 | 3.5 | 0.09 | 9% | 11.4 | 16.5 |
-| Jared Goff | DET | GB | 100% | 22.2 | 227.1 | 1.71 | 4.7 | 0.11 | 10% | 10.9 | 15.7 |
-| Joe Burrow | CIN | BAL | 100% | 23.5 | 246.2 | 1.68 | 8.0 | 0.11 | 10% | 10.7 | 16.5 |
-| Bo Nix | DEN | ARI | 100% | 18.5 | 210.2 | 1.52 | 12.9 | 0.24 | 22% | 10.6 | 15.8 |
-| Bryce Young | CAR | TB | 98% | 21.6 | 254.2 | 1.58 | 8.5 | 0.14 | 13% | 10.1 | 16.3 |
-| Aaron Rodgers | PIT | NO | 100% | 22.5 | 240.4 | 1.60 | 3.6 | 0.04 | 4% | 9.8 | 14.7 |
-| Kirk Cousins | LV | LA | 100% | 20.4 | 225.1 | 1.57 | 5.0 | 0.04 | 4% | 9.7 | 14.0 |
-| Dak Prescott | DAL | PHI | 100% | 23.9 | 258.2 | 1.41 | 8.0 | 0.15 | 14% | 9.4 | 15.8 |
-| Kyler Murray | MIN | IND | 100% | 16.7 | 191.7 | 1.32 | 19.8 | 0.23 | 21% | 9.3 | 15.2 |
-| Tyler Shough | NO | PIT | 98% | 21.6 | 225.2 | 1.36 | 14.4 | 0.17 | 16% | 9.0 | 14.6 |
-| Geno Smith | NYJ | MIA | 100% | 21.1 | 232.9 | 1.37 | 9.1 | 0.10 | 9% | 8.8 | 15.1 |
+| Brock Purdy | SF | ATL | 100% | 20.4 | 217.3 | 1.86 | 17.9 | 0.21 | 19% | 12.4 | 18.2 |
+| Jordan Love | GB | DET | 98% | 22.9 | 289.4 | 1.94 | 5.2 | 0.07 | 7% | 11.8 | 18.2 |
+| Matthew Stafford | LA | LV | 100% | 23.8 | 258.2 | 1.83 | 3.4 | 0.09 | 9% | 11.6 | 16.5 |
+| Jared Goff | DET | GB | 100% | 22.2 | 231.1 | 1.74 | 4.8 | 0.11 | 11% | 11.1 | 15.9 |
+| C.J. Stroud | HOU | NYG | 100% | 20.7 | 239.9 | 1.62 | 20.8 | 0.22 | 20% | 11.0 | 18.2 |
+| Joe Burrow | CIN | BAL | 100% | 23.3 | 244.2 | 1.67 | 8.0 | 0.11 | 11% | 10.7 | 16.4 |
+| Bo Nix | DEN | ARI | 100% | 18.6 | 212.9 | 1.53 | 12.8 | 0.24 | 22% | 10.6 | 15.9 |
+| Bryce Young | CAR | TB | 98% | 21.5 | 252.3 | 1.60 | 8.4 | 0.15 | 14% | 10.3 | 16.3 |
+| Kirk Cousins | LV | LA | 100% | 20.4 | 225.9 | 1.58 | 5.1 | 0.04 | 4% | 9.7 | 14.1 |
+| Aaron Rodgers | PIT | NO | 100% | 22.4 | 242.5 | 1.55 | 4.0 | 0.04 | 4% | 9.6 | 14.7 |
+| Kyler Murray | MIN | IND | 100% | 16.6 | 192.4 | 1.32 | 20.6 | 0.23 | 21% | 9.3 | 15.3 |
+| Dak Prescott | DAL | PHI | 100% | 23.9 | 257.7 | 1.37 | 8.0 | 0.15 | 14% | 9.1 | 15.7 |
+| Michael Penix Jr. | ATL | SF | 100% | 17.7 | 200.0 | 1.40 | 6.6 | 0.09 | 8% | 8.9 | 13.0 |
+| Sam Darnold | SEA | KC | 100% | 19.2 | 216.3 | 1.41 | 6.4 | 0.07 | 7% | 8.9 | 13.1 |
 
 **Running backs**
 
 | player | team | opp | p_active | rush_att_mean | rush_yds_mean | rush_td_mean | rec_mean | rec_yds_mean | rec_td_mean | any_td_pct | league_ev | ppr | dk |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Jahmyr Gibbs | DET | GB | 100% | 20.0 | 90.8 | 1.12 | 4.1 | 30.3 | 0.21 | 76% | 8.0 | 24.2 | 24.0 |
-| Christian McCaffrey | SF | ATL | 100% | 14.5 | 66.8 | 0.58 | 6.5 | 54.0 | 0.42 | 66% | 6.0 | 24.6 | 24.4 |
-| Bijan Robinson | ATL | SF | 100% | 20.7 | 103.1 | 0.81 | 4.0 | 30.4 | 0.19 | 65% | 5.9 | 23.3 | 23.0 |
-| Kyren Williams | LA | LV | 100% | 13.5 | 73.0 | 0.64 | 5.0 | 40.5 | 0.32 | 64% | 5.8 | 22.2 | 22.0 |
-| Javonte Williams | DAL | PHI | 100% | 13.6 | 53.9 | 0.79 | 2.7 | 17.0 | 0.11 | 61% | 5.4 | 15.2 | 15.0 |
-| Woody Marks | HOU | NYG | 100% | 18.7 | 81.2 | 0.76 | 1.5 | 10.8 | 0.10 | 60% | 5.2 | 15.9 | 15.7 |
-| Derrick Henry | BAL | CIN | 100% | 18.3 | 94.2 | 0.72 | 1.0 | 7.6 | 0.05 | 55% | 4.6 | 15.8 | 15.6 |
-| Chase Brown | CIN | BAL | 100% | 15.2 | 58.2 | 0.54 | 4.0 | 26.6 | 0.19 | 53% | 4.4 | 16.9 | 16.7 |
-| Kenneth Walker III | KC | SEA | 100% | 18.7 | 96.9 | 0.55 | 3.4 | 23.8 | 0.18 | 53% | 4.4 | 19.9 | 19.6 |
-| Bucky Irving | TB | CAR | 100% | 15.1 | 80.2 | 0.48 | 3.2 | 22.4 | 0.16 | 48% | 3.8 | 17.3 | 17.1 |
-| Ashton Jeanty | LV | LA | 100% | 16.3 | 59.8 | 0.39 | 3.7 | 28.7 | 0.23 | 47% | 3.7 | 16.3 | 16.1 |
-| J.K. Dobbins | DEN | ARI | 100% | 15.1 | 62.2 | 0.55 | 1.2 | 9.3 | 0.05 | 46% | 3.6 | 11.9 | 11.8 |
-| Aaron Jones | MIN | IND | 100% | 18.8 | 84.7 | 0.45 | 2.3 | 17.4 | 0.12 | 45% | 3.5 | 16.0 | 15.8 |
-| Jaylen Warren | PIT | NO | 100% | 11.7 | 66.2 | 0.33 | 3.9 | 34.0 | 0.20 | 42% | 3.2 | 17.1 | 16.9 |
-| Chuba Hubbard | CAR | TB | 95% | 15.5 | 66.7 | 0.44 | 1.9 | 14.5 | 0.11 | 43% | 3.1 | 13.3 | 12.5 |
-| Emanuel Wilson | SEA | KC | 100% | 15.4 | 58.7 | 0.46 | 1.2 | 8.4 | 0.06 | 41% | 3.1 | 11.0 | 10.8 |
-| Jonathan Taylor | IND | MIN | 95% | 17.8 | 76.9 | 0.47 | 2.8 | 20.3 | 0.06 | 42% | 3.0 | 15.7 | 14.7 |
-| Dameon Pierce | PHI | DAL | 100% | 12.9 | 51.7 | 0.32 | 3.4 | 25.3 | 0.14 | 37% | 2.8 | 13.8 | 13.7 |
+| Jahmyr Gibbs | DET | GB | 100% | 20.0 | 91.7 | 1.18 | 4.1 | 30.5 | 0.21 | 77% | 8.3 | 24.6 | 24.4 |
+| Christian McCaffrey | SF | ATL | 100% | 14.4 | 66.8 | 0.59 | 6.5 | 53.9 | 0.44 | 67% | 6.2 | 24.8 | 24.6 |
+| Bijan Robinson | ATL | SF | 100% | 20.6 | 102.3 | 0.81 | 4.0 | 30.5 | 0.19 | 65% | 6.0 | 23.2 | 23.0 |
+| Kyren Williams | LA | LV | 100% | 13.4 | 71.8 | 0.63 | 5.4 | 43.5 | 0.35 | 65% | 5.9 | 22.8 | 22.6 |
+| Javonte Williams | DAL | PHI | 100% | 13.7 | 54.0 | 0.77 | 2.7 | 17.2 | 0.11 | 60% | 5.3 | 15.1 | 14.9 |
+| Woody Marks | HOU | NYG | 100% | 18.6 | 80.6 | 0.73 | 1.5 | 11.1 | 0.10 | 58% | 5.0 | 15.7 | 15.5 |
+| Kenneth Walker III | KC | SEA | 100% | 18.6 | 97.2 | 0.54 | 3.4 | 24.1 | 0.18 | 52% | 4.3 | 19.9 | 19.7 |
+| Chase Brown | CIN | BAL | 100% | 15.3 | 58.2 | 0.52 | 4.0 | 26.1 | 0.19 | 53% | 4.3 | 16.7 | 16.5 |
+| Derrick Henry | BAL | CIN | 100% | 18.2 | 94.4 | 0.64 | 1.0 | 7.7 | 0.04 | 51% | 4.1 | 15.3 | 15.1 |
+| Ashton Jeanty | LV | LA | 100% | 16.2 | 59.4 | 0.37 | 3.7 | 28.6 | 0.24 | 47% | 3.7 | 16.1 | 15.9 |
+| J.K. Dobbins | DEN | ARI | 100% | 15.1 | 61.9 | 0.55 | 1.2 | 9.3 | 0.04 | 46% | 3.6 | 11.9 | 11.7 |
+| Aaron Jones | MIN | IND | 100% | 19.3 | 87.3 | 0.46 | 2.4 | 17.7 | 0.13 | 46% | 3.6 | 16.4 | 16.2 |
+| Bucky Irving | TB | CAR | 95% | 15.0 | 79.0 | 0.47 | 3.2 | 21.9 | 0.15 | 47% | 3.5 | 16.9 | 15.9 |
+| Jaylen Warren | PIT | NO | 100% | 13.4 | 74.5 | 0.36 | 4.0 | 35.7 | 0.20 | 44% | 3.3 | 18.4 | 18.2 |
+| Chuba Hubbard | CAR | TB | 95% | 15.6 | 67.0 | 0.44 | 1.9 | 14.5 | 0.11 | 44% | 3.2 | 13.4 | 12.6 |
+| Emanuel Wilson | SEA | KC | 100% | 15.5 | 59.7 | 0.46 | 1.2 | 8.5 | 0.05 | 41% | 3.1 | 11.1 | 10.9 |
+| Jonathan Taylor | IND | MIN | 95% | 17.8 | 77.3 | 0.47 | 2.8 | 20.6 | 0.06 | 42% | 3.0 | 15.7 | 14.8 |
+| Dameon Pierce | PHI | DAL | 100% | 12.9 | 51.8 | 0.31 | 3.3 | 25.0 | 0.15 | 38% | 2.8 | 13.8 | 13.6 |
 
 **Wide receivers**
 
 | player | team | opp | p_active | tgt_mean | rec_mean | rec_yds_mean | rec_td_mean | any_td_pct | league_ev | ppr | dk |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Amon-Ra St. Brown | DET | GB | 100% | 10.3 | 6.5 | 66.4 | 0.60 | 46% | 3.6 | 16.7 | 16.7 |
-| Matthew Golden | GB | DET | 96% | 8.5 | 4.9 | 75.3 | 0.58 | 45% | 3.3 | 16.0 | 15.2 |
-| Jaxon Smith-Njigba | SEA | KC | 100% | 11.0 | 6.9 | 93.2 | 0.55 | 43% | 3.3 | 19.6 | 19.6 |
-| Ja'Marr Chase | CIN | BAL | 100% | 9.1 | 6.2 | 67.0 | 0.51 | 41% | 3.0 | 15.9 | 15.9 |
-| Christian Watson | GB | DET | 96% | 8.6 | 5.1 | 89.5 | 0.49 | 39% | 2.8 | 17.0 | 16.2 |
-| CeeDee Lamb | DAL | PHI | 100% | 10.6 | 6.5 | 80.8 | 0.42 | 35% | 2.6 | 17.2 | 17.2 |
-| Tetairoa McMillan | CAR | TB | 100% | 9.1 | 5.4 | 77.1 | 0.42 | 35% | 2.5 | 15.7 | 15.6 |
-| Puka Nacua | LA | LV | 67% | 12.1 | 8.0 | 102.3 | 0.58 | 47% | 2.5 | 22.1 | 14.7 |
-| Nico Collins | HOU | NYG | 96% | 7.7 | 4.8 | 66.0 | 0.38 | 36% | 2.5 | 14.2 | 13.6 |
-| DK Metcalf | PIT | NO | 100% | 9.5 | 5.4 | 68.8 | 0.37 | 32% | 2.3 | 14.6 | 14.6 |
-| Drake London | ATL | SF | 100% | 8.7 | 5.2 | 77.0 | 0.36 | 32% | 2.2 | 15.3 | 15.2 |
-| Chris Olave | NO | PIT | 100% | 9.4 | 5.7 | 72.3 | 0.36 | 31% | 2.2 | 15.1 | 15.1 |
-| Zay Flowers | BAL | CIN | 100% | 7.5 | 5.1 | 75.2 | 0.35 | 31% | 2.2 | 15.0 | 15.0 |
-| Germie Bernard | PIT | NO | 100% | 6.7 | 4.1 | 48.8 | 0.35 | 30% | 2.1 | 11.2 | 11.2 |
-| Justin Jefferson | MIN | IND | 95% | 7.1 | 4.4 | 59.2 | 0.36 | 31% | 2.1 | 12.6 | 11.9 |
-| Courtland Sutton | DEN | ARI | 100% | 5.3 | 3.0 | 40.0 | 0.34 | 29% | 2.0 | 9.1 | 9.0 |
-| Jalen Coker | CAR | TB | 100% | 7.1 | 4.5 | 57.3 | 0.33 | 28% | 2.0 | 12.1 | 12.1 |
-| Garrett Wilson | NYJ | MIA | 100% | 6.9 | 4.9 | 58.7 | 0.33 | 28% | 2.0 | 12.8 | 12.7 |
-| Tee Higgins | CIN | BAL | 100% | 7.5 | 4.9 | 68.2 | 0.32 | 28% | 1.9 | 13.7 | 13.6 |
-| Jaylen Waddle | DEN | ARI | 96% | 6.8 | 4.0 | 52.1 | 0.33 | 29% | 1.9 | 11.4 | 10.8 |
-| George Pickens | DAL | PHI | 96% | 8.7 | 5.3 | 69.7 | 0.31 | 27% | 1.8 | 14.1 | 13.4 |
-| Malik Nabers | NYG | HOU | 100% | 8.4 | 5.0 | 66.4 | 0.29 | 25% | 1.7 | 13.4 | 13.3 |
-| Tre Tucker | LV | LA | 100% | 5.7 | 3.3 | 45.9 | 0.27 | 24% | 1.6 | 9.7 | 9.6 |
-| Michael Wilson | ARI | DEN | 100% | 8.3 | 4.6 | 48.1 | 0.27 | 24% | 1.6 | 11.1 | 11.0 |
+| Amon-Ra St. Brown | DET | GB | 100% | 10.3 | 6.5 | 67.1 | 0.62 | 47% | 3.7 | 16.9 | 16.8 |
+| Jaxon Smith-Njigba | SEA | KC | 100% | 11.1 | 6.9 | 94.8 | 0.56 | 44% | 3.4 | 19.8 | 19.8 |
+| Matthew Golden | GB | DET | 96% | 8.5 | 4.9 | 75.2 | 0.58 | 45% | 3.3 | 16.0 | 15.3 |
+| Ja'Marr Chase | CIN | BAL | 100% | 9.0 | 6.1 | 66.5 | 0.50 | 40% | 3.0 | 15.8 | 15.7 |
+| Christian Watson | GB | DET | 96% | 8.7 | 5.1 | 89.9 | 0.50 | 40% | 2.9 | 17.1 | 16.3 |
+| Tetairoa McMillan | CAR | TB | 100% | 9.0 | 5.4 | 76.4 | 0.43 | 36% | 2.6 | 15.6 | 15.5 |
+| CeeDee Lamb | DAL | PHI | 100% | 10.8 | 6.7 | 82.7 | 0.41 | 35% | 2.5 | 17.6 | 17.5 |
+| Nico Collins | HOU | NYG | 96% | 7.8 | 4.8 | 66.2 | 0.37 | 34% | 2.4 | 14.2 | 13.6 |
+| Drake London | ATL | SF | 100% | 8.7 | 5.3 | 77.1 | 0.38 | 32% | 2.3 | 15.4 | 15.4 |
+| DK Metcalf | PIT | NO | 100% | 9.9 | 5.6 | 71.3 | 0.37 | 32% | 2.3 | 15.1 | 15.0 |
+| Chris Olave | NO | PIT | 100% | 9.4 | 5.7 | 70.9 | 0.36 | 31% | 2.2 | 14.9 | 14.9 |
+| Justin Jefferson | MIN | IND | 95% | 7.3 | 4.5 | 60.0 | 0.37 | 31% | 2.1 | 12.8 | 12.1 |
+| Germie Bernard | PIT | NO | 100% | 7.0 | 4.3 | 50.7 | 0.35 | 30% | 2.1 | 11.5 | 11.5 |
+| Courtland Sutton | DEN | ARI | 100% | 5.4 | 3.0 | 40.6 | 0.35 | 30% | 2.1 | 9.2 | 9.2 |
+| Zay Flowers | BAL | CIN | 100% | 7.5 | 5.1 | 75.3 | 0.32 | 29% | 2.0 | 14.8 | 14.8 |
+| Jalen Coker | CAR | TB | 100% | 7.0 | 4.4 | 56.6 | 0.33 | 28% | 2.0 | 12.0 | 12.0 |
+| Garrett Wilson | NYJ | MIA | 100% | 7.0 | 5.0 | 58.3 | 0.32 | 28% | 1.9 | 12.7 | 12.7 |
+| Tee Higgins | CIN | BAL | 100% | 7.4 | 4.8 | 66.9 | 0.32 | 28% | 1.9 | 13.4 | 13.4 |
+| Jaylen Waddle | DEN | ARI | 95% | 6.9 | 4.1 | 53.4 | 0.33 | 29% | 1.9 | 11.5 | 10.9 |
+| Puka Nacua | LA | LV | 50% | 10.8 | 7.2 | 93.3 | 0.56 | 46% | 1.8 | 20.3 | 10.1 |
+| George Pickens | DAL | PHI | 95% | 8.9 | 5.4 | 71.9 | 0.30 | 26% | 1.7 | 14.4 | 13.6 |
+| Malik Nabers | NYG | HOU | 100% | 8.4 | 5.0 | 66.1 | 0.29 | 26% | 1.7 | 13.4 | 13.3 |
+| Tre Tucker | LV | LA | 100% | 5.7 | 3.3 | 45.8 | 0.28 | 25% | 1.7 | 9.7 | 9.7 |
+| Michael Wilson | ARI | DEN | 100% | 8.4 | 4.7 | 48.9 | 0.27 | 24% | 1.6 | 11.2 | 11.1 |
 
 **Tight ends**
 
 | player | team | opp | p_active | tgt_mean | rec_mean | rec_yds_mean | rec_td_mean | any_td_pct | league_ev | ppr | dk |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| George Kittle | SF | ATL | 100% | 9.3 | 6.6 | 77.1 | 0.76 | 54% | 4.6 | 18.9 | 18.9 |
-| Sam LaPorta | DET | GB | 100% | 8.0 | 5.6 | 56.3 | 0.44 | 36% | 2.7 | 13.9 | 13.8 |
-| Tucker Kraft | GB | DET | 100% | 7.4 | 4.9 | 56.9 | 0.42 | 36% | 2.6 | 13.3 | 13.2 |
-| Brock Bowers | LV | LA | 95% | 9.6 | 6.0 | 66.1 | 0.45 | 37% | 2.6 | 15.3 | 14.4 |
-| Trey McBride | ARI | DEN | 100% | 11.8 | 7.7 | 66.1 | 0.39 | 33% | 2.3 | 16.6 | 16.5 |
-| Colby Parkinson | LA | LV | 95% | 5.2 | 3.6 | 37.0 | 0.36 | 31% | 2.1 | 9.5 | 8.9 |
-| Isaiah Likely | NYG | HOU | 100% | 8.9 | 5.8 | 62.7 | 0.33 | 28% | 2.0 | 14.0 | 13.9 |
-| Pat Freiermuth | PIT | NO | 100% | 5.8 | 3.8 | 40.9 | 0.31 | 28% | 1.9 | 9.9 | 9.9 |
-| Tyler Higbee | LA | LV | 100% | 6.5 | 4.4 | 49.1 | 0.31 | 27% | 1.9 | 11.2 | 11.2 |
-| Kyle Pitts | ATL | SF | 100% | 5.0 | 3.3 | 32.9 | 0.31 | 27% | 1.9 | 8.5 | 8.5 |
-| Juwan Johnson | NO | PIT | 100% | 6.4 | 4.2 | 42.6 | 0.31 | 27% | 1.8 | 10.3 | 10.3 |
-| Dalton Schultz | HOU | NYG | 96% | 5.7 | 4.0 | 37.7 | 0.32 | 27% | 1.8 | 9.6 | 9.2 |
-| T.J. Hockenson | MIN | IND | 95% | 5.0 | 3.4 | 34.1 | 0.31 | 27% | 1.7 | 8.7 | 8.2 |
-| AJ Barner | SEA | KC | 100% | 4.7 | 3.0 | 28.7 | 0.26 | 25% | 1.7 | 7.7 | 7.6 |
+| George Kittle | SF | ATL | 100% | 9.3 | 6.6 | 77.4 | 0.78 | 56% | 4.7 | 19.1 | 19.0 |
+| Sam LaPorta | DET | GB | 100% | 8.1 | 5.6 | 57.3 | 0.46 | 38% | 2.8 | 14.1 | 14.1 |
+| Tucker Kraft | GB | DET | 100% | 7.4 | 4.9 | 56.7 | 0.43 | 37% | 2.7 | 13.3 | 13.3 |
+| Brock Bowers | LV | LA | 95% | 9.6 | 6.0 | 66.7 | 0.45 | 37% | 2.6 | 15.4 | 14.6 |
+| Colby Parkinson | LA | LV | 95% | 5.9 | 4.1 | 42.4 | 0.40 | 33% | 2.3 | 10.7 | 10.1 |
+| Trey McBride | ARI | DEN | 100% | 11.8 | 7.7 | 66.1 | 0.38 | 32% | 2.3 | 16.5 | 16.4 |
+| Tyler Higbee | LA | LV | 100% | 7.0 | 4.7 | 52.7 | 0.33 | 29% | 2.0 | 12.0 | 11.9 |
+| Kyle Pitts | ATL | SF | 100% | 5.1 | 3.4 | 33.1 | 0.33 | 28% | 2.0 | 8.6 | 8.6 |
+| Isaiah Likely | NYG | HOU | 100% | 8.9 | 5.7 | 62.0 | 0.31 | 27% | 1.9 | 13.8 | 13.7 |
+| Pat Freiermuth | PIT | NO | 100% | 6.0 | 4.0 | 42.9 | 0.30 | 27% | 1.9 | 10.3 | 10.2 |
+| T.J. Hockenson | MIN | IND | 95% | 5.1 | 3.5 | 34.9 | 0.32 | 28% | 1.8 | 8.9 | 8.4 |
+| Juwan Johnson | NO | PIT | 100% | 6.4 | 4.2 | 42.2 | 0.30 | 26% | 1.8 | 10.3 | 10.2 |
+| Dalton Schultz | HOU | NYG | 95% | 5.8 | 4.0 | 37.6 | 0.30 | 27% | 1.7 | 9.6 | 9.0 |
+| AJ Barner | SEA | KC | 100% | 4.8 | 3.0 | 28.7 | 0.27 | 25% | 1.7 | 7.7 | 7.7 |
 
-**Kickers (this league: FG 3, XP 1; ranked by team implied points, the only validated signal; differences are within noise)**: DET 8.1; HOU 8.0; SF 7.8; LA 7.8; GB 7.7; CIN 7.7; DAL 7.6; MIN 7.5; DEN 7.5; PIT 7.5
+**Kickers (this league: FG 3, XP 1; ranked by team implied points, the only validated signal; differences are within noise)**: DET 8.2; SF 7.9; HOU 7.8; LA 7.8; GB 7.7; CIN 7.6; MIN 7.5; ATL 7.5; DAL 7.5; DEN 7.5
 
 ## 6. Touchdown boards (anytime counts rushing and receiving TDs; fair odds; 'play at' = fair + 12% cushion)
 
@@ -297,174 +299,149 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 
 | player | team | opp | pos | prob | adj | fair | playat | p_active | note |
 |---|---|---|---|---|---|---|---|---|---|
-| Jahmyr Gibbs | DET | GB | RB | 75.6% | 75.6% | -310 | -208 | 100% |  |
-| Christian McCaffrey | SF | ATL | RB | 65.5% | 65.5% | -190 | -141 | 100% |  |
-| Bijan Robinson | ATL | SF | RB | 64.8% | 64.8% | -184 | -138 | 100% |  |
-| Kyren Williams | LA | LV | RB | 63.6% | 63.6% | -175 | -131 | 100% |  |
-| Javonte Williams | DAL | PHI | RB | 60.7% | 60.7% | -154 | -118 | 100% | opp QB: fill-in QB (Tanner McKee) |
-| Woody Marks | HOU | NYG | RB | 59.7% | 59.7% | -148 | -114 | 100% | opp QB: fill-in QB (J.J. McCarthy) |
-| Derrick Henry | BAL | CIN | RB | 54.7% | 54.7% | -121 | +105 | 100% | QB1 designation (start probability 35%) |
-| George Kittle | SF | ATL | TE | 54.3% | 54.3% | -119 | +106 | 100% |  |
-| Kenneth Walker III | KC | SEA | RB | 53.4% | 53.4% | -115 | +110 | 100% |  |
-| Chase Brown | CIN | BAL | RB | 53.2% | 53.2% | -114 | +111 | 100% | opp QB: QB1 designation (start probability 35%) |
-| Bucky Irving | TB | CAR | RB | 47.9% | 47.7% | +109 | +134 | 100% | QB1 designation (start probability 65%) |
-| Ashton Jeanty | LV | LA | RB | 47.2% | 47.2% | +112 | +137 | 100% |  |
-| Amon-Ra St. Brown | DET | GB | WR | 46.5% | 46.5% | +115 | +141 | 100% |  |
-| J.K. Dobbins | DEN | ARI | RB | 46.0% | 46.0% | +118 | +144 | 100% |  |
-| Aaron Jones | MIN | IND | RB | 44.6% | 44.6% | +124 | +151 | 100% |  |
-| Jaxon Smith-Njigba | SEA | KC | WR | 43.3% | 43.3% | +131 | +159 | 100% |  |
-| Matthew Golden | GB | DET | WR | 45.1% | 43.2% | +122 | +148 | 96% |  |
-| Jaylen Warren | PIT | NO | RB | 41.8% | 41.8% | +139 | +168 | 100% |  |
-| Chuba Hubbard | CAR | TB | RB | 42.9% | 40.8% | +133 | +161 | 95% | opp QB: QB1 designation (start probability 65%) |
-| Emanuel Wilson | SEA | KC | RB | 40.7% | 40.7% | +146 | +175 | 100% |  |
-| Ja'Marr Chase | CIN | BAL | WR | 40.6% | 40.6% | +146 | +176 | 100% | opp QB: QB1 designation (start probability 35%) |
-| Jonathan Taylor | IND | MIN | RB | 42.2% | 40.1% | +137 | +165 | 95% |  |
-| Christian Watson | GB | DET | WR | 39.0% | 37.4% | +156 | +187 | 96% |  |
-| Dameon Pierce | PHI | DAL | RB | 37.2% | 37.2% | +168 | +201 | 100% | fill-in QB (Tanner McKee) |
-| Sam LaPorta | DET | GB | TE | 36.5% | 36.5% | +174 | +207 | 100% |  |
-| Tucker Kraft | GB | DET | TE | 36.2% | 36.2% | +177 | +210 | 100% |  |
-| Braelon Allen | NYJ | MIA | RB | 36.1% | 36.1% | +177 | +210 | 100% |  |
-| CeeDee Lamb | DAL | PHI | WR | 35.4% | 35.4% | +182 | +216 | 100% | opp QB: fill-in QB (Tanner McKee) |
-| MarShawn Lloyd | GB | DET | RB | 35.3% | 35.3% | +183 | +217 | 100% |  |
-| Brock Bowers | LV | LA | TE | 37.1% | 35.1% | +170 | +202 | 95% |  |
+| Jahmyr Gibbs | DET | GB | RB | 77.3% | 77.3% | -341 | -223 | 100% |  |
+| Christian McCaffrey | SF | ATL | RB | 66.6% | 66.6% | -199 | -147 | 100% |  |
+| Bijan Robinson | ATL | SF | RB | 65.0% | 65.0% | -186 | -138 | 100% |  |
+| Kyren Williams | LA | LV | RB | 64.7% | 64.7% | -183 | -137 | 100% |  |
+| Javonte Williams | DAL | PHI | RB | 60.0% | 60.0% | -150 | -115 | 100% | opp QB: fill-in QB (Tanner McKee) |
+| Woody Marks | HOU | NYG | RB | 57.9% | 57.9% | -138 | -107 | 100% | opp QB: fill-in QB (J.J. McCarthy) |
+| George Kittle | SF | ATL | TE | 55.6% | 55.6% | -125 | +101 | 100% |  |
+| Chase Brown | CIN | BAL | RB | 52.7% | 52.7% | -111 | +113 | 100% | opp QB: fill-in QB (QB1 Out) |
+| Kenneth Walker III | KC | SEA | RB | 52.5% | 52.5% | -110 | +113 | 100% |  |
+| Derrick Henry | BAL | CIN | RB | 50.8% | 50.8% | -103 | +120 | 100% | fill-in QB (QB1 Out) |
+| Amon-Ra St. Brown | DET | GB | WR | 47.0% | 47.0% | +113 | +138 | 100% |  |
+| Ashton Jeanty | LV | LA | RB | 46.7% | 46.7% | +114 | +140 | 100% |  |
+| Aaron Jones | MIN | IND | RB | 46.0% | 46.0% | +117 | +144 | 100% |  |
+| J.K. Dobbins | DEN | ARI | RB | 45.9% | 45.9% | +118 | +144 | 100% |  |
+| Bucky Irving | TB | CAR | RB | 46.8% | 44.5% | +114 | +139 | 95% | QB1 designation (start probability 65%) |
+| Jaylen Warren | PIT | NO | RB | 43.8% | 43.8% | +128 | +155 | 100% |  |
+| Jaxon Smith-Njigba | SEA | KC | WR | 43.7% | 43.7% | +129 | +156 | 100% |  |
+| Matthew Golden | GB | DET | WR | 45.0% | 43.1% | +122 | +149 | 96% |  |
+| Chuba Hubbard | CAR | TB | RB | 43.5% | 41.4% | +130 | +157 | 95% | opp QB: QB1 designation (start probability 65%) |
+| Emanuel Wilson | SEA | KC | RB | 41.2% | 41.2% | +142 | +172 | 100% |  |
+| Ja'Marr Chase | CIN | BAL | WR | 40.0% | 40.0% | +150 | +180 | 100% | opp QB: fill-in QB (QB1 Out) |
+| Jonathan Taylor | IND | MIN | RB | 41.6% | 39.6% | +140 | +169 | 95% |  |
+| Christian Watson | GB | DET | WR | 40.2% | 38.5% | +149 | +179 | 96% |  |
+| Dameon Pierce | PHI | DAL | RB | 38.0% | 38.0% | +164 | +195 | 100% | fill-in QB (Tanner McKee) |
+| Sam LaPorta | DET | GB | TE | 37.6% | 37.6% | +166 | +198 | 100% |  |
+| Tucker Kraft | GB | DET | TE | 36.7% | 36.7% | +172 | +205 | 100% |  |
+| Braelon Allen | NYJ | MIA | RB | 35.9% | 35.9% | +178 | +212 | 100% |  |
+| Tetairoa McMillan | CAR | TB | WR | 35.7% | 35.7% | +180 | +213 | 100% | opp QB: QB1 designation (start probability 65%) |
+| MarShawn Lloyd | GB | DET | RB | 35.6% | 35.6% | +181 | +214 | 100% |  |
+| Brock Bowers | LV | LA | TE | 37.4% | 35.5% | +167 | +199 | 95% |  |
 
 **2+ TD (top 10)**
 
 | player | team | opp | prob | fair |
 |---|---|---|---|---|
-| Jahmyr Gibbs | DET | GB | 39.3% | +154 |
-| Christian McCaffrey | SF | ATL | 26.8% | +274 |
-| Bijan Robinson | ATL | SF | 26.2% | +282 |
-| Kyren Williams | LA | LV | 24.9% | +301 |
-| Javonte Williams | DAL | PHI | 22.5% | +345 |
-| Woody Marks | HOU | NYG | 21.1% | +375 |
-| George Kittle | SF | ATL | 17.9% | +459 |
-| Derrick Henry | BAL | CIN | 17.8% | +462 |
-| Chase Brown | CIN | BAL | 16.4% | +510 |
-| Kenneth Walker III | KC | SEA | 16.3% | +513 |
+| Jahmyr Gibbs | DET | GB | 41.5% | +141 |
+| Christian McCaffrey | SF | ATL | 27.6% | +262 |
+| Bijan Robinson | ATL | SF | 26.3% | +280 |
+| Kyren Williams | LA | LV | 25.3% | +296 |
+| Javonte Williams | DAL | PHI | 21.5% | +366 |
+| Woody Marks | HOU | NYG | 19.5% | +413 |
+| George Kittle | SF | ATL | 18.3% | +447 |
+| Kenneth Walker III | KC | SEA | 16.4% | +511 |
+| Chase Brown | CIN | BAL | 15.7% | +537 |
+| Derrick Henry | BAL | CIN | 14.7% | +579 |
 
 **First TD (top 10)**
 
 | player | team | opp | prob | fair |
 |---|---|---|---|---|
-| Jahmyr Gibbs | DET | GB | 21.6% | +363 |
-| Woody Marks | HOU | NYG | 19.5% | +413 |
-| Kyren Williams | LA | LV | 17.8% | +462 |
-| Javonte Williams | DAL | PHI | 17.6% | +467 |
-| Christian McCaffrey | SF | ATL | 17.4% | +474 |
-| Bijan Robinson | ATL | SF | 17.0% | +488 |
-| Kenneth Walker III | KC | SEA | 16.4% | +508 |
-| Aaron Jones | MIN | IND | 15.2% | +558 |
-| Derrick Henry | BAL | CIN | 14.2% | +604 |
-| Bucky Irving | TB | CAR | 13.8% | +624 |
+| Jahmyr Gibbs | DET | GB | 22.0% | +354 |
+| Woody Marks | HOU | NYG | 19.3% | +419 |
+| Kyren Williams | LA | LV | 18.1% | +453 |
+| Javonte Williams | DAL | PHI | 17.7% | +466 |
+| Christian McCaffrey | SF | ATL | 17.4% | +473 |
+| Bijan Robinson | ATL | SF | 16.7% | +499 |
+| Kenneth Walker III | KC | SEA | 16.1% | +520 |
+| Aaron Jones | MIN | IND | 15.7% | +536 |
+| Chase Brown | CIN | BAL | 14.1% | +608 |
+| Jonathan Taylor | IND | MIN | 13.5% | +639 |
 
-**Sneaky longshots** (8% to 25% anytime, active 90%+): Rico Dowdle (PIT) 25% fair +300, take at +348+; George Holani (SEA) 25% fair +304, take at +352+; AJ Barner (SEA) 25% fair +307, take at +356+; Samaje Perine (CIN) 25% fair +307, take at +356+; Tre Tucker (LV) 24% fair +313, take at +362+; Michael Wilson (ARI) 24% fair +320, take at +370+; Travis Kelce (KC) 25% fair +304, take at +352+; Darnell Washington (PIT) 23% fair +326, take at +377+; Wan'Dale Robinson (TEN) 23% fair +328, take at +380+; Devaughn Vele (NO) 23% fair +332, take at +384+; Mike Gesicki (CIN) 23% fair +333, take at +385+; KC Concepcion (CLE) 24% fair +321, take at +372+; Mark Andrews (BAL) 24% fair +319, take at +369+; Ryan Flournoy (DAL) 22% fair +346, take at +400+; Xavier Worthy (KC) 22% fair +347, take at +401+; Cade Otton (TB) 22% fair +347, take at +401+; Darren Waller (CAR) 23% fair +333, take at +386+; Bo Nix (DEN) 22% fair +358, take at +412+; Jahan Dotson (ATL) 22% fair +364, take at +420+; Malik Washington (MIA) 21% fair +367, take at +423+
+**Sneaky longshots** (8% to 25% anytime, active 90%+): Tre Tucker (LV) 25% fair +301, take at +350+; Alvin Kamara (NO) 25% fair +303, take at +351+; George Holani (SEA) 25% fair +308, take at +357+; Samaje Perine (CIN) 24% fair +314, take at +363+; Travis Kelce (KC) 25% fair +303, take at +351+; Michael Wilson (ARI) 24% fair +323, take at +373+; Darius Cooper (PHI) 24% fair +325, take at +376+; Mike Gesicki (CIN) 23% fair +328, take at +380+; Darnell Washington (PIT) 23% fair +330, take at +382+; Wan'Dale Robinson (TEN) 23% fair +331, take at +383+; KC Concepcion (CLE) 24% fair +313, take at +362+; Jahan Dotson (ATL) 23% fair +342, take at +395+; Xavier Worthy (KC) 22% fair +346, take at +399+; Ryan Flournoy (DAL) 22% fair +348, take at +402+; Darren Waller (CAR) 23% fair +326, take at +378+; Kaelon Black (SF) 22% fair +354, take at +409+; Bo Nix (DEN) 22% fair +356, take at +410+; Devaughn Vele (NO) 22% fair +358, take at +413+; Malik Washington (MIA) 22% fair +361, take at +417+; Jameson Williams (DET) 22% fair +363, take at +418+
 
 ## 7. Single-line screen (DraftKings lines via ESPN, assumed -110)
 
-448 lines screened: **74 PLAY** (45 receiving, tagged thin: W6 receiving lines hit 35 to 52 percent, Thursday 7 of 11), 42 LEAN (the 25 best shown). Pulled by rule: receiving LEANs, pass-volume UNDERs, UNDERs on a teammate of a player now Out or Questionable ('role change'). PLAY = shrunk probability about 55.4%+ (about 61% raw), active 95%+, side cleared in at least half of the player's games. 'Agree' = the model-only track picks the same side.
+484 lines screened: **49 PLAY** (24 receiving, tagged thin: W6 receiving lines hit 35 to 52 percent, Thursday 7 of 11), 47 LEAN (the 25 best shown). Pulled by rule: receiving LEANs, pass-volume UNDERs, UNDERs on a teammate of a player now Out or Questionable ('role change'). PLAY = shrunk probability about 55.4%+ (about 61% raw), active 95%+, side cleared in at least half of the player's games. 'Agree' = the model-only track picks the same side.
 
 | label | game | player | market | side | line | model_p | shrunk | fair | log | agree | flag | caution |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| PLAY | CIN@BAL | Samaje Perine | rush_att | UNDER | 8.5 | 83% | 67% | -200 | 4/5 | yes |  | opp QB: BAL QB1 designation (start probability 35%) |
-| PLAY (thin) | DEN@ARI | Jalen Brooks | rec_yds | UNDER | 16.5 | 79% | 64% | -180 | 2/3 | yes |  |  |
-| PLAY | DAL@PHI | Javonte Williams | rush_att | UNDER | 16.5 | 78% | 64% | -179 | 4/6 | yes |  | opp QB: PHI fill-in QB (Tanner McKee) |
-| PLAY (thin) | KC@SEA | Jalen Royals | rec_yds | UNDER | 17.5 | 78% | 64% | -176 | 3/4 | yes |  |  |
-| PLAY | DEN@ARI | Jacoby Brissett | rush_yds | OVER | 6.5 | 77% | 64% | -174 | 4/6 | yes |  |  |
-| PLAY (thin) | KC@SEA | Jalen Royals | rec | UNDER | 1.5 | 77% | 63% | -173 | 2/4 | yes |  |  |
-| PLAY (thin) | NYG@HOU | Xavier Hutchinson | rec | OVER | 1.5 | 76% | 63% | -169 | 6/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
-| PLAY (thin) | NYG@HOU | Xavier Hutchinson | rec_yds | OVER | 13.5 | 75% | 63% | -168 | 5/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
-| PLAY | GB@DET | Jordan Love | rush_yds | UNDER | 6.5 | 75% | 62% | -166 | 4/5 | yes |  |  |
-| PLAY | TB@CAR | Bryce Young | rush_yds | UNDER | 10.5 | 74% | 62% | -162 | 4/4 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
-| PLAY | PIT@NO | Alvin Kamara | rush_yds | OVER | 15.5 | 74% | 62% | -162 | 3/5 | yes |  |  |
-| PLAY | IND@MIN | Kyler Murray | rush_att | UNDER | 5.5 | 74% | 62% | -162 | 2/4 | yes |  |  |
-| PLAY | IND@MIN | Kyler Murray | rush_yds | UNDER | 26.5 | 73% | 62% | -161 | 3/4 | yes |  |  |
+| PLAY | CIN@BAL | Chase Brown | rush_att | OVER | 11.5 | 83% | 66% | -198 | 4/5 | yes |  | opp QB: BAL fill-in QB (QB1 Out) |
+| PLAY (thin) | NYG@HOU | Woody Marks | rec | UNDER | 2.5 | 79% | 65% | -182 | 4/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
+| PLAY | DAL@PHI | Javonte Williams | rush_att | UNDER | 16.5 | 77% | 64% | -176 | 4/6 | yes |  | opp QB: PHI fill-in QB (Tanner McKee) |
+| PLAY | DEN@ARI | Jacoby Brissett | rush_yds | OVER | 6.5 | 77% | 64% | -175 | 4/6 | yes |  |  |
+| PLAY | TB@CAR | Bryce Young | rush_yds | UNDER | 11.5 | 77% | 63% | -173 | 4/4 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
+| PLAY (thin) | DEN@ARI | Tyler Allgeier | rec | UNDER | 2.5 | 77% | 63% | -172 | 5/6 | yes |  |  |
+| PLAY (thin) | NYG@HOU | Xavier Hutchinson | rec | OVER | 1.5 | 76% | 63% | -170 | 6/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
+| PLAY | KC@SEA | George Holani | rush_yds | OVER | 13.5 | 76% | 63% | -170 | 3/6 | yes |  |  |
+| PLAY | GB@DET | Jordan Love | rush_yds | UNDER | 6.5 | 75% | 62% | -167 | 4/5 | yes |  |  |
+| PLAY (thin) | NYG@HOU | Kayshon Boutte | rec_yds | OVER | 9.5 | 75% | 62% | -166 | 6/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
+| PLAY | CIN@BAL | Samaje Perine | rush_att | UNDER | 7.5 | 74% | 62% | -164 | 4/5 | yes |  | opp QB: BAL fill-in QB (QB1 Out) |
+| PLAY (thin) | PIT@NO | Jaylen Warren | rec | OVER | 2.5 | 73% | 62% | -161 | 4/6 | yes |  |  |
 | PLAY (thin) | TB@CAR | Tommy Tremble | rec | OVER | 1.5 | 73% | 61% | -159 | 4/5 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
-| PLAY | SF@ATL | Michael Penix Jr. | rush_yds | OVER | 0.5 | 72% | 61% | -157 | 2/4 | yes |  |  |
-| PLAY (thin) | IND@MIN | Jauan Jennings | rec | OVER | 0.5 | 72% | 61% | -157 | 2/4 | yes |  |  |
-| PLAY | CLE@TEN | Quinshon Judkins | rush_att | UNDER | 14.5 | 72% | 61% | -155 | 3/5 | yes |  |  |
-| PLAY | DAL@PHI | Javonte Williams | rush_yds | UNDER | 65.5 | 72% | 61% | -155 | 5/6 | yes |  | opp QB: PHI fill-in QB (Tanner McKee) |
-| PLAY (thin) | CIN@BAL | Ja'Marr Chase | rec_yds | UNDER | 83.5 | 71% | 61% | -154 | 4/5 | yes |  | opp QB: BAL QB1 designation (start probability 35%) |
-| PLAY | KC@SEA | Emmett Johnson | rush_yds | OVER | 8.5 | 71% | 61% | -154 | 3/4 | yes |  |  |
-| PLAY (thin) | NYG@HOU | Kayshon Boutte | rec_yds | OVER | 11.5 | 71% | 61% | -153 | 6/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
-| PLAY (thin) | CIN@BAL | Ja'Marr Chase | rec | UNDER | 7.5 | 71% | 60% | -153 | 4/5 | yes |  | opp QB: BAL QB1 designation (start probability 35%) |
-| PLAY (thin) | KC@SEA | Noah Gray | rec | OVER | 1.5 | 70% | 60% | -151 | 3/5 | yes |  |  |
-| PLAY | KC@SEA | Patrick Mahomes | rush_yds | UNDER | 17.5 | 70% | 60% | -151 | 4/5 | yes |  |  |
-| PLAY (thin) | TB@CAR | Chuba Hubbard | rec | UNDER | 2.5 | 70% | 60% | -150 | 3/5 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
-| PLAY (thin) | NYG@HOU | Jaylin Noel | rec | UNDER | 2.5 | 70% | 60% | -150 | 3/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
-| PLAY | NYG@HOU | C.J. Stroud | rush_yds | OVER | 9.5 | 70% | 60% | -150 | 4/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
-| PLAY | PIT@NO | Kendre Miller | rush_att | UNDER | 12.5 | 70% | 60% | -149 | 4/5 | yes |  |  |
-| PLAY | KC@SEA | George Holani | rush_yds | OVER | 15.5 | 70% | 60% | -149 | 3/6 | yes |  |  |
-| PLAY (thin) | GB@DET | Amon-Ra St. Brown | rec_yds | UNDER | 79.5 | 69% | 60% | -147 | 4/5 | yes |  |  |
-| PLAY (thin) | CLE@TEN | Jerry Jeudy | rec | OVER | 1.5 | 69% | 59% | -147 | 4/5 | yes |  |  |
-| PLAY (thin) | LA@LV | Kyren Williams | rec | OVER | 3.5 | 68% | 59% | -144 | 3/6 | yes |  |  |
-| PLAY | GB@DET | Sione Vaki | rush_yds | OVER | 8.5 | 68% | 59% | -144 | 2/4 | yes |  |  |
-| PLAY (thin) | KC@SEA | Emanuel Wilson | rec | UNDER | 1.5 | 68% | 59% | -143 | 2/4 | yes |  |  |
-| PLAY (thin) | TB@CAR | Jalen Coker | rec_yds | UNDER | 68.5 | 67% | 59% | -142 | 2/4 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
-| PLAY | SF@ATL | Bijan Robinson | rush_att | OVER | 18.5 | 67% | 59% | -142 | 3/6 | yes |  |  |
-| PLAY (thin) | NYG@HOU | Marvin Harrison Jr. | rec | UNDER | 2.5 | 67% | 59% | -141 | 3/5 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
-| PLAY | CIN@BAL | Chase Brown | rush_yds | OVER | 41.5 | 67% | 58% | -141 | 3/5 | yes |  | opp QB: BAL QB1 designation (start probability 35%) |
-| PLAY (thin) | DAL@PHI | Jake Ferguson | rec | OVER | 2.5 | 67% | 58% | -140 | 4/6 | yes |  | opp QB: PHI fill-in QB (Tanner McKee) |
-| PLAY (thin) | DAL@PHI | Jake Ferguson | rec_yds | OVER | 18.5 | 67% | 58% | -140 | 3/6 | yes |  | opp QB: PHI fill-in QB (Tanner McKee) |
-| PLAY (thin) | PIT@NO | Devaughn Vele | rec_yds | UNDER | 42.5 | 66% | 58% | -139 | 3/6 | yes |  |  |
-| PLAY (thin) | DAL@PHI | CeeDee Lamb | rec | UNDER | 7.5 | 66% | 58% | -138 | 3/6 | yes |  | opp QB: PHI fill-in QB (Tanner McKee) |
-| PLAY (thin) | KC@SEA | Tory Horton | rec | UNDER | 1.5 | 66% | 58% | -138 | 2/3 | yes |  |  |
-| PLAY | CIN@BAL | Samaje Perine | rush_yds | UNDER | 27.5 | 66% | 58% | -137 | 4/5 | yes |  | opp QB: BAL QB1 designation (start probability 35%) |
-| PLAY (thin) | NYG@HOU | Kayshon Boutte | rec | OVER | 1.5 | 65% | 58% | -137 | 5/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
-| PLAY | LA@LV | Blake Corum | rush_att | UNDER | 8.5 | 65% | 57% | -135 | 3/6 | yes |  |  |
-| PLAY | DEN@ARI | RJ Harvey | rush_yds | OVER | 16.5 | 65% | 57% | -135 | 3/5 | yes |  |  |
-| PLAY (thin) | DEN@ARI | Courtland Sutton | rec | UNDER | 3.5 | 64% | 57% | -134 | 6/6 | yes |  |  |
-| PLAY | MIA@NYJ | Malik Willis | rush_att | UNDER | 6.5 | 64% | 57% | -134 | 3/5 | yes |  |  |
-| PLAY (thin) | LA@LV | Kyren Williams | rec_yds | OVER | 26.5 | 64% | 57% | -133 | 3/6 | yes |  |  |
-| PLAY (thin) | KC@SEA | Xavier Worthy | rec_yds | UNDER | 49.5 | 64% | 57% | -133 | 3/5 | yes |  |  |
-| PLAY | DEN@ARI | J.K. Dobbins | rush_att | OVER | 13.5 | 64% | 57% | -132 | 3/6 | yes |  |  |
-| PLAY (thin) | KC@SEA | Emanuel Wilson | rec_yds | UNDER | 8.5 | 63% | 57% | -131 | 2/4 | yes |  |  |
-| PLAY (thin) | CLE@TEN | Elic Ayomanor | rec_yds | OVER | 15.5 | 63% | 57% | -131 | 3/6 | yes |  |  |
-| PLAY (thin) | TB@CAR | John Metchie III | rec_yds | OVER | 10.5 | 63% | 57% | -130 | 3/3 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
-| PLAY (thin) | TB@CAR | Tommy Tremble | rec_yds | OVER | 15.5 | 63% | 57% | -130 | 3/5 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
-| PLAY (thin) | GB@DET | Jameson Williams | rec_yds | UNDER | 52.5 | 63% | 57% | -130 | 4/5 | yes |  |  |
-| PLAY | CLE@TEN | Quinshon Judkins | rush_yds | UNDER | 45.5 | 63% | 57% | -130 | 3/5 | yes |  |  |
-| PLAY (thin) | DEN@ARI | Trey McBride | rec | OVER | 6.5 | 63% | 56% | -130 | 6/6 | yes |  |  |
-| PLAY (thin) | PIT@NO | Germie Bernard | rec_yds | UNDER | 55.5 | 63% | 56% | -129 | 3/5 | yes |  |  |
-| PLAY (thin) | GB@DET | Matthew Golden | rec | UNDER | 5.5 | 63% | 56% | -129 | 3/6 | yes |  |  |
-| PLAY (thin) | MIA@NYJ | Garrett Wilson | rec | UNDER | 5.5 | 62% | 56% | -128 | 3/6 | yes |  |  |
-| PLAY | LA@LV | Kyren Williams | rush_att | UNDER | 14.5 | 62% | 56% | -128 | 3/6 | yes |  |  |
-| PLAY (thin) | CLE@TEN | KC Concepcion | rec | UNDER | 4.5 | 62% | 56% | -128 | 4/6 | yes |  |  |
-| PLAY (thin) | SF@ATL | Jahan Dotson | rec | UNDER | 2.5 | 62% | 56% | -127 | 5/6 | yes |  |  |
-| PLAY | SF@ATL | Christian McCaffrey | rush_att | UNDER | 15.5 | 62% | 56% | -127 | 5/6 | yes |  |  |
-| PLAY (thin) | DEN@ARI | Jaylen Waddle | rec | UNDER | 4.5 | 62% | 56% | -127 | 4/6 | yes |  |  |
-| PLAY (thin) | MIA@NYJ | Garrett Wilson | rec_yds | UNDER | 63.5 | 62% | 56% | -127 | 3/6 | yes |  |  |
-| PLAY | MIA@NYJ | Ollie Gordon II | rush_yds | OVER | 54.5 | 62% | 56% | -126 | 2/4 | yes |  |  |
-| PLAY (thin) | SF@ATL | Austin Hooper | rec | OVER | 0.5 | 61% | 56% | -126 | 4/4 | yes |  |  |
-| PLAY | PIT@NO | Aaron Rodgers | pass_att | OVER | 34.5 | 61% | 56% | -126 | 4/6 | yes |  |  |
-| PLAY (thin) | CIN@BAL | Dohnte Meyers | rec | OVER | 1.5 | 61% | 56% | -125 | 3/5 | yes |  | opp QB: BAL QB1 designation (start probability 35%) |
-| PLAY (thin) | SF@ATL | Drake London | rec_yds | UNDER | 82.5 | 61% | 56% | -125 | 3/6 | yes |  |  |
-| PLAY (thin) | MIA@NYJ | Greg Dulcich | rec_yds | OVER | 21.5 | 61% | 55% | -125 | 2/4 | yes |  |  |
+| PLAY | IND@MIN | Kyler Murray | rush_yds | UNDER | 26.5 | 73% | 61% | -159 | 3/4 | yes |  |  |
+| PLAY (thin) | LA@LV | Kyren Williams | rec | OVER | 3.5 | 72% | 61% | -157 | 3/6 | yes |  |  |
+| PLAY | CLE@TEN | Quinshon Judkins | rush_att | UNDER | 14.5 | 72% | 61% | -156 | 3/5 | yes |  |  |
+| PLAY | SF@ATL | Michael Penix Jr. | rush_yds | OVER | 0.5 | 72% | 61% | -155 | 2/4 | yes |  |  |
+| PLAY (thin) | CIN@BAL | Ja'Marr Chase | rec | UNDER | 7.5 | 72% | 61% | -155 | 4/5 | yes |  | opp QB: BAL fill-in QB (QB1 Out) |
+| PLAY | KC@SEA | Emmett Johnson | rush_yds | OVER | 8.5 | 71% | 61% | -153 | 3/4 | yes |  |  |
+| PLAY (thin) | NYG@HOU | Jaylin Noel | rec | UNDER | 2.5 | 70% | 60% | -151 | 3/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
+| PLAY (thin) | TB@CAR | Chuba Hubbard | rec | UNDER | 2.5 | 70% | 60% | -151 | 3/5 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
+| PLAY | NYG@HOU | C.J. Stroud | rush_yds | OVER | 9.5 | 70% | 60% | -151 | 4/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
+| PLAY (thin) | KC@SEA | Noah Gray | rec | OVER | 1.5 | 70% | 60% | -150 | 3/5 | yes |  |  |
+| PLAY | DEN@ARI | RJ Harvey | rush_yds | OVER | 14.5 | 70% | 60% | -149 | 3/5 | yes |  |  |
+| PLAY (thin) | GB@DET | Amon-Ra St. Brown | rec_yds | UNDER | 80.5 | 70% | 60% | -149 | 4/5 | yes |  |  |
+| PLAY (thin) | CLE@TEN | Jerry Jeudy | rec | OVER | 1.5 | 69% | 60% | -148 | 4/5 | yes |  |  |
+| PLAY | PIT@NO | Alvin Kamara | rush_yds | OVER | 17.5 | 68% | 59% | -145 | 3/5 | yes |  |  |
+| PLAY | GB@DET | Sione Vaki | rush_yds | OVER | 8.5 | 68% | 59% | -145 | 2/4 | yes |  |  |
+| PLAY (thin) | DAL@PHI | Jake Ferguson | rec | OVER | 2.5 | 68% | 59% | -143 | 4/6 | yes |  | opp QB: PHI fill-in QB (Tanner McKee) |
+| PLAY | SF@ATL | Bijan Robinson | rush_att | OVER | 18.5 | 68% | 59% | -143 | 3/6 | yes |  |  |
+| PLAY (thin) | TB@CAR | Jalen Coker | rec_yds | UNDER | 68.5 | 68% | 59% | -143 | 2/4 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
+| PLAY (thin) | PIT@NO | Devaughn Vele | rec_yds | UNDER | 42.5 | 67% | 58% | -140 | 3/6 | yes |  |  |
+| PLAY (thin) | NYG@HOU | Marvin Harrison Jr. | rec | UNDER | 2.5 | 66% | 58% | -139 | 3/5 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
+| PLAY | LA@LV | Blake Corum | rush_att | UNDER | 8.5 | 66% | 58% | -139 | 3/6 | yes |  |  |
+| PLAY | PIT@NO | Aaron Rodgers | pass_cmp | OVER | 21.5 | 65% | 58% | -136 | 5/6 | yes |  |  |
+| PLAY (thin) | GB@DET | Jameson Williams | rec_yds | UNDER | 54.5 | 65% | 57% | -134 | 4/5 | yes |  |  |
+| PLAY | TB@CAR | AJ Dillon | rush_att | OVER | 3.5 | 64% | 57% | -132 | 3/4 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
+| PLAY | MIA@NYJ | Malik Willis | rush_att | UNDER | 6.5 | 64% | 57% | -132 | 3/5 | yes |  |  |
+| PLAY (thin) | MIA@NYJ | Garrett Wilson | rec_yds | UNDER | 64.5 | 64% | 57% | -132 | 3/6 | yes |  |  |
+| PLAY (thin) | TB@CAR | John Metchie III | rec_yds | OVER | 10.5 | 64% | 57% | -132 | 3/3 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
+| PLAY | KC@SEA | Kenneth Walker III | rush_yds | OVER | 80.5 | 64% | 57% | -132 | 4/5 | yes |  |  |
+| PLAY | DEN@ARI | J.K. Dobbins | rush_att | OVER | 13.5 | 63% | 57% | -131 | 3/6 | yes |  |  |
+| PLAY | LA@LV | Ashton Jeanty | rush_att | OVER | 14.5 | 63% | 57% | -131 | 4/6 | yes |  |  |
+| PLAY | LA@LV | Kyren Williams | rush_att | UNDER | 14.5 | 63% | 57% | -131 | 3/6 | yes |  |  |
+| PLAY (thin) | DEN@ARI | Courtland Sutton | rec | UNDER | 3.5 | 63% | 56% | -130 | 6/6 | yes |  |  |
+| PLAY | PIT@NO | Aaron Rodgers | pass_yds | OVER | 227.5 | 62% | 56% | -126 | 4/6 | yes |  |  |
+| PLAY (thin) | CLE@TEN | Elic Ayomanor | rec_yds | OVER | 16.5 | 61% | 56% | -126 | 3/6 | yes |  |  |
+| PLAY (thin) | CIN@BAL | Dohnte Meyers | rec | OVER | 1.5 | 61% | 56% | -125 | 3/5 | yes |  | opp QB: BAL fill-in QB (QB1 Out) |
+| PLAY (thin) | CIN@BAL | Samaje Perine | rec | UNDER | 1.5 | 61% | 55% | -124 | 3/5 | yes |  | opp QB: BAL fill-in QB (QB1 Out) |
+| LEAN | CLE@TEN | Deshaun Watson | rush_yds | UNDER | 29.5 | 84% | 67% | -203 | 3/6 | yes | model vs own record |  |
+| LEAN | CIN@BAL | Tyler Huntley | rush_att | UNDER | 5.5 | 77% | 63% | -173 | 2/3 | yes |  | fill-in QB (QB1 Out) |
 | LEAN | GB@DET | Pierre Strong | rush_yds | OVER | 8.5 | 76% | 63% | -171 | 1/2 | yes |  |  |
-| LEAN | NYG@HOU | Malachi Fields | rec | OVER | 1.5 | 74% | 62% | -162 | 6/6 | yes |  | fill-in QB (J.J. McCarthy) |
-| LEAN | CIN@BAL | Derrick Henry | rec | UNDER | 1.5 | 73% | 62% | -161 | 4/6 | yes |  | QB1 designation (start probability 35%) |
-| LEAN | SF@ATL | Brock Purdy | rush_att | UNDER | 4.5 | 71% | 60% | -153 | 2/6 | yes |  |  |
-| LEAN | NYG@HOU | Malachi Fields | rec_yds | OVER | 17.5 | 70% | 60% | -151 | 6/6 | yes |  | fill-in QB (J.J. McCarthy) |
-| LEAN | DAL@PHI | Dak Prescott | rush_yds | UNDER | 9.5 | 70% | 60% | -151 | 2/5 | yes |  | opp QB: PHI fill-in QB (Tanner McKee) |
+| LEAN | CIN@BAL | Tyler Huntley | pass_yds | OVER | 197.5 | 73% | 62% | -160 | 1/3 | yes |  | fill-in QB (QB1 Out) |
+| LEAN | DAL@PHI | Javonte Williams | rush_yds | UNDER | 65.5 | 72% | 61% | -156 | 5/6 | yes | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
+| LEAN | IND@MIN | Kyler Murray | rush_att | UNDER | 5.5 | 72% | 61% | -156 | 2/4 | yes | same bet as sibling line |  |
+| LEAN | DAL@PHI | Dak Prescott | rush_yds | UNDER | 9.5 | 71% | 60% | -153 | 2/5 | yes |  | opp QB: PHI fill-in QB (Tanner McKee) |
+| LEAN | SF@ATL | Brock Purdy | rush_att | UNDER | 4.5 | 71% | 60% | -152 | 2/6 | yes |  |  |
 | LEAN | TB@CAR | Chuba Hubbard | rush_att | UNDER | 17.5 | 69% | 59% | -147 | 2/5 | yes |  | opp QB: TB QB1 designation (start probability 65%) |
-| LEAN | SF@ATL | Brock Purdy | rush_yds | UNDER | 20.5 | 68% | 59% | -144 | 1/6 | yes |  |  |
-| LEAN | DEN@ARI | J.K. Dobbins | rush_yds | OVER | 45.5 | 68% | 59% | -143 | 2/6 | yes |  |  |
+| LEAN | CIN@BAL | Chase Brown | rush_yds | OVER | 41.5 | 69% | 59% | -146 | 3/5 | yes | same bet as sibling line | opp QB: BAL fill-in QB (QB1 Out) |
 | LEAN | NYG@HOU | Woody Marks | rush_att | OVER | 16.5 | 67% | 58% | -140 | 0/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
-| LEAN | NYG@HOU | Woody Marks | rush_yds | OVER | 63.5 | 65% | 57% | -134 | 0/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
-| LEAN | NYG@HOU | Devin Singletary | rec | UNDER | 1.5 | 64% | 57% | -132 | 2/3 | yes |  | fill-in QB (J.J. McCarthy) |
-| LEAN | PIT@NO | Tyler Shough | rush_att | UNDER | 3.5 | 64% | 57% | -132 | 2/5 | yes |  |  |
-| LEAN | MIA@NYJ | Jaylen Wright | rush_yds | OVER | 14.5 | 63% | 56% | -129 | 0/4 | yes |  |  |
-| LEAN | PIT@NO | Tyler Shough | rush_yds | UNDER | 14.5 | 62% | 56% | -129 | 2/5 | yes |  |  |
+| LEAN | CLE@TEN | Quinshon Judkins | rush_yds | UNDER | 46.5 | 65% | 58% | -136 | 3/5 | yes | same bet as sibling line |  |
+| LEAN | NYG@HOU | Woody Marks | rush_yds | OVER | 63.5 | 65% | 58% | -136 | 0/6 | yes |  | opp QB: NYG fill-in QB (J.J. McCarthy) |
+| LEAN | SF@ATL | Brock Purdy | rush_yds | UNDER | 19.5 | 65% | 58% | -135 | 1/6 | yes |  |  |
+| LEAN | PIT@NO | Tyler Shough | rush_att | UNDER | 3.5 | 64% | 57% | -133 | 2/5 | yes |  |  |
+| LEAN | MIA@NYJ | Jaylen Wright | rush_yds | OVER | 14.5 | 62% | 56% | -128 | 0/4 | yes |  |  |
 | LEAN | MIA@NYJ | Malik Willis | pass_att | OVER | 27.5 | 62% | 56% | -127 | 1/5 | yes |  |  |
-| LEAN | TB@CAR | Bucky Irving | rush_yds | OVER | 65.5 | 62% | 56% | -127 | 2/6 | yes |  | QB1 designation (start probability 65%) |
-| LEAN | MIA@NYJ | Geno Smith | pass_cmp | OVER | 20.5 | 62% | 56% | -127 | 2/6 | yes |  |  |
-| LEAN | TB@CAR | Sean Tucker | rush_yds | UNDER | 7.5 | 62% | 56% | -127 | 0/2 | yes |  | QB1 designation (start probability 65%) |
-| LEAN | CIN@BAL | Derrick Henry | rush_att | UNDER | 19.5 | 62% | 56% | -126 | 2/6 | yes |  | QB1 designation (start probability 35%) |
-| LEAN | CIN@BAL | Joe Burrow | rush_yds | UNDER | 6.5 | 61% | 55% | -125 | 2/5 | yes |  | opp QB: BAL QB1 designation (start probability 35%) |
-| LEAN | GB@DET | Jahmyr Gibbs | rush_yds | UNDER | 96.5 | 61% | 55% | -124 | 2/5 | yes |  |  |
-| LEAN | DAL@PHI | Dak Prescott | pass_cmp | OVER | 23.5 | 60% | 55% | -123 | 5/6 | yes |  | opp QB: PHI fill-in QB (Tanner McKee) |
-| LEAN | CLE@TEN | Cam Ward | pass_yds | OVER | 180.5 | 59% | 55% | -120 | 3/6 | yes |  |  |
-| LEAN | LA@LV | Matthew Stafford | pass_cmp | OVER | 23.5 | 59% | 54% | -120 | 4/6 | yes |  |  |
+| LEAN | TB@CAR | Bucky Irving | rush_yds | OVER | 65.5 | 62% | 56% | -126 | 2/6 | yes |  | QB1 designation (start probability 65%) |
+| LEAN | GB@DET | Jahmyr Gibbs | rush_yds | UNDER | 97.5 | 61% | 56% | -126 | 2/5 | yes |  |  |
+| LEAN | DEN@ARI | J.K. Dobbins | rush_yds | OVER | 49.5 | 61% | 55% | -125 | 1/6 | yes |  |  |
+| LEAN | PIT@NO | Tyler Shough | rush_yds | UNDER | 13.5 | 61% | 55% | -124 | 2/5 | yes |  |  |
+| LEAN | CIN@BAL | Tyler Huntley | pass_att | OVER | 28.5 | 61% | 55% | -124 | 2/3 | NO |  | fill-in QB (QB1 Out) |
+| LEAN | TB@CAR | Sean Tucker | rush_yds | UNDER | 7.5 | 61% | 55% | -124 | 0/2 | yes |  | QB1 designation (start probability 65%) |
+| LEAN | CLE@TEN | Cam Ward | pass_att | OVER | 30.5 | 60% | 55% | -123 | 4/6 | yes |  |  |
+| LEAN | PIT@NO | Kendre Miller | rush_att | UNDER | 11.5 | 60% | 55% | -123 | 4/5 | yes |  |  |
 
 ## 8. Parlays across the slate (fair odds; legs from different games are independent, same-game legs use the joint simulation)
 
@@ -476,19 +453,19 @@ Pool: PLAY/LEAN single-line legs (shrunk), anytime-TD legs (12-60%), QB 1+ and 2
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| CIN@BAL: Samaje Perine rush_att U8.5 + LA@LV: Matthew Stafford pass TD 1+ | 45.5% | 72.0% | +120 | +146 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + SF@ATL: Brock Purdy pass TD 1+ | 45.3% | 71.7% | +121 | +147 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + GB@DET: Jordan Love pass TD 1+ | 45.3% | 71.6% | +121 | +147 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + GB@DET: Jared Goff pass TD 1+ | 44.7% | 70.2% | +124 | +150 |
+| CIN@BAL: Chase Brown rush_att O11.5 + GB@DET: Jordan Love pass TD 1+ | 45.4% | 71.8% | +120 | +147 |
+| CIN@BAL: Chase Brown rush_att O11.5 + SF@ATL: Brock Purdy pass TD 1+ | 45.3% | 71.5% | +121 | +147 |
+| CIN@BAL: Chase Brown rush_att O11.5 + LA@LV: Matthew Stafford pass TD 1+ | 45.3% | 71.5% | +121 | +147 |
+| CIN@BAL: Chase Brown rush_att O11.5 + GB@DET: Jared Goff pass TD 1+ | 44.8% | 70.4% | +123 | +150 |
 
 **Touchdown-led (at least one TD leg, longer shot)**
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 40.8% | 53.7% | +145 | +175 |
-| NYG@HOU: Woody Marks anytime TD + LA@LV: Matthew Stafford pass TD 1+ | 37.3% | 51.2% | +168 | +201 |
-| NYG@HOU: Woody Marks anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 37.2% | 51.0% | +169 | +201 |
-| NYG@HOU: Woody Marks anytime TD + GB@DET: Jordan Love pass TD 1+ | 37.1% | 50.9% | +169 | +202 |
+| SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 41.0% | 54.5% | +144 | +173 |
+| NYG@HOU: Woody Marks anytime TD + GB@DET: Jordan Love pass TD 1+ | 36.9% | 50.3% | +171 | +203 |
+| NYG@HOU: Woody Marks anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 36.8% | 50.1% | +171 | +204 |
+| NYG@HOU: Woody Marks anytime TD + LA@LV: Matthew Stafford pass TD 1+ | 36.8% | 50.1% | +171 | +204 |
 
 ### 3-leg
 
@@ -496,19 +473,19 @@ Pool: PLAY/LEAN single-line legs (shrunk), anytime-TD legs (12-60%), QB 1+ and 2
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| CIN@BAL: Samaje Perine rush_att U8.5 + DEN@ARI: Jalen Brooks rec_yds U16.5 + LA@LV: Matthew Stafford pass TD 1+ | 29.3% | 56.6% | +242 | +283 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + DEN@ARI: Jalen Brooks rec_yds U16.5 + SF@ATL: Brock Purdy pass TD 1+ | 29.2% | 56.4% | +243 | +284 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + DAL@PHI: Javonte Williams rush_att U16.5 + LA@LV: Matthew Stafford pass TD 1+ | 29.2% | 56.4% | +243 | +284 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + DEN@ARI: Jalen Brooks rec_yds U16.5 + GB@DET: Jordan Love pass TD 1+ | 29.1% | 56.3% | +243 | +284 |
+| CIN@BAL: Chase Brown rush_att O11.5 + NYG@HOU: Woody Marks rec U2.5 + GB@DET: Jordan Love pass TD 1+ | 29.3% | 56.7% | +242 | +283 |
+| CIN@BAL: Chase Brown rush_att O11.5 + NYG@HOU: Woody Marks rec U2.5 + SF@ATL: Brock Purdy pass TD 1+ | 29.2% | 56.5% | +242 | +283 |
+| CIN@BAL: Chase Brown rush_att O11.5 + NYG@HOU: Woody Marks rec U2.5 + LA@LV: Matthew Stafford pass TD 1+ | 29.2% | 56.5% | +242 | +283 |
+| CIN@BAL: Chase Brown rush_att O11.5 + NYG@HOU: Woody Marks rec U2.5 + GB@DET: Jared Goff pass TD 1+ | 28.9% | 55.7% | +246 | +287 |
 
 **Touchdown-led (at least one TD leg, longer shot)**
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| CIN@BAL: Samaje Perine rush_att U8.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 27.2% | 44.8% | +268 | +312 |
-| DEN@ARI: Jalen Brooks rec_yds U16.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 26.2% | 42.2% | +281 | +327 |
-| DAL@PHI: Javonte Williams rush_att U16.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 26.1% | 42.0% | +282 | +328 |
-| KC@SEA: Jalen Royals rec_yds U17.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 26.0% | 41.7% | +284 | +330 |
+| CIN@BAL: Chase Brown rush_att O11.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 27.2% | 45.1% | +267 | +311 |
+| NYG@HOU: Woody Marks rec U2.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 26.5% | 43.1% | +278 | +323 |
+| DAL@PHI: Javonte Williams rush_att U16.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 26.1% | 42.2% | +282 | +328 |
+| DEN@ARI: Jacoby Brissett rush_yds O6.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 26.1% | 42.1% | +283 | +329 |
 
 ### 4-leg
 
@@ -516,19 +493,19 @@ Pool: PLAY/LEAN single-line legs (shrunk), anytime-TD legs (12-60%), QB 1+ and 2
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| CIN@BAL: Samaje Perine rush_att U8.5 + DEN@ARI: Jalen Brooks rec_yds U16.5 + DAL@PHI: Javonte Williams rush_att U16.5 + LA@LV: Matthew Stafford pass TD 1+ | 18.8% | 44.3% | +433 | +497 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + DEN@ARI: Jalen Brooks rec_yds U16.5 + DAL@PHI: Javonte Williams rush_att U16.5 + SF@ATL: Brock Purdy pass TD 1+ | 18.7% | 44.1% | +435 | +499 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + DEN@ARI: Jalen Brooks rec_yds U16.5 + DAL@PHI: Javonte Williams rush_att U16.5 + GB@DET: Jordan Love pass TD 1+ | 18.7% | 44.1% | +435 | +499 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + DEN@ARI: Jalen Brooks rec_yds U16.5 + KC@SEA: Jalen Royals rec_yds U17.5 + LA@LV: Matthew Stafford pass TD 1+ | 18.7% | 44.0% | +436 | +500 |
+| CIN@BAL: Chase Brown rush_att O11.5 + NYG@HOU: Woody Marks rec U2.5 + DAL@PHI: Javonte Williams rush_att U16.5 + GB@DET: Jordan Love pass TD 1+ | 18.7% | 44.0% | +436 | +500 |
+| CIN@BAL: Chase Brown rush_att O11.5 + NYG@HOU: Woody Marks rec U2.5 + CIN@BAL: Samaje Perine rush_att U7.5 + GB@DET: Jordan Love pass TD 1+ | 18.7% | 43.2% | +436 | +500 |
+| CIN@BAL: Chase Brown rush_att O11.5 + NYG@HOU: Woody Marks rec U2.5 + DEN@ARI: Jacoby Brissett rush_yds O6.5 + GB@DET: Jordan Love pass TD 1+ | 18.6% | 43.8% | +437 | +501 |
+| CIN@BAL: Chase Brown rush_att O11.5 + NYG@HOU: Woody Marks rec U2.5 + DAL@PHI: Javonte Williams rush_att U16.5 + SF@ATL: Brock Purdy pass TD 1+ | 18.6% | 43.8% | +437 | +501 |
 
 **Touchdown-led (at least one TD leg, longer shot)**
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| CIN@BAL: Samaje Perine rush_att U8.5 + DEN@ARI: Jalen Brooks rec_yds U16.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 17.5% | 35.2% | +472 | +540 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + DAL@PHI: Javonte Williams rush_att U16.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 17.4% | 35.0% | +473 | +542 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + KC@SEA: Jalen Royals rec_yds U17.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 17.4% | 34.8% | +476 | +545 |
-| CIN@BAL: Samaje Perine rush_att U8.5 + DEN@ARI: Jacoby Brissett rush_yds O6.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 17.3% | 34.5% | +478 | +548 |
+| CIN@BAL: Chase Brown rush_att O11.5 + NYG@HOU: Woody Marks rec U2.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 17.6% | 35.7% | +469 | +537 |
+| CIN@BAL: Chase Brown rush_att O11.5 + DAL@PHI: Javonte Williams rush_att U16.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 17.4% | 35.0% | +476 | +545 |
+| CIN@BAL: Chase Brown rush_att O11.5 + DEN@ARI: Jacoby Brissett rush_yds O6.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 17.3% | 34.9% | +477 | +546 |
+| CIN@BAL: Chase Brown rush_att O11.5 + DEN@ARI: Tyler Allgeier rec U2.5 + SF@ATL: George Kittle anytime TD + SF@ATL: Brock Purdy pass TD 1+ | 17.2% | 34.5% | +480 | +550 |
 
 ### Quarterback passing-TD ladder (calibrated market: the model beat the books here in W4; fair odds)
 
@@ -536,28 +513,28 @@ Raw simulation probability, with the 50/50-shrunk figure used in parlays in brac
 
 | QB | 1+ raw (shrunk) | 2+ raw (shrunk) |
 |---|---|---|
+| Jordan Love | 87% (68%) | 59% (55%) |
+| Brock Purdy | 86% (68%) | 57% (54%) |
 | Matthew Stafford | 86% (68%) | 57% (53%) |
-| Brock Purdy | 86% (68%) | 56% (53%) |
-| Jordan Love | 86% (68%) | 58% (54%) |
-| Jared Goff | 84% (67%) | 52% (51%) |
-| Joe Burrow | 84% (67%) | 52% (51%) |
-| C.J. Stroud | 83% (67%) | 51% (51%) |
-| Aaron Rodgers | 83% (66%) | 50% (50%) |
-| Kirk Cousins | 81% (66%) | 48% (49%) |
-| Bryce Young | 81% (65%) | 48% (49%) |
+| Jared Goff | 85% (68%) | 55% (52%) |
+| Joe Burrow | 83% (67%) | 51% (50%) |
+| Kirk Cousins | 82% (66%) | 49% (49%) |
+| Aaron Rodgers | 82% (66%) | 48% (49%) |
+| C.J. Stroud | 82% (66%) | 49% (49%) |
+| Bryce Young | 80% (65%) | 48% (49%) |
 | Bo Nix | 80% (65%) | 47% (48%) |
-| Dak Prescott | 77% (64%) | 42% (46%) |
-| Sam Darnold | 77% (64%) | 41% (46%) |
-| Geno Smith | 77% (64%) | 41% (45%) |
-| Michael Penix Jr. | 76% (63%) | 40% (45%) |
-| Tyler Shough | 75% (63%) | 40% (45%) |
+| Sam Darnold | 78% (64%) | 42% (46%) |
+| Michael Penix Jr. | 78% (64%) | 41% (46%) |
+| Dak Prescott | 77% (63%) | 41% (45%) |
+| Geno Smith | 77% (63%) | 41% (45%) |
 | Kyler Murray | 75% (63%) | 39% (44%) |
-| Jacoby Brissett | 68% (59%) | 30% (40%) |
+| Tyler Shough | 74% (62%) | 38% (44%) |
+| Jacoby Brissett | 69% (59%) | 30% (40%) |
 | Deshaun Watson | 68% (59%) | 30% (40%) |
-| Patrick Mahomes | 67% (59%) | 30% (40%) |
-| Cam Ward | 66% (58%) | 27% (39%) |
+| Cam Ward | 67% (58%) | 28% (39%) |
+| Patrick Mahomes | 66% (58%) | 29% (39%) |
 | Malik Willis | 58% (54%) | 21% (35%) |
-| Daniel Jones | 46% (48%) | 12% (31%) |
+| Daniel Jones | 46% (48%) | 11% (31%) |
 
 ## 9. This league (SPAMML) view
 
@@ -580,11 +557,12 @@ What it says: where the model disagrees with a receiving line, the line was righ
 
 ## 11. Known gaps and audit results (read before betting)
 
-Two QA agents (data audit, model sanity) reviewed the Thursday-window run; the full-slate run was re-checked at each window. Each window is audited before it is frozen (QB1 against the depth chart, bye-team rows, Out players and their volume, team codes, unmatched names); the verdicts are in the run notes of the frozen manifest. Remaining, by how much they change a pick:
+Three agents (data audit, model sanity, red-team) reviewed this run before it was frozen. Each window is audited before it is frozen (QB1 against the depth chart, bye-team rows, Out players and their volume, team codes, unmatched names); the verdicts are in the run notes of the frozen manifest. Remaining, by how much they change a pick:
 
-1. **Fill-in quarterbacks (depth-chart QB1 who is not the 2026 completions leader):** BAL (QB1 uncertain, start probability 35%), NYG (J.J. McCarthy), PHI (Tanner McKee), TB (QB1 uncertain, start probability 65%). The backup is modeled at 92% of starter efficiency with the team's YPA and the model-only track does not discount him, so pass-game singles for these teams carry a caution flag and the QBs are left out of touchdown boards and parlay legs.
+1. **Fill-in quarterbacks (depth-chart QB1 who is not the 2026 completions leader):** BAL (QB1 uncertain, start probability 0%), NYG (J.J. McCarthy), PHI (Tanner McKee), TB (QB1 uncertain, start probability 65%). The backup is modeled at 92% of starter efficiency with the team's YPA and the model-only track does not discount him, so pass-game singles for these teams carry a caution flag and the QBs are left out of touchdown boards and parlay legs.
 2. **Carries leak to 'other'.** The vacated-role candidate (DECISIONS #35) did not move the 27-slate backtest, so the engine is unchanged: team RBs get about 70% of team carries in the projection against about 80% in practice, so rushing props are not inflated for backs on teams with a lead back Out. Since the Thursday result (DECISIONS #43) these lines are no longer withheld; compare them with any book number you have.
-3. **SF@ATL** now has a spread and total in nflverse (SF -2.5, 49.5); the market track is anchored to it. **DAL@PHI** (Monday): rerun after Saturday's report; until a team has injury rows its availability is the default prior (see `injury_report_coverage.csv` in the frozen run).
+3. **DAL@PHI** (Monday 8:15 PM ET) runs on this window's inputs, which stop on Sunday morning: treat its availability as provisional and use the Monday rerun. The raw `w4_*` files in the frozen run still contain the played NE@CHI rows (flagged PLAYED); this report excludes them.
+3b. **Known biases to price in.** QB over/under props and QB fantasy points run about 5 to 7 percent low (the sim gives the starter 93 percent of team yards, attempts and completions; starters took 97 to 98 percent in 2023-26; a backtest candidate, not changed this week). Team rush yards run 4 to 5 percent high and ATL, NYG, BAL and PHI backs are under-allocated carries (6 or more carries go to an unlisted bucket), so read rushing props for those teams as uncertain. Team touchdowns run about 6 percent light against 2026 weeks 1 to 6. The model-only track disagrees with the market by 4.5 or more points of margin in CIN@BAL, DAL@PHI and NYG@HOU: a diagnostic, not a pick source.
 4. **Availability prior.** Healthy players with no designation carry p_active of about 0.95 (fitted prior), so A.J. Brown's anytime TD is 5% below his conditional number. Inactives (about 90 minutes before each kickoff) replace the prior with certainty.
 5. Anytime-TD board: the 0.10 to 0.20 bin was over-predicted 2.4x in Week 6 in the sim board (frozen-run board: predicted 15.0% vs 9.1% actual, n=55) and the top ten hit 70% against 64% predicted; the W9 postmortem checks the floor. Probabilities are conditional on playing, so discount by the p_active column.
 6. Minor: about two dozen practice-squad or inactive players carry small volumes at 100% active (e.g. players listed IR/PUP who appear in the unmatched-names report).

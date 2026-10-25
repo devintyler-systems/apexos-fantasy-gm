@@ -67,3 +67,10 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - Slate screen: UNDERs on a teammate of a player now Out or Questionable (role change) are pulled; a PLAY whose model probability is 30+ points above the player's own record (3+ games) drops to LEAN and is never a parlay leg; receiving PLAYs are tagged thin; the TD board ranks by probability x p_active; opposing-QB caution is labelled.
 - Not backtested: these are publishing gates, not model changes. Fired on 0 lines in the Saturday window (no at-risk teammate with recent usage on a screened UNDER); Perine rush_att UNDER 8.5 stays PLAY at 83% and is the red-team's remaining objection.
 - Frozen: 2026_w07_{market,model}_20261024T0308*.
+
+## 47. Sunday-window gates and red-team pulls (2026-10-25)
+- Slate gates: role-change covers every market (teammate with 10%+ of targets or 20%+ of carries at risk), availability under 90% pulls the line, rec/rec_yds and rush_att/rush_yds on one player and side count as one bet (second line drops to LEAN, no parlay), receiving LEANs are suppressed after every demotion.
+- Red-team pulls are an explicit dated input (`config/weekly/redteam_pulls_2026_w07.csv`, `APEX_RT_PULL`) for lines the usage-window gate cannot see (teammate absent more than 3 weeks).
+- Status overlay: a newer Sleeper Out replaces the NFL designation when the row is flagged `override`. Lamar Jackson Out was confirmed by the 01:46Z ESPN pull.
+- Candidates queued, not changed: `qb_share` 0.93 / `qb_td` 0.95 (starters took 97 to 98 percent of attempts and yards in 2023-26; QB lines run 5 to 7 percent low), rushing allocation to the unlisted bucket (ATL, NYG, BAL, PHI), team TDs 6 percent light. Each needs the weeks 4-12 backtest.
+- Frozen: `2026_w07_{market,model}_20261025T0151*`. Official inactives not used.
