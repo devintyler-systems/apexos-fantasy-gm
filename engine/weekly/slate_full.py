@@ -426,7 +426,7 @@ def render(run_market, run_model, tables, out_path, season=2026, week=int(os.env
     A = TD[TD.market == "anytime_td"].sort_values("prob", ascending=False)
     w("## 6. Touchdown boards (anytime counts rushing and receiving TDs; fair odds; 'play at' = fair + 12% cushion)\n")
     A = A.assign(adj=A.prob * A.p_active.fillna(1.0)).sort_values("adj", ascending=False)      # rank by the probability he scores in this game, not the one conditional on playing
-    A2 = A.assign(fair=[T.american(p) for p in A.prob], playat=[T.play_price(p) for p in A.prob], note=[CAUTION.get(t, ("opp QB: " + CAUTION[o]) if o in CAUTION else "") for t, o in zip(A.team, A.opp)])
+    A2 = A.assign(fair=[T.american(p) for p in A.prob], playat=[T.play_price(p) for p in A.prob], note=[(CAUTION.get(t, ("opp QB: " + CAUTION[o]) if o in CAUTION else "") + (" red-team downgrade" if pl in TD_DOWN else "")).strip() for pl, t, o in zip(A.player, A.team, A.opp)])
     w("**Top 30 anytime TD** (ranked by probability times chance he plays; 'prob' is conditional on playing)\n"); w(_tab(A2, ["player", "team", "opp", "pos", "prob", "adj", "fair", "playat", "p_active", "note"], {"prob": lambda v: f"{v:.1%}", "adj": lambda v: f"{v:.1%}", "fair": lambda v: f"{int(v):+d}", "playat": lambda v: f"{int(v):+d}", "p_active": fp}, n=30))
     X2 = TD[TD.market == "2plus_td"].sort_values("prob", ascending=False).head(10); X2 = X2.assign(fair=[T.american(p) for p in X2.prob])
     w("\n**2+ TD (top 10)**\n"); w(_tab(X2, ["player", "team", "opp", "prob", "fair"], {"prob": lambda v: f"{v:.1%}", "fair": lambda v: f"{int(v):+d}"}))

@@ -1,0 +1,121 @@
+player,team,pos,source,as_of_utc,note,gsis_id,game,espn_status
+CJ Donaldson,NO,RB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,PIT @ NO: Shoulder,00-0041326,PIT@NO,Out
+Treyton Welch,NO,TE,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,PIT @ NO: Coach's Decision,00-0039518,PIT@NO,Out
+Nathan Shepherd,NO,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,PIT @ NO: Illness,00-0034760,PIT@NO,Out
+Cesar Ruiz,NO,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,PIT @ NO: Knee,00-0036408,PIT@NO,Out
+Ben Skowronek,PIT,WR,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,PIT @ NO: Calf,00-0036862,PIT@NO,Out
+Terell Smith,PIT,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,PIT @ NO: Coach's Decision,00-0038395,PIT@NO,Out
+Eli Heidenreich,PIT,RB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,PIT @ NO: Coach's Decision,00-0041490,PIT@NO,Out
+Will Howard,PIT,QB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,PIT @ NO: Coach's Decision,00-0040203,PIT@NO,Out
+Drew Allar,PIT,QB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,PIT @ NO: Coach's Decision,00-0041565,PIT@NO,Out
+Michael Jerrell,ATL,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,SF @ ATL: Biceps,00-0039842,SF@ATL,Injured Reserve
+Garret Wallow,SF,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,SF @ ATL: Hamstring,00-0036844,SF@ATL,Out
+Luke Gifford,SF,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,SF @ ATL: Groin,00-0035413,SF@ATL,Out
+Marques Sigle,SF,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,SF @ ATL: Ankle,00-0040185,SF@ATL,Out
+Nick Bosa,SF,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,SF @ ATL: Knee,00-0035717,SF@ATL,Out
+Calvin Ridley,TEN,WR,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CLE @ TEN: Hip,00-0034837,CLE@TEN,Out
+Nicholas Singleton,TEN,RB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CLE @ TEN: Coach's Decision,00-0040886,CLE@TEN,Out
+Tyjae Spears,TEN,RB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CLE @ TEN: Knee,00-0039032,CLE@TEN,Out
+Jaylon Jones,TEN,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CLE @ TEN: Coach's Decision,00-0038407,CLE@TEN,Out
+Jackie Marshall,TEN,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CLE @ TEN: Coach's Decision,00-0040892,CLE@TEN,Out
+Teven Jenkins,CLE,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CLE @ TEN: Back,00-0036953,CLE@TEN,Injured Reserve
+Dillon Gabriel,CLE,QB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CLE @ TEN: Back,00-0040704,CLE@TEN,Injured Reserve
+Mike Hall Jr.,CLE,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CLE @ TEN: Ankle,00-0039895,CLE@TEN,Out
+Kalia Davis,CLE,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CLE @ TEN: Quadriceps,00-0037832,CLE@TEN,Injured Reserve
+Elijah Williams,MIN,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,IND @ MIN: Coach's Decision,00-0040624,IND@MIN,Out
+Jakobe Thomas,MIN,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,IND @ MIN: Coach's Decision,00-0041054,IND@MIN,Out
+Caleb Tiernan,MIN,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,IND @ MIN: Coach's Decision,00-0041053,IND@MIN,Out
+Max Brosmer,MIN,QB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,IND @ MIN: Coach's Decision,00-0040494,IND@MIN,Out
+Demond Claiborne,MIN,RB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,IND @ MIN: Coach's Decision,00-0041104,IND@MIN,Out
+CJ Allen,IND,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,IND @ MIN: Ankle,00-0041039,IND@MIN,Out
+Sauce Gardner,IND,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,IND @ MIN: Calf,00-0037190,IND@MIN,Out
+Tyler Warren,IND,TE,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,IND @ MIN: Groin,00-0040128,IND@MIN,Out
+Anthony Gould,IND,WR,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,IND @ MIN: Concussion,00-0039816,IND@MIN,Out
+Max Mitchell,NYJ,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,MIA @ NYJ: Concussion,00-0038114,MIA@NYJ,Out
+Kene Nwangwu,NYJ,RB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,MIA @ NYJ: Knee,00-0036842,MIA@NYJ,Out
+Joseph Ossai,NYJ,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,MIA @ NYJ: Ankle,00-0036902,MIA@NYJ,Out
+Dylan Parham,NYJ,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,MIA @ NYJ: Knee,00-0037255,MIA@NYJ,Out
+Jack Heflin,NYJ,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,MIA @ NYJ: Coach's Decision,00-0036788,MIA@NYJ,Out
+Reese Taylor,MIA,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,MIA @ NYJ: Quadriceps,00-0038521,MIA@NYJ,Out
+De'Von Achane,MIA,RB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,MIA @ NYJ: Knee - ACL,00-0039040,MIA@NYJ,Injured Reserve
+Ronnie Harrison,MIA,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,MIA @ NYJ: Hamstring,00-0034779,MIA@NYJ,Injured Reserve
+Ja'Tavion Sanders,CAR,TE,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,TB @ CAR: Coach's Decision,00-0039356,TB@CAR,Out
+Haynes King,CAR,QB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,TB @ CAR: Coach's Decision,00-0041149,TB@CAR,Out
+Jaelan Phillips,CAR,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,TB @ CAR: Hamstring,00-0036934,TB@CAR,Out
+Stone Forsythe,CAR,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,TB @ CAR: Coach's Decision,00-0036653,TB@CAR,Out
+Sam Hecht,CAR,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,TB @ CAR: Coach's Decision,00-0041071,TB@CAR,Out
+Luke Goedeke,TB,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,TB @ CAR: Calf,00-0037835,TB@CAR,Out
+Antoine Winfield Jr.,TB,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,TB @ CAR: Ribs,00-0036411,TB@CAR,Out
+Emeka Egbuka,TB,WR,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,TB @ CAR: Concussion,00-0040129,TB@CAR,Out
+Christian Rozeboom,TB,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,TB @ CAR: Finger,00-0035942,TB@CAR,Injured Reserve
+Broderick Washington,BAL,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CIN @ BAL: Ankle,00-0036081,CIN@BAL,Out
+Elijah Sarratt,BAL,WR,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CIN @ BAL: Coach's Decision,00-0040876,CIN@BAL,Out
+Andrew Vorhees,BAL,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CIN @ BAL: Coach's Decision,00-0038383,CIN@BAL,Out
+Jaylinn Hawkins,BAL,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CIN @ BAL: Knee,00-0036302,CIN@BAL,Out
+Lamar Jackson,BAL,QB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CIN @ BAL: Ankle,00-0034796,CIN@BAL,Out
+Russ Yeast,CIN,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CIN @ BAL: Coach's Decision,00-0037844,CIN@BAL,Out
+Landon Robinson,CIN,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CIN @ BAL: Coach's Decision,00-0041118,CIN@BAL,Out
+Shemar Stewart,CIN,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CIN @ BAL: Coach's Decision,00-0040756,CIN@BAL,Out
+Connor Lew,CIN,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CIN @ BAL: Coach's Decision,00-0041062,CIN@BAL,Out
+Myles Hinton,CIN,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,CIN @ BAL: Coach's Decision,00-0040015,CIN@BAL,Out
+Nathan Thomas,HOU,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,NYG @ HOU: Coach's Decision,00-0039422,NYG@HOU,Out
+Marlin Klein,HOU,TE,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,NYG @ HOU: Coach's Decision,00-0041472,NYG@HOU,Out
+David Montgomery,HOU,RB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,NYG @ HOU: Groin,00-0035685,NYG@HOU,Out
+Febechi Nwaiwu,HOU,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,NYG @ HOU: Coach's Decision,00-0041559,NYG@HOU,Out
+Jalen Pitre,HOU,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,NYG @ HOU: Shoulder - AC Joint,00-0037246,NYG@HOU,Out
+Nikko Reed,NYG,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,NYG @ HOU: Coach's Decision,00-0040471,NYG@HOU,Out
+Josh Sills,NYG,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,NYG @ HOU: Coach's Decision,00-0037138,NYG@HOU,Out
+Marcus Mbow,NYG,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,NYG @ HOU: Knee,00-0040181,NYG@HOU,Out
+Greg Newsome II,NYG,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,NYG @ HOU: Concussion,00-0036996,NYG@HOU,Out
+Jon Gaines II,ARI,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DEN @ ARI: Knee,00-0038571,DEN@ARI,Out
+Andrew Wingard,ARI,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DEN @ ARI: Knee,00-0035378,DEN@ARI,Out
+Tyler Badie,DEN,RB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DEN @ ARI: Thumb,00-0037085,DEN@ARI,Injured Reserve
+Jonah Elliss,DEN,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DEN @ ARI: Ankle,00-0039809,DEN@ARI,Injured Reserve
+Talanoa Hufanga,DEN,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DEN @ ARI: Ankle,00-0036564,DEN@ARI,Out
+Kerby Joseph,DET,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,GB @ DET: Knee,00-0037667,GB@DET,Out
+Ben Bartch,DET,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,GB @ DET: Foot,00-0036272,GB@DET,Injured Reserve
+Devin White,DET,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,GB @ DET: Forearm,00-0035707,GB@DET,Injured Reserve
+Tom Kennedy,DET,WR,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,GB @ DET: Knee - MCL,00-0035544,GB@DET,Injured Reserve
+Thomas Harper,DET,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,GB @ DET: Ankle,00-0039660,GB@DET,Injured Reserve
+Zaire Franklin,GB,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,GB @ DET: Shin,00-0034431,GB@DET,Out
+Luke Musgrave,GB,TE,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,GB @ DET: Neck,00-0039144,GB@DET,Out
+Carter Runyon,LV,TE,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,LA @ LV: Foot,00-0040488,LA@LV,Injured Reserve
+Dont'e Thornton Jr.,LV,WR,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,LA @ LV: Hamstring,00-0040581,LA@LV,Injured Reserve
+Jack Bech,LV,WR,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,LA @ LV: Forearm,00-0040729,LA@LV,Injured Reserve
+Nate Landman,LA,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,LA @ LV: Concussion,00-0037587,LA@LV,Out
+Myles Garrett,LA,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,LA @ LV: Knee,00-0033868,LA@LV,Injured Reserve
+Kobie Turner,LA,DL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,LA @ LV: Groin,00-0039138,LA@LV,Injured Reserve
+Chazz Surratt,SEA,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,KC @ SEA: Calf,00-0037003,KC@SEA,Out
+Drake Thomas,SEA,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,KC @ SEA: Ankle,00-0038922,KC@SEA,Out
+Jaylon Moore,KC,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,KC @ SEA: Concussion,00-0036557,KC@SEA,Out
+Brashard Smith,KC,RB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,KC @ SEA: Hamstring,00-0040078,KC@SEA,Injured Reserve
+Rashee Rice,KC,WR,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,KC @ SEA: Hamstring,00-0039067,KC@SEA,Out
+Josh Simmons,KC,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,KC @ SEA: Back,00-0040116,KC@SEA,Injured Reserve
+Landon Dickerson,PHI,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DAL @ PHI: Knee,00-0037002,DAL@PHI,Injured Reserve
+Michael Carter II,PHI,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DAL @ PHI: Abdomen,00-0036501,DAL@PHI,Out
+Nolan Smith,PHI,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DAL @ PHI: Concussion,00-0039013,DAL@PHI,Out
+Eli Stowers,PHI,TE,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DAL @ PHI: Quadriceps,00-0041483,DAL@PHI,Injured Reserve
+Grant Calcaterra,PHI,TE,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DAL @ PHI: Back,00-0037086,DAL@PHI,Injured Reserve
+Drew Shelton,DAL,OL,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DAL @ PHI: Hamstring,00-0040874,DAL@PHI,Out
+Marist Liufau,DAL,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DAL @ PHI: Forearm,00-0039352,DAL@PHI,Injured Reserve
+Dee Winters,DAL,LB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DAL @ PHI: Calf,00-0038625,DAL@PHI,Out
+KaVontae Turpin,DAL,WR,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DAL @ PHI: Ribs,00-0037801,DAL@PHI,Out
+P.J. Locke,DAL,DB,ESPN game summary injuries (status Out; feed capped at 5 names per team),2026-10-25T15:44:17Z,DAL @ PHI: Foot,00-0035227,DAL@PHI,Injured Reserve
+Case Keenum,CHI,QB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0028986,NE@CHI,INA
+Carlton Davis III,NE,DB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0034778,NE@CHI,INA
+T.J. Edwards,CHI,LB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0035386,NE@CHI,INA
+Brandin Echols,PIT,DB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0036504,PIT@NO,INA
+Nick McCloud,CHI,DB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0036589,NE@CHI,INA
+Zach Wilson,NO,QB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0037013,PIT@NO,INA
+Jack Sanborn,CHI,LB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0037109,NE@CHI,INA
+John Ridgeway,NO,DL,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0037283,PIT@NO,INA
+Ben Brown,NE,OL,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0037413,NE@CHI,INA
+Tyree Wilson,NO,LB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0038541,PIT@NO,INA
+Jordan McFadden,CHI,OL,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0038595,NE@CHI,INA
+Joshua Farmer,NE,DL,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0040171,NE@CHI,INA
+Kyle Monangai,CHI,RB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0040236,NE@CHI,INA
+Michael Reid,NO,DB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0040293,PIT@NO,INA
+Karon Prunty,NE,DB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0041088,NE@CHI,INA
+Behren Morton,NE,QB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0041123,NE@CHI,INA
+Jayden Loving,CHI,DL,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0041171,NE@CHI,INA
+Channing Canada,NE,DB,nflverse roster INA (official inactives),2026-10-25T15:44:22Z,Inactive (game-day designation),00-0041316,NE@CHI,INA

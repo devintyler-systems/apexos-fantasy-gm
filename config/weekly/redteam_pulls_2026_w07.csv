@@ -38,3 +38,16 @@ RJ Harvey,rush_yds,OVER,downgrade,model 1.47x his average; Coleman and Dobbins c
 Elic Ayomanor,rec_yds,OVER,downgrade,3 of 6; Ridley Questionable
 Woody Marks,anytime_td,*,downgrade,TD in 2 of 6 games; carry lines 0 of 6
 Chase Brown,anytime_td,*,downgrade,one TD in five games
+Braelon Allen,rush_yds,UNDER,pull,"NYJ Hall Questionable, no Hall lines; Allen 116/78 yards on 24/17 carries in W5-W6"
+Jalen Brooks,rec_yds,UNDER,pull,rising role 7 then 3 targets; Duvernay DNP; n=3
+Davis Allen,rec,OVER,pull,TE3 with 6 catches in 6 games; zero-catch games dropped from the log; Nacua 50 pct
+Tony Pollard,rush_att,UNDER,pull,TEN Spears lines removed after 12:01Z
+Cam Ward,pass_att,OVER,downgrade,raw 53 pct lifted by the passing shift; lowest-total game
+Cam Ward,rush_yds,UNDER,downgrade,model mean above the line; threshold flip
+Samaje Perine,rec,UNDER,downgrade,threshold flip
+Kyren Williams,rec,OVER,downgrade,exactly 3 of 6; depends on Nacua 50 pct
+Marvin Harrison Jr.,rec,UNDER,downgrade,one game with HOU
+Amon-Ra St. Brown,rec_yds,UNDER,downgrade,line rose 6 from open in the 55.5-total game
+Jameson Williams,rec_yds,UNDER,downgrade,average above the line
+Tyler Higbee,rec,OVER,downgrade,new line; blends the 50 pct Nacua scenario
+Javonte Williams,anytime_td,*,downgrade,Monday; provisional inputs

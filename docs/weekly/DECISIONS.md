@@ -96,3 +96,9 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - Official inactives were not used: the ESPN feed carries injuries (5 names per team), not the NFL inactive list. Open item: a real inactive-list source for T-90.
 - Frozen: `2026_w07_{market,model}_20261025T1211*`.
 - 9:30 red-team (applied to the report; the frozen run files are unchanged): 6 pulls and 21 downgrades plus Marks and Brown anytime-TD parlay exclusions in `config/weekly/redteam_pulls_2026_w07.csv` (`action` = pull | downgrade; a verdict covers the whole thesis family: receptions with receiving yards, carries with rushing yards). Result: 23 PLAY (14 receiving, thin), from 50. Log hit rates drop zero-usage games and flatter OVERs on low-volume players (known gap 3c).
+
+## 51. 1 PM window (2026-10-25): official inactives source, started-game exclusion
+- `nfl_inactives.py` reads the game-day `INA` designation in nflverse `roster_2026` (week row) and merges it with the ESPN Out file; ESPN lists at most 5 names per team and missed Ridgeway, Reid and Echols for PIT@NO. nflverse lags the league's 90-minute publication (PIT@NO's rows were present by 15:31Z; the 1 PM teams were not at 15:50Z), so a team with no INA rows is reported as pending, never as healthy. A faster inactive source is still an open item.
+- A game past its scheduled kickoff is never pickable: `slate_full.games_unplayed()` drops it (`APEX_INCLUDE_STARTED=1` to override) and the report names it. The raw `w4_*` files of a freeze still carry started games without a flag (open item).
+- Red-team pulls/downgrades file grew to 52 rows (pull | downgrade; family-wide); the TD board marks downgraded anytime-TD players. Card: 17 PLAY.
+- Frozen: `2026_w07_{market,model}_20261025T1550*`.
