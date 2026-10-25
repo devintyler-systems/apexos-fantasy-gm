@@ -74,3 +74,9 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - Status overlay: a newer Sleeper Out replaces the NFL designation when the row is flagged `override`. Lamar Jackson Out was confirmed by the 01:46Z ESPN pull.
 - Candidates queued, not changed: `qb_share` 0.93 / `qb_td` 0.95 (starters took 97 to 98 percent of attempts and yards in 2023-26; QB lines run 5 to 7 percent low), rushing allocation to the unlisted bucket (ATL, NYG, BAL, PHI), team TDs 6 percent light. Each needs the weeks 4-12 backtest.
 - Frozen: `2026_w07_{market,model}_20261025T0151*`. Official inactives not used.
+
+## 48. Game-level baseline: model-only vs the line (2026-10-25, no model change)
+- `game_bt.py` scores the model-only team-points means from the weeks 4-12 backtest (2023-25 plus 2026 weeks 4-7, 438 games) against nflverse spread_line / total_line.
+- Result: margin MAE 9.91 vs 9.35 for the line, total MAE 9.80 vs 9.54, team-points RMSE 8.93 vs 8.55, winner 62.1% vs 68.5%. The line is better in every season on margin (2023 9.95 vs 9.38, 2024 10.15 vs 9.43, 2025 10.26 vs 9.67). The MAE-optimal blend puts weight 0.0 on the model for both margin and total: the model adds no game-level information the line lacks. Model margin correlates 0.85 with the spread; mean total bias is +0.66.
+- Consequence: market-anchored beating model-only at the game level is expected (it is the line plus noise); the target is model-only beating the LINE, measured by this script. No game-level change ships until it beats the line row in all three seasons and lifts the blend weight above 0.
+- `game_grade.py` grades live frozen runs the same way each Tuesday (2026 weeks 4-7 so far: model-only margin MAE 8.12 vs line 8.02, total 10.8 vs 9.9, 45 games).
