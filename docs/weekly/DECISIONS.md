@@ -124,3 +124,7 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - Fix: the flag is post-game only (`espn_roster_inactives.py` default min-minutes 0, removed from the pregame window script). Operator-confirmed official statuses enter through the overlay (`Active` clears the designation and drops the player from the injury table; tested). Re-run with Barkley active: the model gives Barkley 6.8 carries and Pierce 11.3 against books at 15.5 and 5.5, which is a model allocation artifact for a returning back, so every PHI backfield gap is untrusted.
 - Process rule: a new data source is never used to publish until its pregame value has been checked against the official list on at least one full slate.
 - Frozen replacement: `2026_w07_{market,model}_20261026T23*` (the mon4 run); the earlier 23:00Z freeze carried the wrong inactives and is superseded.
+
+## 56. Monday-night final run from the official inactives (2026-10-26)
+- Operator read NFL.com's official inactives (DAL: Demercado, Turpin, Shelton, Wheat, Winters; PHI: Payton, D. Smith, Wicks, Majors, N. Smith, Carter II). New `operator_inactives.py` turns that list into hard Out rows with gsis ids (so unit effects work) and clears every other still-listed, non-Out player of those teams to Active; `window3.sh` merges both. Result: PHI offensive-line penalty 1.4 (only Majors out), DAL 0.7.
+- Frozen: `2026_w07_{market,model}_20261026T233*`. Full priced board with Play/Pass labels in `MNF_FULL_RUN_2026_W07.md`; 3 of 58 lines are PLAY.
