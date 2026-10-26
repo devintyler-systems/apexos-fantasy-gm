@@ -36,6 +36,12 @@ def rows_for(dates, season, now=None, min_minutes=100, snap=None):
     now = now or dt.datetime.now(dt.timezone.utc)
     r = pd.read_parquet(NFLV + f"roster_{season}.parquet"); r = r[r.week == r.week.max()]
     byid = {str(int(x.espn_id)): x for x in r.dropna(subset=["espn_id"]).itertuples()}
+    try:      # players the weekly roster file lacks (linemen, practice squad): resolve through the full players table so their unit effects are not silently dropped
+        pl = pd.read_parquet(NFLV + "players.parquet").dropna(subset=["espn_id", "gsis_id"])
+        for x in pl.itertuples():
+            byid.setdefault(str(int(float(x.espn_id))), type("P", (), dict(full_name=x.display_name, position=x.position, gsis_id=x.gsis_id))())
+    except Exception:
+        pass
     out, snaps, skipped = [], [], []
     for d in dates:
         for ev in _get(SB.format(d=d)).get("events", []):
