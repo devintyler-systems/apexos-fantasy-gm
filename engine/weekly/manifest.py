@@ -86,6 +86,11 @@ def freeze(season, week, track, out_dir=None, runs_dir=None, as_of=None, notes="
                 with open(src, "rb") as a, open(os.path.join(dest, name), "wb") as b:
                     b.write(a.read())
                 artifacts[name] = {"rows": int(sum(1 for _ in open(src, encoding="utf-8", errors="ignore")) - 1)}
+    so = os.environ.get("APEX_STATUS_OVERLAY")
+    if so and os.path.exists(so):        # designations mirrored from another feed travel with the run
+        with open(so, "rb") as a, open(os.path.join(dest, "status_overlay.csv"), "wb") as b:
+            b.write(a.read())
+        artifacts["status_overlay.csv"] = {"rows": int(sum(1 for _ in open(so, encoding="utf-8", errors="ignore")) - 1)}
     mo = os.environ.get("APEX_MANUAL_OUT")
     if mo and os.path.exists(mo):        # confirmed-inactive overrides travel with the run
         with open(mo, "rb") as a, open(os.path.join(dest, "manual_overrides.csv"), "wb") as b:

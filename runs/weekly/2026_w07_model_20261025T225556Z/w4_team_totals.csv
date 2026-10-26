@@ -1,0 +1,29 @@
+team,opp,home,game,note,pts_mean,p25,p50,p75,p90,win_prob,fair_ml
+NE,CHI,False,NE@CHI,PLAYED (final score in nflverse),22.982,16.0,23.0,30.0,37.0,0.48,108
+CHI,NE,True,NE@CHI,PLAYED (final score in nflverse),23.574,17.0,23.0,30.0,37.0,0.52,-108
+PIT,NO,False,PIT@NO,PLAYED (final score in nflverse),24.663,17.0,24.0,31.0,38.0,0.563,-129
+NO,PIT,True,PIT@NO,PLAYED (final score in nflverse),22.268,16.0,21.0,29.0,35.0,0.437,129
+SF,ATL,False,SF@ATL,PLAYED (final score in nflverse),25.79,17.0,26.0,33.0,40.0,0.598,-149
+ATL,SF,True,SF@ATL,PLAYED (final score in nflverse),22.4,16.0,22.0,30.0,35.0,0.402,149
+CIN,BAL,False,CIN@BAL,PLAYED (final score in nflverse),23.417,16.0,23.0,30.0,37.0,0.416,140
+BAL,CIN,True,CIN@BAL,PLAYED (final score in nflverse),26.394,20.0,27.0,34.0,41.0,0.584,-140
+TB,CAR,False,TB@CAR,PLAYED (final score in nflverse),20.566,13.0,20.0,27.0,33.0,0.35,186
+CAR,TB,True,TB@CAR,PLAYED (final score in nflverse),25.767,19.0,26.0,33.0,40.0,0.65,-186
+NYG,HOU,False,NYG@HOU,PLAYED (final score in nflverse),19.798,13.0,20.0,26.0,33.0,0.346,189
+HOU,NYG,True,NYG@HOU,PLAYED (final score in nflverse),25.086,17.0,24.0,31.0,38.0,0.654,-189
+IND,MIN,False,IND@MIN,PLAYED (final score in nflverse),20.549,13.0,20.0,26.0,33.0,0.386,159
+MIN,IND,True,IND@MIN,PLAYED (final score in nflverse),24.348,17.0,23.0,30.0,37.0,0.614,-159
+MIA,NYJ,False,MIA@NYJ,PLAYED (final score in nflverse),18.585,13.0,17.0,24.0,31.0,0.395,153
+NYJ,MIA,True,MIA@NYJ,PLAYED (final score in nflverse),22.085,16.0,21.0,28.0,34.0,0.605,-153
+CLE,TEN,False,CLE@TEN,PLAYED (final score in nflverse),18.965,13.0,19.0,24.0,31.0,0.539,-117
+TEN,CLE,True,CLE@TEN,PLAYED (final score in nflverse),17.656,10.0,17.0,24.0,30.0,0.461,117
+DEN,ARI,False,DEN@ARI,,23.325,17.0,23.0,30.0,37.0,0.571,-133
+ARI,DEN,True,DEN@ARI,,21.107,13.0,20.0,27.0,34.0,0.429,133
+GB,DET,False,GB@DET,,22.846,16.0,23.0,30.0,37.0,0.362,176
+DET,GB,True,GB@DET,,27.877,20.0,27.0,34.0,41.0,0.638,-176
+LA,LV,False,LA@LV,,24.72,17.0,24.0,31.0,38.0,0.547,-121
+LV,LA,True,LA@LV,,23.199,16.0,23.0,30.0,37.0,0.453,121
+KC,SEA,False,KC@SEA,,21.583,14.0,20.0,27.0,34.0,0.429,133
+SEA,KC,True,KC@SEA,,24.144,17.0,24.0,31.0,37.0,0.571,-133
+DAL,PHI,False,DAL@PHI,,23.06,16.0,23.0,30.0,37.0,0.476,110
+PHI,DAL,True,DAL@PHI,,23.773,17.0,24.0,31.0,38.0,0.524,-110

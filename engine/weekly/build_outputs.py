@@ -28,6 +28,8 @@ tp[tp.market.notna()].dropna(axis=1,how="all").round(3).to_csv(O+"w4_team_count_
 os.path.exists(O+"w4_team_props_raw.csv") and os.rename(O+"w4_team_props_raw.csv",O+"_team_props_raw.tmp")
 # injury adjustment log
 inj=INJ.copy(); inj["skill"]=inj.pos.isin(["QB","RB","WR","TE","K","FB"])
+PLAYING = set(SCHED.away) | set(SCHED.home)      # teams on bye this week stay out of the injury log and unit-effect files
+inj = inj[inj.team.isin(PLAYING)]
 logs=[]
 for t in sorted(inj.team.unique()):
     d,oth_t,oth_c=build_roster(t)
@@ -40,7 +42,7 @@ for t in sorted(inj.team.unique()):
 pd.DataFrame(logs).round(3).to_csv(O+"w4_injury_adjustments.csv",index=False)
 # defensive/OL injury group effects
 from params import inj_groups
-pd.DataFrame([dict(team=t,**inj_groups(t)) for t in TEAM]).round(3).to_csv(O+"w4_injury_unit_effects.csv",index=False)
+pd.DataFrame([dict(team=t,**inj_groups(t)) for t in TEAM if t in PLAYING]).round(3).to_csv(O+"w4_injury_unit_effects.csv",index=False)
 # ---- observed pace (3 games) ----
 mk=pd.read_csv(O+"w4_player_props_fair_lines.csv")
 s=sc.copy(); q=pas.copy()

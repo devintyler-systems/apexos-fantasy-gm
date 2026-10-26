@@ -42,6 +42,8 @@ One command for the tables: `python engine/weekly/postmortem.py SEASON WEEK` (la
 `APEX_SEASON=2026 ...` -> compare frozen projections to `stats_player_week_2026` (see `compare_bt.py` for the metric set: MAE, bias,
 TD Brier/log loss, team RMSE). First graded game already in hand: PIT @ CLE (final 24-27).
 
+Game-level grade (every Tuesday): `python engine/weekly/game_grade.py 2026 4 5 6 7 ... --out docs/weekly/GAME_GRADE_2026_W{NN}.md` compares MODEL-ONLY, MARKET-ANCHORED and the betting line on winner accuracy, margin MAE, total MAE and team-points RMSE, using the last frozen pair before each kickoff. The model-only target is the LINE row, not market-anchored. The multi-season baseline is `python engine/weekly/game_bt.py <bt dir> base [candidate tags]` (DECISIONS #48); a game-level change ships only if it beats the line row in all three seasons and raises the model blend weight above 0.
+
 ## 4. Hard-won rules (do not regress)
 1. Join on PFR/gsis ids via `players.parquet`, never names. Team codes: nflverse convention.
 2. Time-zone audit every timestamp (the odds workbook was Pacific).

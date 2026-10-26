@@ -187,7 +187,10 @@ def render(away, home, out_path):
     # singles
     junk = S.market.isin(["rush_yds", "rush_att"]) & ~S.pos.isin(["QB", "RB"])
     S.loc[junk | (S.model_p >= 0.85) | ((S.n_log < 2) & (S.label == "LEAN")), "label"] = ""
-    S.loc[S.market.isin(["rush_yds", "rush_att"]) & (S.pos == "RB") & S.team.isin(rb_out_teams(int(os.environ.get("APEX_SEASON", 2026)), int(os.environ.get("APEX_TARGET_WEEK", 7)))), "label"] = ""
+    if os.environ.get("APEX_PASS_UNDER_GATE", "1") != "0":      # DECISIONS #44: 2026 team pass attempts run 2 to 3 above the projection and the Thursday pass-volume unders went 1 of 6; no PLAY/LEAN on a passing attempts, completions or yards UNDER until the level correction is backtested (=0 restores)
+        S.loc[S.market.isin(["pass_att", "pass_cmp", "pass_yds"]) & (S.side == "UNDER"), "label"] = ""
+    if os.environ.get("APEX_RB_OUT_GATE") == "1":      # off by default since the Week 7 Thursday result (DECISIONS #43: the four gated CHI RB lines all won); =1 restores the old rule
+        S.loc[S.market.isin(["rush_yds", "rush_att"]) & (S.pos == "RB") & S.team.isin(rb_out_teams(int(os.environ.get("APEX_SEASON", 2026)), int(os.environ.get("APEX_TARGET_WEEK", 7)))), "label"] = ""
     S.loc[(S.label == "LEAN") & S.market.isin(["rec", "rec_yds"]), "label"] = ""      # W6: LEAN receiving props hit 35% on 105 lines (POSTMORTEM_2026_W06 3.3); never published
     P = S[S.label != ""].sort_values(["label", "shrunk"], ascending=[False, False])
     w("## Singles (main lines)\n")
