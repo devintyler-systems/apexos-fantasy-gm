@@ -8,8 +8,12 @@ def apply_status_overlay(i, m, team_map):
     """Operator-supplied game designations (APEX_STATUS_OVERLAY=<csv: player,team,pos,report_status,source,as_of_utc>) for players whose NFL report is not in the nflverse feed yet (it lags the Friday
     report by hours). Only teams with NO report_status in `i` are touched, so the NFL feed governs the moment it carries a team. A matching player row gets the designation (practice status stays the
     nflverse one); an unmatched player is added with no practice row. The fitted availability table turns (designation, practice, position) into p_active exactly as for nflverse rows."""
+    m = m.copy(); m["team"] = m.team.map(lambda t: team_map.get(t, t) if hasattr(team_map, "get") else t); m["nkey"] = m.player.map(norm_name)
+    act = m[m.report_status == "Active"]
+    if len(act):      # an official 'active' (the operator read the league's inactive list): clear the game designation and the practice status so the healthy prior applies
+        i = i.copy(); ak = set(zip(act.nkey, act.team)); hit = [(a, b) in ak for a, b in zip(i.full_name.map(norm_name), i.team)]
+        i = i[[not h for h in hit]]      # officially active: drop the injury-table row so no fallback availability applies (a listing with no designation otherwise falls back to about 0.6)
     m = m[m.report_status.isin(["Out", "Doubtful", "Questionable"])].copy()
-    m["team"] = m.team.map(lambda t: team_map.get(t, t) if hasattr(team_map, "get") else t); m["nkey"] = m.player.map(norm_name)
     have = set(zip(i.loc[i.report_status.notna(), "full_name"].map(norm_name), i.loc[i.report_status.notna(), "team"]))      # the NFL feed governs a player it already carries (nflverse can hold a team's Outs and still lack its Questionables)
     if "override" in m.columns:      # a status newer than the NFL report (an upgrade to Out after the Friday designation) replaces the NFL row for that player
         keep = m.override.astype(str).str.lower().isin(["1", "true"])

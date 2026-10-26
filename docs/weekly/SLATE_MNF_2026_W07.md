@@ -2,7 +2,7 @@
 
 **How to read this.** Two simulation tracks, always labeled: MARKET-ANCHORED (nflverse spread/total as the team-points prior) and MODEL-ONLY (ratings and weather, no lines). Player numbers are the market-anchored track unless stated. Props use DraftKings lines via ESPN: lines only, **no prices and no touchdown prices**. Singles are screened at an assumed -110 after shrinking the model 50/50 toward 50%; touchdown and parlay prices are FAIR odds from the joint simulation, 'play at' adds a 12% cushion. The W4 and W5 postmortems found no edge over the books on yardage and count props and calibrated anytime-TD probabilities, so read everything as a ranked lean. TD v2 multipliers and the anytime-TD floor (0.06, DECISIONS #29-30) are live.
 
-**Inputs used (UTC).** ESPN game-summary Outs (5 names per team cap, not the official inactives): 2026-10-26T22:55:05Z. Sleeper status overlay (newer Out replaces the NFL row): 2026-10-26T22:54:57+00:00. nflverse depth charts: 2026-10-26T14:07:44Z; nflverse injuries: no timestamp in the feed. Lines: ESPN/DraftKings fetched 2026-10-26T22:55Z (no prices; the per-line `last_updated_utc` stamps run ahead of the fetch time and their zone is unverified, so no recency claim is made from them). Inactives: nflverse `roster INA` where the league's list has reached it, ESPN event-roster `didNotPlay` flags within 100 minutes of kickoff (they matched the official list 13 of 13 on a finished game), and the ESPN game-summary Outs (5 names per team); a team with no `INA` rows yet is pending, not healthy. A Sleeper status that disagrees with the ESPN flag is listed in the injury audit. Code: git 9dd1647.
+**Inputs used (UTC).** ESPN game-summary Outs (5 names per team cap, not the official inactives): 2026-10-26T23:07:53Z. Sleeper status overlay (newer Out replaces the NFL row): 2026-10-26T23:07:45+00:00. nflverse depth charts: 2026-10-26T14:07:44Z; nflverse injuries: no timestamp in the feed. Lines: ESPN/DraftKings fetched 2026-10-26T23:08Z (no prices; the per-line `last_updated_utc` stamps run ahead of the fetch time and their zone is unverified, so no recency claim is made from them). Inactives: nflverse `roster INA` where the league's list has reached it, and the ESPN game-summary Outs (5 names per team). The ESPN event-roster `didNotPlay` flag is a post-game record only: before kickoff it is not the inactive list (it listed Barkley inactive when the league listed him active); a team with no `INA` rows yet is pending, not healthy. A Sleeper status that disagrees with the ESPN flag is listed in the injury audit. Code: git 4e68902.
 
 **Started or finished, excluded from picks:** CIN@BAL, CLE@TEN, DEN@ARI, GB@DET, IND@MIN, KC@SEA, LA@LV, MIA@NYJ, NE@CHI, NYG@HOU, PIT@NO, SF@ATL, TB@CAR.
 
@@ -10,7 +10,7 @@
 
 | Game | Kickoff ET | Market (spread / total) | Market-anchored score | Win prob | Total | Model-only score | Model-only win | Fair spread |
 |---|---|---|---|---|---|---|---|---|
-| DAL@PHI | 2026-10-26 20:15 | PHI +4.5 / 43.5 | DAL 24.0, PHI 19.5 | DAL 62% / PHI 38% | 43.5 | DAL 23.2, PHI 23.9 | DAL 48% | PHI +4.0 |
+| DAL@PHI | 2026-10-26 20:15 | PHI +4.5 / 43.5 | DAL 24.0, PHI 19.6 | DAL 63% / PHI 37% | 43.6 | DAL 23.2, PHI 23.8 | DAL 48% | PHI +4.0 |
 
 Already played: NE@CHI final NE 24, CHI 30 (market CHI -3.0, total 50.5; projected 23.7-26.7).
 
@@ -36,7 +36,7 @@ Already played: GB@DET final GB 17, DET 20 (market DET -3.5, total 55.5; project
 
 Already played: LA@LV final LA 35, LV 21 (market LV +3.5, total 49.5; projected 26.5-23.1).
 
-Already played: KC@SEA final KC 3, SEA 20 (market SEA -3.0, total 43.5; projected 20.1-23.3).
+Already played: KC@SEA final KC 3, SEA 20 (market SEA -3.0, total 43.5; projected 20.2-23.3).
 
 ## 2. Team offense (through Week 6, per game)
 
@@ -219,40 +219,42 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 
 | player | team | opp | p_active | pass_cmp_mean | pass_yds_mean | pass_td_mean | rush_yds_mean | rush_td_mean | any_td_pct | league_ev | dk |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Dak Prescott | DAL | PHI | 100% | 23.8 | 260.6 | 1.37 | 9.5 | 0.16 | 15% | 9.2 | 16.0 |
-| Tanner McKee | PHI | DAL | 100% | 20.5 | 216.0 | 1.35 | 15.1 | 0.10 | 9% | 8.7 | 14.7 |
+| Dak Prescott | DAL | PHI | 100% | 23.8 | 259.3 | 1.37 | 9.4 | 0.16 | 15% | 9.2 | 16.0 |
+| Tanner McKee | PHI | DAL | 100% | 20.6 | 207.9 | 1.35 | 7.7 | 0.06 | 5% | 8.4 | 13.3 |
 
 **Running backs**
 
 | player | team | opp | p_active | rush_att_mean | rush_yds_mean | rush_td_mean | rec_mean | rec_yds_mean | rec_td_mean | any_td_pct | league_ev | ppr | dk |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Javonte Williams | DAL | PHI | 100% | 15.9 | 64.1 | 0.87 | 2.8 | 17.7 | 0.11 | 64% | 5.8 | 16.8 | 16.6 |
-| Dameon Pierce | PHI | DAL | 100% | 15.7 | 65.2 | 0.36 | 3.6 | 27.2 | 0.16 | 42% | 3.1 | 16.0 | 15.8 |
-| Tyler Goodson | DAL | PHI | 100% | 3.2 | 13.2 | 0.11 | 0.6 | 4.8 | 0.03 | 13% | 0.8 | 3.3 | 3.2 |
-| Hunter Luepke | DAL | PHI | 100% | 1.1 | 4.9 | 0.04 | 0.5 | 3.7 | 0.02 | 6% | 0.4 | 1.8 |  |
+| Javonte Williams | DAL | PHI | 100% | 15.9 | 63.8 | 0.87 | 2.8 | 17.8 | 0.11 | 64% | 5.8 | 16.8 | 16.6 |
+| Dameon Pierce | PHI | DAL | 100% | 11.3 | 43.9 | 0.28 | 3.1 | 22.5 | 0.14 | 35% | 2.5 | 12.2 | 12.1 |
+| Saquon Barkley | PHI | DAL | 100% | 6.8 | 34.0 | 0.18 | 2.1 | 15.6 | 0.08 | 23% | 1.6 | 8.6 | 8.6 |
+| Tyler Goodson | DAL | PHI | 100% | 3.2 | 13.0 | 0.11 | 0.6 | 4.7 | 0.03 | 13% | 0.8 | 3.3 | 3.2 |
+| Hunter Luepke | DAL | PHI | 100% | 1.1 | 4.9 | 0.04 | 0.5 | 3.8 | 0.02 | 6% | 0.4 | 1.8 |  |
 
 **Wide receivers**
 
 | player | team | opp | p_active | tgt_mean | rec_mean | rec_yds_mean | rec_td_mean | any_td_pct | league_ev | ppr | dk |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| CeeDee Lamb | DAL | PHI | 100% | 10.9 | 6.7 | 84.6 | 0.42 | 36% | 2.6 | 17.9 | 17.8 |
-| George Pickens | DAL | PHI | 95% | 9.0 | 5.5 | 73.4 | 0.31 | 27% | 1.8 | 14.7 | 13.9 |
-| Darius Cooper | PHI | DAL | 100% | 3.0 | 1.8 | 24.7 | 0.28 | 25% | 1.7 | 5.9 | 5.9 |
-| Ryan Flournoy | DAL | PHI | 100% | 5.8 | 3.5 | 39.8 | 0.25 | 22% | 1.5 | 9.0 | 9.0 |
-| Makai Lemon | PHI | DAL | 100% | 7.8 | 4.5 | 49.7 | 0.24 | 22% | 1.4 | 11.0 | 11.0 |
-| Elijah Moore | PHI | DAL | 100% | 1.6 | 0.9 | 12.0 | 0.05 | 6% | 0.3 | 2.4 |  |
-| Jonathan Mingo | DAL | PHI | 100% | 1.2 | 0.7 | 9.1 | 0.04 | 6% | 0.3 | 1.9 |  |
-| Britain Covey | PHI | DAL | 95% | 0.6 | 0.4 | 4.9 | 0.02 | 2% | 0.1 | 1.0 |  |
+| CeeDee Lamb | DAL | PHI | 100% | 10.9 | 6.7 | 83.9 | 0.42 | 36% | 2.6 | 17.8 | 17.8 |
+| George Pickens | DAL | PHI | 95% | 9.0 | 5.5 | 73.3 | 0.31 | 27% | 1.7 | 14.7 | 13.8 |
+| Darius Cooper | PHI | DAL | 100% | 2.6 | 1.5 | 20.5 | 0.26 | 23% | 1.5 | 5.1 | 5.1 |
+| Ryan Flournoy | DAL | PHI | 100% | 5.8 | 3.5 | 39.8 | 0.24 | 22% | 1.4 | 8.9 | 8.9 |
+| Makai Lemon | PHI | DAL | 100% | 6.6 | 3.9 | 41.0 | 0.21 | 20% | 1.3 | 9.3 | 9.3 |
+| Marquise Brown | PHI | DAL | 95% | 2.7 | 1.6 | 19.8 | 0.09 | 9% | 0.6 | 4.3 | 4.1 |
+| Jonathan Mingo | DAL | PHI | 100% | 1.2 | 0.7 | 8.9 | 0.04 | 6% | 0.3 | 1.9 |  |
+| Elijah Moore | PHI | DAL | 100% | 1.3 | 0.7 | 9.1 | 0.04 | 6% | 0.3 | 1.9 |  |
+| Britain Covey | PHI | DAL | 95% | 0.3 | 0.2 | 2.5 | 0.01 | 1% | 0.1 | 0.5 |  |
 
 **Tight ends**
 
 | player | team | opp | p_active | tgt_mean | rec_mean | rec_yds_mean | rec_td_mean | any_td_pct | league_ev | ppr | dk |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Dallas Goedert | PHI | DAL | 95% | 9.3 | 6.0 | 63.1 | 0.38 | 32% | 2.2 | 14.6 | 13.8 |
-| Zach Ertz | PHI | DAL | 100% | 6.6 | 4.1 | 43.1 | 0.25 | 22% | 1.5 | 10.0 | 9.9 |
-| Jake Ferguson | DAL | PHI | 100% | 5.5 | 3.7 | 33.7 | 0.20 | 18% | 1.2 | 8.3 | 8.2 |
-| Brevyn Spann-Ford | DAL | PHI | 100% | 1.7 | 1.1 | 11.0 | 0.06 | 6% | 0.3 | 2.5 |  |
-| Johnny Mundt | PHI | DAL | 100% | 1.6 | 1.0 | 10.4 | 0.05 | 6% | 0.3 | 2.3 |  |
+| Dallas Goedert | PHI | DAL | 95% | 7.9 | 5.1 | 52.1 | 0.34 | 29% | 2.0 | 12.4 | 11.7 |
+| Zach Ertz | PHI | DAL | 100% | 5.6 | 3.5 | 35.4 | 0.22 | 20% | 1.3 | 8.4 | 8.3 |
+| Jake Ferguson | DAL | PHI | 100% | 5.5 | 3.7 | 33.5 | 0.20 | 18% | 1.2 | 8.3 | 8.2 |
+| Brevyn Spann-Ford | DAL | PHI | 100% | 1.7 | 1.1 | 10.9 | 0.06 | 6% | 0.3 | 2.5 |  |
+| Johnny Mundt | PHI | DAL | 100% | 1.3 | 0.8 | 8.2 | 0.04 | 6% | 0.2 | 1.9 |  |
 | Luke Schoonmaker | DAL | PHI | 100% | 0.9 | 0.6 | 5.7 | 0.02 | 6% | 0.1 | 1.3 |  |
 
 **Kickers (this league: FG 3, XP 1; ranked by team implied points, the only validated signal; differences are within noise)**: DAL 7.5; PHI 6.9
@@ -263,57 +265,58 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 
 | player | team | opp | pos | prob | adj | fair | playat | p_active | note |
 |---|---|---|---|---|---|---|---|---|---|
-| Javonte Williams | DAL | PHI | RB | 63.7% | 63.7% | -176 | -132 | 100% | opp QB: fill-in QB (Tanner McKee) red-team downgrade |
-| Dameon Pierce | PHI | DAL | RB | 41.8% | 41.8% | +139 | +168 | 100% | fill-in QB (Tanner McKee) red-team downgrade |
-| CeeDee Lamb | DAL | PHI | WR | 35.6% | 35.6% | +181 | +214 | 100% | opp QB: fill-in QB (Tanner McKee) |
-| Dallas Goedert | PHI | DAL | TE | 32.1% | 30.4% | +212 | +249 | 95% | fill-in QB (Tanner McKee) |
-| George Pickens | DAL | PHI | WR | 27.2% | 25.8% | +268 | +312 | 95% | opp QB: fill-in QB (Tanner McKee) |
-| Darius Cooper | PHI | DAL | WR | 25.1% | 25.1% | +299 | +347 | 100% | fill-in QB (Tanner McKee) red-team downgrade |
-| Zach Ertz | PHI | DAL | TE | 22.4% | 22.4% | +346 | +400 | 100% | fill-in QB (Tanner McKee) red-team downgrade |
-| Ryan Flournoy | DAL | PHI | WR | 21.9% | 21.9% | +357 | +412 | 100% | opp QB: fill-in QB (Tanner McKee) |
-| Makai Lemon | PHI | DAL | WR | 21.6% | 21.6% | +364 | +420 | 100% | fill-in QB (Tanner McKee) |
-| Jake Ferguson | DAL | PHI | TE | 18.0% | 18.0% | +455 | +522 | 100% | opp QB: fill-in QB (Tanner McKee) |
-| Dak Prescott | DAL | PHI | QB | 14.6% | 14.6% | +583 | +665 | 100% | opp QB: fill-in QB (Tanner McKee) |
-| Tyler Goodson | DAL | PHI | RB | 12.8% | 12.8% | +679 | +773 | 100% | opp QB: fill-in QB (Tanner McKee) |
-| Hunter Luepke | DAL | PHI | RB | 6.2% | 6.2% | +1509 | +1702 | 100% | opp QB: fill-in QB (Tanner McKee) |
+| Javonte Williams | DAL | PHI | RB | 64.3% | 64.3% | -180 | -135 | 100% | opp QB: fill-in QB (Tanner McKee) red-team downgrade |
+| CeeDee Lamb | DAL | PHI | WR | 35.7% | 35.7% | +180 | +214 | 100% | opp QB: fill-in QB (Tanner McKee) |
+| Dameon Pierce | PHI | DAL | RB | 34.8% | 34.8% | +187 | +222 | 100% | fill-in QB (Tanner McKee) red-team downgrade |
+| Dallas Goedert | PHI | DAL | TE | 29.4% | 27.9% | +240 | +281 | 95% | fill-in QB (Tanner McKee) |
+| George Pickens | DAL | PHI | WR | 26.6% | 25.2% | +276 | +321 | 95% | opp QB: fill-in QB (Tanner McKee) |
+| Saquon Barkley | PHI | DAL | RB | 23.3% | 23.3% | +329 | +381 | 100% | fill-in QB (Tanner McKee) |
+| Darius Cooper | PHI | DAL | WR | 22.9% | 22.9% | +338 | +390 | 100% | fill-in QB (Tanner McKee) red-team downgrade |
+| Ryan Flournoy | DAL | PHI | WR | 21.5% | 21.5% | +364 | +420 | 100% | opp QB: fill-in QB (Tanner McKee) |
+| Zach Ertz | PHI | DAL | TE | 19.8% | 19.8% | +405 | +465 | 100% | fill-in QB (Tanner McKee) red-team downgrade |
+| Makai Lemon | PHI | DAL | WR | 19.5% | 19.5% | +413 | +474 | 100% | fill-in QB (Tanner McKee) |
+| Jake Ferguson | DAL | PHI | TE | 18.3% | 18.3% | +445 | +511 | 100% | opp QB: fill-in QB (Tanner McKee) |
+| Dak Prescott | DAL | PHI | QB | 14.9% | 14.9% | +571 | +652 | 100% | opp QB: fill-in QB (Tanner McKee) |
+| Tyler Goodson | DAL | PHI | RB | 13.1% | 13.1% | +664 | +756 | 100% | opp QB: fill-in QB (Tanner McKee) |
+| Marquise Brown | PHI | DAL | WR | 9.3% | 8.9% | +970 | +1099 | 95% | fill-in QB (Tanner McKee) |
+| Hunter Luepke | DAL | PHI | RB | 6.3% | 6.3% | +1480 | +1669 | 100% | opp QB: fill-in QB (Tanner McKee) |
 | Jonathan Mingo | DAL | PHI | WR | 6.0% | 6.0% | +1567 | +1767 | 100% | opp QB: fill-in QB (Tanner McKee) |
 | Luke Schoonmaker | DAL | PHI | TE | 6.0% | 6.0% | +1567 | +1767 | 100% | opp QB: fill-in QB (Tanner McKee) |
 | Brevyn Spann-Ford | DAL | PHI | TE | 6.0% | 6.0% | +1567 | +1767 | 100% | opp QB: fill-in QB (Tanner McKee) |
 | Elijah Moore | PHI | DAL | WR | 6.0% | 6.0% | +1567 | +1767 | 100% | fill-in QB (Tanner McKee) |
 | Johnny Mundt | PHI | DAL | TE | 6.0% | 6.0% | +1567 | +1767 | 100% | fill-in QB (Tanner McKee) |
-| Britain Covey | PHI | DAL | WR | 2.1% | 2.0% | +4733 | +5313 | 95% | fill-in QB (Tanner McKee) |
 
 **2+ TD (top 10)**
 
 | player | team | opp | prob | fair |
 |---|---|---|---|---|
 | Javonte Williams | DAL | PHI | 25.4% | +293 |
-| Dameon Pierce | PHI | DAL | 9.2% | +985 |
-| CeeDee Lamb | DAL | PHI | 6.4% | +1467 |
-| Dallas Goedert | PHI | DAL | 5.2% | +1812 |
-| George Pickens | DAL | PHI | 3.8% | +2561 |
-| Darius Cooper | PHI | DAL | 3.2% | +3070 |
-| Zach Ertz | PHI | DAL | 2.6% | +3776 |
-| Ryan Flournoy | DAL | PHI | 2.5% | +3916 |
-| Makai Lemon | PHI | DAL | 2.2% | +4530 |
-| Jake Ferguson | DAL | PHI | 1.7% | +5835 |
+| CeeDee Lamb | DAL | PHI | 6.8% | +1379 |
+| Dameon Pierce | PHI | DAL | 6.2% | +1508 |
+| Dallas Goedert | PHI | DAL | 4.4% | +2151 |
+| George Pickens | DAL | PHI | 3.7% | +2586 |
+| Darius Cooper | PHI | DAL | 2.6% | +3761 |
+| Saquon Barkley | PHI | DAL | 2.5% | +3845 |
+| Ryan Flournoy | DAL | PHI | 2.1% | +4551 |
+| Zach Ertz | PHI | DAL | 2.1% | +4562 |
+| Makai Lemon | PHI | DAL | 2.1% | +4731 |
 
 **First TD (top 10)**
 
 | player | team | opp | prob | fair |
 |---|---|---|---|---|
-| Javonte Williams | DAL | PHI | 19.5% | +412 |
-| Dameon Pierce | PHI | DAL | 10.4% | +865 |
-| CeeDee Lamb | DAL | PHI | 8.5% | +1075 |
-| Dallas Goedert | PHI | DAL | 7.5% | +1236 |
-| George Pickens | DAL | PHI | 6.2% | +1515 |
-| Darius Cooper | PHI | DAL | 5.7% | +1669 |
-| Zach Ertz | PHI | DAL | 5.0% | +1920 |
-| Ryan Flournoy | DAL | PHI | 4.9% | +1957 |
-| Makai Lemon | PHI | DAL | 4.7% | +2031 |
-| Jake Ferguson | DAL | PHI | 3.9% | +2439 |
+| Javonte Williams | DAL | PHI | 19.6% | +410 |
+| CeeDee Lamb | DAL | PHI | 8.6% | +1065 |
+| Dameon Pierce | PHI | DAL | 8.3% | +1102 |
+| Dallas Goedert | PHI | DAL | 6.8% | +1375 |
+| George Pickens | DAL | PHI | 6.1% | +1546 |
+| Saquon Barkley | PHI | DAL | 5.1% | +1843 |
+| Darius Cooper | PHI | DAL | 5.0% | +1894 |
+| Ryan Flournoy | DAL | PHI | 4.7% | +2024 |
+| Zach Ertz | PHI | DAL | 4.4% | +2191 |
+| Makai Lemon | PHI | DAL | 4.3% | +2250 |
 
-**Sneaky longshots** (8% to 25% anytime, active 90%+): Zach Ertz (PHI) 22% fair +346, take at +400+; Ryan Flournoy (DAL) 22% fair +357, take at +412+; Makai Lemon (PHI) 22% fair +364, take at +420+; Jake Ferguson (DAL) 18% fair +455, take at +522+; Dak Prescott (DAL) 15% fair +583, take at +665+; Tyler Goodson (DAL) 13% fair +679, take at +773+
+**Sneaky longshots** (8% to 25% anytime, active 90%+): Saquon Barkley (PHI) 23% fair +329, take at +381+; Darius Cooper (PHI) 23% fair +338, take at +390+; Ryan Flournoy (DAL) 22% fair +364, take at +420+; Zach Ertz (PHI) 20% fair +405, take at +465+; Makai Lemon (PHI) 20% fair +413, take at +474+; Jake Ferguson (DAL) 18% fair +445, take at +511+; Dak Prescott (DAL) 15% fair +571, take at +652+; Tyler Goodson (DAL) 13% fair +664, take at +756+; Marquise Brown (PHI) 9% fair +970, take at +1099+
 
 ## 7. Single-line screen (DraftKings lines via ESPN, assumed -110)
 
@@ -321,19 +324,19 @@ pro-football-reference.com serves a bot challenge (HTTP 403) to scripted request
 
 | label | game | player | market | side | line | model_p | shrunk | fair | log | agree | flag | caution |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| LEAN | DAL@PHI | Dameon Pierce | rush_att | OVER | 5.5 | 100% | 75% | -298 | 2/2 | yes | same bet as sibling line | fill-in QB (Tanner McKee) |
-| LEAN | DAL@PHI | Dameon Pierce | rush_yds | OVER | 18.5 | 98% | 74% | -284 | 1/2 | yes | same bet as sibling line | fill-in QB (Tanner McKee) |
-| LEAN | DAL@PHI | Tanner McKee | rush_yds | OVER | 3.5 | 77% | 64% | -175 | 0/1 | yes | same bet as sibling line | fill-in QB (Tanner McKee) |
-| LEAN | DAL@PHI | Dak Prescott | pass_att | OVER | 35.5 | 73% | 62% | -160 | 4/6 | yes | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
-| LEAN | DAL@PHI | Tyler Goodson | rush_yds | UNDER | 13.5 | 65% | 57% | -135 | 2/3 | yes | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
-| LEAN | DAL@PHI | Dak Prescott | rush_yds | UNDER | 9.5 | 65% | 57% | -134 | 2/5 | yes | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
-| LEAN | DAL@PHI | Tanner McKee | pass_yds | OVER | 202.5 | 61% | 55% | -125 | 1/1 | yes | same bet as sibling line | fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Dameon Pierce | rush_att | OVER | 5.5 | 96% | 73% | -267 | 2/2 | yes | same bet as sibling line | fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Saquon Barkley | rush_yds | UNDER | 65.5 | 91% | 70% | -238 | 2/4 | yes | same bet as sibling line | fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Dameon Pierce | rush_yds | OVER | 18.5 | 88% | 69% | -221 | 1/2 | yes | same bet as sibling line | fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Dak Prescott | pass_att | OVER | 35.5 | 73% | 61% | -159 | 4/6 | yes | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Tyler Goodson | rush_yds | UNDER | 13.5 | 65% | 58% | -135 | 2/3 | yes | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Dak Prescott | rush_yds | UNDER | 9.5 | 65% | 57% | -135 | 2/5 | yes | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Tanner McKee | pass_cmp | OVER | 20.5 | 59% | 54% | -119 | 1/1 | NO | same bet as sibling line | fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Javonte Williams | rush_yds | UNDER | 64.5 | 58% | 54% | -118 | 5/6 | yes | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
 | LEAN | DAL@PHI | Javonte Williams | rush_att | UNDER | 16.5 | 58% | 54% | -117 | 4/6 | yes | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
-| LEAN | DAL@PHI | Tanner McKee | pass_cmp | OVER | 20.5 | 58% | 54% | -117 | 1/1 | NO | same bet as sibling line | fill-in QB (Tanner McKee) |
-| LEAN | DAL@PHI | Javonte Williams | rush_yds | UNDER | 64.5 | 58% | 54% | -117 | 5/6 | yes | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Tanner McKee | pass_yds | OVER | 203.5 | 56% | 53% | -113 | 1/1 | NO | same bet as sibling line | fill-in QB (Tanner McKee) |
 | LEAN | DAL@PHI | Tanner McKee | pass_att | OVER | 33.5 | 53% | 52% | -106 | 1/1 | NO | same bet as sibling line | fill-in QB (Tanner McKee) |
-| LEAN | DAL@PHI | Dak Prescott | pass_cmp | OVER | 24.5 | 52% | 51% | -104 | 4/6 | NO | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
-| LEAN | DAL@PHI | Saquon Barkley | rush_yds | UNDER | 65.5 | nan% | nan% | +0 | 2/4 | yes | same bet as sibling line | fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Tanner McKee | rush_yds | OVER | 3.5 | 53% | 51% | -105 | 0/1 | yes | same bet as sibling line | fill-in QB (Tanner McKee) |
+| LEAN | DAL@PHI | Dak Prescott | pass_cmp | OVER | 24.5 | 51% | 51% | -103 | 4/6 | NO | same bet as sibling line | opp QB: PHI fill-in QB (Tanner McKee) |
 
 ## 8. Parlays across the slate (fair odds; legs from different games are independent, same-game legs use the joint simulation)
 
@@ -353,8 +356,8 @@ Pool: PLAY/LEAN single-line legs (shrunk), anytime-TD legs (12-60%), QB 1+ and 2
 |---|---|---|---|---|
 | DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Dak Prescott pass TD 1+ | 28.7% | 34.7% | +249 | +290 |
 | DAL@PHI: Ryan Flournoy anytime TD + DAL@PHI: Dak Prescott pass TD 1+ | 18.1% | 21.9% | +453 | +519 |
-| DAL@PHI: Jake Ferguson anytime TD + DAL@PHI: Dak Prescott pass TD 1+ | 14.7% | 17.8% | +581 | +662 |
-| DAL@PHI: Makai Lemon anytime TD + DAL@PHI: Dak Prescott pass TD 1+ | 13.8% | 16.7% | +626 | +714 |
+| DAL@PHI: Saquon Barkley anytime TD + DAL@PHI: Dak Prescott pass TD 1+ | 14.9% | 18.0% | +572 | +653 |
+| DAL@PHI: Jake Ferguson anytime TD + DAL@PHI: Dak Prescott pass TD 1+ | 14.7% | 17.8% | +580 | +662 |
 
 ### 3-leg
 
@@ -368,10 +371,10 @@ Pool: PLAY/LEAN single-line legs (shrunk), anytime-TD legs (12-60%), QB 1+ and 2
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Ryan Flournoy anytime TD | 7.9% | 7.0% | +1170 | +1323 |
-| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Jake Ferguson anytime TD | 6.3% | 5.7% | +1475 | +1664 |
-| DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Makai Lemon anytime TD + DAL@PHI: Dak Prescott pass TD 1+ | 6.2% | 7.5% | +1517 | +1711 |
-| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: Ryan Flournoy anytime TD + DAL@PHI: Jake Ferguson anytime TD | 4.2% | 3.7% | +2304 | +2593 |
+| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Ryan Flournoy anytime TD | 7.9% | 7.0% | +1171 | +1324 |
+| DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Saquon Barkley anytime TD + DAL@PHI: Dak Prescott pass TD 1+ | 6.8% | 8.2% | +1375 | +1552 |
+| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Jake Ferguson anytime TD | 6.4% | 5.7% | +1474 | +1663 |
+| DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Makai Lemon anytime TD + DAL@PHI: Dak Prescott pass TD 1+ | 5.8% | 7.0% | +1620 | +1827 |
 
 ### 4-leg
 
@@ -385,10 +388,10 @@ Pool: PLAY/LEAN single-line legs (shrunk), anytime-TD legs (12-60%), QB 1+ and 2
 
 | Legs | Hit probability | Raw sim | Fair odds | Play at or better |
 |---|---|---|---|---|
-| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Ryan Flournoy anytime TD + DAL@PHI: Makai Lemon anytime TD | 1.7% | 1.6% | +5678 | +6372 |
-| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Makai Lemon anytime TD + DAL@PHI: Jake Ferguson anytime TD | 1.4% | 1.3% | +6980 | +7830 |
-| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Ryan Flournoy anytime TD + DAL@PHI: Jake Ferguson anytime TD | 1.4% | 1.3% | +7037 | +7893 |
-| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: Ryan Flournoy anytime TD + DAL@PHI: Makai Lemon anytime TD + DAL@PHI: Jake Ferguson anytime TD | 0.9% | 0.8% | +11166 | +12518 |
+| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Saquon Barkley anytime TD + DAL@PHI: Ryan Flournoy anytime TD | 1.9% | 1.7% | +5263 | +5907 |
+| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Ryan Flournoy anytime TD + DAL@PHI: Makai Lemon anytime TD | 1.6% | 1.4% | +6163 | +6915 |
+| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Saquon Barkley anytime TD + DAL@PHI: Jake Ferguson anytime TD | 1.5% | 1.4% | +6510 | +7303 |
+| DAL@PHI: Dak Prescott pass TD 2+ + DAL@PHI: CeeDee Lamb anytime TD + DAL@PHI: Ryan Flournoy anytime TD + DAL@PHI: Jake Ferguson anytime TD | 1.4% | 1.3% | +7008 | +7861 |
 
 ### Quarterback passing-TD ladder (calibrated market: the model beat the books here in W4; fair odds)
 
@@ -419,13 +422,11 @@ What it says: where the model disagrees with a receiving line, the line was righ
 
 ## 10b. Lines with no projection, and players withheld
 
-3 players have posted lines but no projection row (not on the 2026 stats universe, injured/exempt, or name mismatch). Nothing is published for them:
+1 players have posted lines but no projection row (not on the 2026 stats universe, injured/exempt, or name mismatch). Nothing is published for them:
 
 | player | team | game | market |
 |---|---|---|---|
 | Eli Stowers | PHI | DAL@PHI | reception_yds |
-| Marquise Brown | PHI | DAL@PHI | reception_yds, receptions |
-| Saquon Barkley | PHI | DAL@PHI | reception_yds, receptions, rush_attempts, rush_yds |
 
 **Withheld on purpose** (no line, touchdown or parlay leg):
 
