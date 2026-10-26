@@ -102,3 +102,8 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - A game past its scheduled kickoff is never pickable: `slate_full.games_unplayed()` drops it (`APEX_INCLUDE_STARTED=1` to override) and the report names it. The raw `w4_*` files of a freeze still carry started games without a flag (open item).
 - Red-team pulls/downgrades file grew to 52 rows (pull | downgrade; family-wide); the TD board marks downgraded anytime-TD players. Card: 17 PLAY.
 - Frozen: `2026_w07_{market,model}_20261025T1550*`.
+
+## 52. Week 7 Sunday postmortem (2026-10-26): findings and queue, no model change
+- See `POSTMORTEM_2026_W07_SUNDAY.md`. Must-plays 2 of 9; published PLAY 10 of 17; 402 screened lines hit 55% against 61% raw. The raw probability is over-confident where the model disagrees with the line by more than 25% (hit 49% against 66% raw); above raw 0.70 the hit rate is flat near 62%.
+- RB rush-yard intervals are too narrow in the 2023-25 backtest (P25-P75 holds 44%; best rescale 1.2 in all three seasons); candidates queued: gap-aware shrink with a 65% cap, RB rush dispersion 1.2 and QB rush 1.1, returning-player prior, healthy-scratch discount, parlay portfolio rule. Interim publishing rule from Week 8: rush-yard lines are LEAN at most; no must-play on a quarterback rush under or a volume line in a game with a spread above 6.
+- Rejected on evidence: a tail-receiver projection haircut (W7 +47% at rank 4-9, backtest +1 to +5%).
