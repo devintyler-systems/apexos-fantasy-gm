@@ -1,7 +1,7 @@
 # Week 7 Sunday postmortem (12 Sunday games, plus Thursday for reference)
 
 Scope: every Sunday game (PIT@NO through KC@SEA). DAL@PHI (Monday) is not graded here. Sources: the last frozen run before each kickoff (12:11Z for PIT@NO, 15:50Z for the 1:00 PM games, 18:39Z for the 4 PM games, 22:55Z for KC@SEA), the per-window screened-line dumps, nflverse box scores, and the 2023-25 backtest.
-No book prices exist, so every number is a hit rate against the posted line at an assumed -110, never ROI. Nothing here changes a frozen run; nothing in this document is a model change.
+Sections 1-6 grade the screened lines at an assumed -110 (the ESPN lines carry no prices). **That framing was incomplete: the operator's Odds API workbook does carry two-sided prices from six books; section 7 grades against them.** Nothing here changes a frozen run; nothing in this document is a model change.
 
 ## 1. Scorecard
 
@@ -84,12 +84,12 @@ Against the naive per-game average: receiving yards MAE 21.4 vs 22.9 (better), r
 - Team points: market-anchored and the line were within 0.04 RMSE of each other. The anchor is working.
 - Lamar Jackson Out was correct (Huntley started); a late ESPN drop of his name was a post-kickoff list artifact.
 
-## 5. Decisions I need from you, and what I need you to find
+## 5. Asks, and where they stand (updated after the operator's reply)
 
-1. **A price source** (an Odds API key, or timestamped DraftKings/FanDuel prop prices exported at each window). Without it, every calibration above rests on an assumed -110. This is the highest-value input.
-2. **A faster official-inactives source**: any feed that publishes the NFL's 90-minute inactive list in a machine-readable form (a paid feed, or a page you know I can read). Right now we publish before the league's list reaches us.
-3. **Josh Jacobs**: his status (reinstated, role) and, if you know it, any other returning or exempt players for Week 8.
-4. **Approval to archive graded lines** outside the repo each week so the gap-aware shrink (F1) can be fit on four-plus weeks of data instead of one. I will keep only aggregated tables in the repo.
+1. **Prices.** Received earlier (see section 7); what is missing is a repeating feed. Needed: the same export at each window (Wednesday open, T-90, T-30) including `player_anytime_td`, `player_1st_td` and `player_pass_completions`, or an Odds API key stored as an environment secret named `ODDS_API_KEY` (never pasted in chat). `odds_api_fetch.py` is ready and writes the workbook schema.
+2. **Inactives.** Approved to find a source. Built `espn_roster_inactives.py` (ESPN event roster `didNotPlay`): matched nflverse's official inactives 13 of 13 for the finished PIT@NO game; before the league publishes (about 90 minutes out) the flag is not trustworthy (Monday's list omitted three known Outs), so it is used only inside a 100-minute window and every call logs a timestamped snapshot to measure its lead time. First live test: DAL@PHI tonight.
+3. **Josh Jacobs.** Reinstated after the exempt list. He now has a 2026 stat row, so the engine projects him from Week 8 with last season's role as the prior. A general returning-player prior stays in the queue.
+4. **Archive.** Approved. `calibration_ledger.py` appends aggregated graded counts (no lines, no prices) to `config/weekly/calibration_ledger.csv`; Week 7 is seeded under both anchors.
 
 ## 6. Work queue (each item needs its own weeks 4-12 backtest and a DECISIONS entry)
 
@@ -101,3 +101,33 @@ Against the naive per-game average: receiving yards MAE 21.4 vs 22.9 (better), r
 | 4 | Parlay portfolio rule (F4) | unit test |
 | 5 | Quarterback share 0.93 to about 0.975 with the dispersion change (previously queued) | all metrics plus coverage |
 | 6 | QB-aware team ratings (F7) | `game_bt.py` beats the line in all three seasons |
+
+## 7. Prices: correction and what the real prices say
+
+**Correction.** I told you there were no prices. The ESPN lines used in the Sunday screens carry none, but your workbook (4,625 rows: 6 books, 14 games, 7 markets, one snapshot at 7:43 PM ET Thursday Oct 22) has two-sided prices. The Sunday screens did not use it because `price_odds.py` drops lines older than two hours by design, and Sunday was three days later. It should have been graded in this postmortem; it is now.
+
+**Method.** `price_odds.py` pinned to the snapshot time, the model's probability at each book's posted point against the de-vigged consensus (mean 2.4 books per line), 811 lines with p_active 0.9 or better in 13 final games. Rows are not independent (a player's receptions and receiving yards, alternate rungs), so read sample sizes as inflated.
+
+| Result | Value |
+|---|---|
+| Brier, book consensus / our model / coin | 0.2498 / 0.2505 / 0.2500 |
+| Brier, 50/50 blend (book + 0.5 x (model - book)) | **0.2458** (best at weight 0.5) |
+| By market, Brier book vs model | rec_yds 0.2519 vs 0.2430; rush_att 0.2469 vs 0.2189; rush_yds 0.2490 vs 0.2430; rec 0.2477 vs 0.2461; pass_att 0.2415 vs 0.2646; **pass_yds 0.2512 vs 0.2974** |
+| Model side when the gap to the book is 10+ points, best price | 366 bets, 57% win, ROI +8.8% (gap 20+: 89 bets, 73%, +41%); fading the model: -19% |
+| ROI by market at 10+ points | rec_yds +23% (128), rush_att +26% (18), rush_yds +7.5% (70), rec +8% (67), pass_att -2% (21), **pass_yds -20% (62)** |
+| Closing-line value | between Thursday and Sunday the line moved with the model's lean only **39%** of the time (117 moved lines; 43% at a 10-point gap, 42 lines) |
+
+**Reading it.**
+- The realized ROI is not evidence of an edge. The negative closing-line value says the market moved away from the model, the ROI standard error at this sample is about 10 points, and Thursday's prices predate the Sunday injury news the model already had.
+- It does show the model carries information the book lacks when the two are blended. The right shrink target is the book's de-vigged probability, not 50%; the flat 50% in the screens discarded price skew (books posted -128/+101 type lines), which is a large part of the over-confidence in section 3 (F1).
+- **Passing yards is the one market where the model is clearly worse than the book** (Brier 0.297 against 0.251, -20% ROI). This is the quarterback share haircut (0.93 against about 0.975 observed) and the narrow passing interval showing up in probabilities. It moves to the top of the work queue.
+- Rush attempts and receiving yards look best, but rush attempts is 39 lines and receiving yards leans on 128 correlated rows.
+
+## 8. Revised work queue (priority order)
+
+1. Quarterback share and passing dispersion backtest (pass yards is the worst-calibrated market against real prices).
+2. Shrink toward the book's de-vigged probability with per-market weights, fit on the ledger as weeks accumulate (needs prices at each window, not only Thursday).
+3. RB rush-yard dispersion 1.2, QB rush 1.1 (F2/F3).
+4. Returning-player prior and healthy-scratch discount (F5).
+5. Parlay portfolio rule (F4).
+6. QB-aware team ratings (F7).
