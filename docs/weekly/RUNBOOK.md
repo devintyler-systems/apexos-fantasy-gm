@@ -44,6 +44,8 @@ TD Brier/log loss, team RMSE). First graded game already in hand: PIT @ CLE (fin
 
 Game-level grade (every Tuesday): `python engine/weekly/game_grade.py 2026 4 5 6 7 ... --out docs/weekly/GAME_GRADE_2026_W{NN}.md` compares MODEL-ONLY, MARKET-ANCHORED and the betting line on winner accuracy, margin MAE, total MAE and team-points RMSE, using the last frozen pair before each kickoff. The model-only target is the LINE row, not market-anchored. The multi-season baseline is `python engine/weekly/game_bt.py <bt dir> base [candidate tags]` (DECISIONS #48); a game-level change ships only if it beats the line row in all three seasons and raises the model blend weight above 0.
 
+Prices and inactives (DECISIONS #53): `odds_api_fetch.py` (needs the `ODDS_API_KEY` environment secret) or the operator export at each window feeds `price_odds.py`; grade lines against book prices and append `calibration_ledger.py` rows each Tuesday. Inactives: ESPN game-summary Outs, plus `nfl_inactives.py` (nflverse roster INA) and `espn_roster_inactives.py` (ESPN roster didNotPlay, trusted only within 100 minutes of kickoff).
+
 ## 4. Hard-won rules (do not regress)
 1. Join on PFR/gsis ids via `players.parquet`, never names. Team codes: nflverse convention.
 2. Time-zone audit every timestamp (the odds workbook was Pacific).
