@@ -1,0 +1,15 @@
+game,roof,note,wind_mph,gust_mph,temp_f,precip_pct,total_adj_pts
+NE@CHI,outdoors,kickoff outside the 7-day forecast: no adjustment,,,,,
+PIT@NO,dome,indoor,,,,,
+SF@ATL,open,indoor,,,,,
+CIN@BAL,outdoors,kickoff outside the 7-day forecast: no adjustment,,,,,
+TB@CAR,outdoors,kickoff outside the 7-day forecast: no adjustment,,,,,
+NYG@HOU,closed,indoor,,,,,
+IND@MIN,dome,indoor,,,,,
+MIA@NYJ,outdoors,kickoff outside the 7-day forecast: no adjustment,,,,,
+CLE@TEN,outdoors,kickoff outside the 7-day forecast: no adjustment,,,,,
+DEN@ARI,closed,indoor,,,,,
+GB@DET,dome,indoor,,,,,
+LA@LV,dome,indoor,,,,,
+KC@SEA,outdoors,kickoff outside the 7-day forecast: no adjustment,,,,,
+DAL@PHI,outdoors,"NWS hourly, mid-game hour",5.0,,57.0,0.0,-0.0

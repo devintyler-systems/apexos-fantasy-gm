@@ -2,6 +2,8 @@
 
 Usage: python espn_roster_inactives.py YYYYMMDD [YYYYMMDD ...] --out var/manual_out.csv [--merge var/manual_out.csv] [--snap var/roster_dnp_snapshots.csv]
 
+WARNING (Week 7 Monday night): BEFORE kickoff this flag is NOT the inactive list. ESPN's `active` field is False for every player and the flag listed Saquon Barkley as inactive while NFL.com listed him ACTIVE;
+the 13-of-13 match with the official list holds only for FINISHED games. Default is now min-minutes 0 (rows only for games that have started, i.e. a post-game record of who sat); never use it pregame.
 ESPN's core API serves, per event and team, `competitions/{id}/competitors/{team}/roster`: every rostered player with `active`, `starter`, `didNotPlay`. For the finished PIT@NO game the
 `didNotPlay` set matched nflverse's official inactives 13 of 13 names. BEFORE the league publishes inactives (about 90 minutes before kickoff) the flag is NOT trustworthy (Monday's DAL@PHI carried 9 PHI
 names that omitted DeVonta Smith, Dontayvion Wicks and Jalen Hurts, three known Outs), so rows are written only when --min-minutes-to-kickoff allows it (default: kickoff within 100 minutes or already started)
@@ -32,10 +34,16 @@ def dnp_ids(roster_json):
     return [str(e["playerId"]) for e in roster_json.get("entries", []) if e.get("didNotPlay")]
 
 
-def rows_for(dates, season, now=None, min_minutes=100, snap=None):
+def rows_for(dates, season, now=None, min_minutes=0, snap=None):
     now = now or dt.datetime.now(dt.timezone.utc)
     r = pd.read_parquet(NFLV + f"roster_{season}.parquet"); r = r[r.week == r.week.max()]
     byid = {str(int(x.espn_id)): x for x in r.dropna(subset=["espn_id"]).itertuples()}
+    try:      # players the weekly roster file lacks (linemen, practice squad): resolve through the full players table so their unit effects are not silently dropped
+        pl = pd.read_parquet(NFLV + "players.parquet").dropna(subset=["espn_id", "gsis_id"])
+        for x in pl.itertuples():
+            byid.setdefault(str(int(float(x.espn_id))), type("P", (), dict(full_name=x.display_name, position=x.position, gsis_id=x.gsis_id))())
+    except Exception:
+        pass
     out, snaps, skipped = [], [], []
     for d in dates:
         for ev in _get(SB.format(d=d)).get("events", []):
@@ -59,7 +67,7 @@ def rows_for(dates, season, now=None, min_minutes=100, snap=None):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("dates", nargs="+"); ap.add_argument("--season", type=int, default=2026); ap.add_argument("--merge"); ap.add_argument("--out", required=True)
-    ap.add_argument("--snap"); ap.add_argument("--min-minutes-to-kickoff", type=int, default=100)
+    ap.add_argument("--snap"); ap.add_argument("--min-minutes-to-kickoff", type=int, default=0)
     a = ap.parse_args()
     df, skipped = rows_for(a.dates, a.season, min_minutes=a.min_minutes_to_kickoff, snap=a.snap)
     if a.merge and os.path.exists(a.merge):

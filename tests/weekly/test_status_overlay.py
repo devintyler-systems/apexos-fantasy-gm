@@ -38,3 +38,9 @@ def test_newer_overlay_status_replaces_the_nfl_row_when_flagged():
     ov = pd.concat([_ov(), pd.DataFrame([dict(player="Tyreek Hill", team="NE", pos="WR", report_status="Out", override=True)])])
     out = apply_status_overlay(_inj(), ov, {})
     assert out[out.full_name == "Tyreek Hill"].report_status.iloc[0] == "Out"
+
+
+def test_active_row_clears_the_designation():
+    ov = pd.DataFrame([dict(player="Tyreek Hill", team="NE", pos="WR", report_status="Active")])
+    out = apply_status_overlay(_inj(), ov, {})
+    assert "Tyreek Hill" not in set(out.full_name)      # the player leaves the injury table, so he is treated as healthy
