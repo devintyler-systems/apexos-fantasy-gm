@@ -243,8 +243,8 @@ def play_side(rng, t, sd, ns):
         fl = rng.poisson(0.012 * sd["db"] / 1.0 * 0.45)
         pint = sd["int_n"]
         if nm == qb_name:     # starter takes ~93% of team dropbacks (early exits, garbage time): calibrated on 2023-25 weeks 4-12
-            fq = CAL["qb_share"]; q_py = team_pass_yds * fq; q_pc = rng.binomial(team_cmp.astype(np.int64), fq); q_pa = rng.binomial(att.astype(np.int64), fq)
-            q_ptd = rng.binomial(sd["ptd_n"].astype(np.int64), CAL["qb_td"]); pint = rng.binomial(pint.astype(np.int64), fq)
+            fq = float(_os.environ.get("APEX_QB_SHARE", CAL["qb_share"])); q_py = team_pass_yds * fq; q_pc = rng.binomial(team_cmp.astype(np.int64), fq); q_pa = rng.binomial(att.astype(np.int64), fq)
+            q_ptd = rng.binomial(sd["ptd_n"].astype(np.int64), float(_os.environ.get("APEX_QB_TD", CAL["qb_td"]))); pint = rng.binomial(pint.astype(np.int64), fq)
         else:
             q_py, q_pc, q_pa, q_ptd = team_pass_yds, team_cmp, att, sd["ptd_n"]
         pf = fp(p_yds=q_py, p_td=q_ptd, p_int=pint, r_yds=rush_y, r_td=rush_t, fl=fl)
