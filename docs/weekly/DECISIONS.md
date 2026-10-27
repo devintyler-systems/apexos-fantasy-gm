@@ -128,3 +128,7 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 ## 56. Monday-night final run from the official inactives (2026-10-26)
 - Operator read NFL.com's official inactives (DAL: Demercado, Turpin, Shelton, Wheat, Winters; PHI: Payton, D. Smith, Wicks, Majors, N. Smith, Carter II). New `operator_inactives.py` turns that list into hard Out rows with gsis ids (so unit effects work) and clears every other still-listed, non-Out player of those teams to Active; `window3.sh` merges both. Result: PHI offensive-line penalty 1.4 (only Majors out), DAL 0.7.
 - Frozen: `2026_w07_{market,model}_20261026T233*`. Full priced board with Play/Pass labels in `MNF_FULL_RUN_2026_W07.md`; 3 of 58 lines are PLAY.
+
+## 57. Week 7 Tuesday grade (2026-10-27, no model effect)
+- Game level, weeks 4-7: model-only margin MAE 8.99 and total MAE 10.80 against the line's 8.59 and 10.14; it won the winner call against the line in 5 of 12 disagreements (0 of 2 in week 7). The #48 target is not met and no game-level change ships.
+- Monday night: 1 of 3 PLAY. Barkley/Pierce carries were closer to the model than to the books, so the "returning-back artifact" label is withdrawn pending more cases. Detail in `GRADE_2026_W07_TUESDAY.md`.
