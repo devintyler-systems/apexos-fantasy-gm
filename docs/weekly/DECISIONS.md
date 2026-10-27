@@ -139,3 +139,9 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - Game level: reproduced the baseline (margin MAE 10.12 vs line 9.49, 393 games). A QB-change margin adjustment (`qb_rating_lab.py`, beta 20) lowers margin MAE to 10.04 in all three seasons and does not beat the line; blend weight stays 0.0; not promoted (#48). Rest term adds 0.01.
 - Availability: 22 no-snap incidents among 700 real-role player-games in weeks 4-7, 9 repeats; proposed trailing games-played multiplier, needs its own backtest.
 - Tools: `component_audit.py`, `board_grade.py`, `qb_rating_lab.py`, `eval_qb.py`. Known process defect: `postmortem.grade()` writes into the run folder; run it on a copy via `--runs`.
+
+## 59. PROMOTED: qb_share 0.93 to 0.96, and a QB-only promotion rule (2026-10-27, owner-approved)
+- Owner approved the amendment and the change on 2026-10-27. Rule: `promotion_rule_qb_only` in `contracts/weekly/grading.v0.1.yaml`.
+- Evidence is DECISIONS #58 / `POSTMORTEM_2026_W07_FULL.md` section 9 (weeks 4-12, 2023-25, 671 QB games): pass-yards MAE 63.67 to 63.22 (better in 2023, 2024, 2025: -0.16, -0.65, -0.57), pinball 19.79 to 19.58, bias -8.0 to -1.4, P25-P75 coverage 45.3% to 47.4%, completions MAE 5.030 to 5.012; rec_yds MAE 20.3562, rec MAE 1.5321, TD log loss 0.4526, team RMSE 9.0177 identical to the baseline.
+- `config/weekly/calibration_params.json`: `qb_share` 0.96. `qb_td` stays 0.95 (no measurable effect, not changed). Live runs from the Week 8 Wednesday run use it; every frozen run is unchanged. `APEX_QB_SHARE` still overrides for backtests.
+- Watch item: 2023 backtest bias is +7.8 yards at 0.96 (2024-25: -6.4, -6.7). Re-check passing-yards bias on the weeks 4-9 live sample at the Week 9 review.
