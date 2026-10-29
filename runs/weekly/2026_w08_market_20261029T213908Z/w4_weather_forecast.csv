@@ -1,0 +1,15 @@
+game,roof,wind_mph,gust_mph,temp_f,precip_pct,total_adj_pts,note
+CAR@GB,outdoors,5.0,,49.0,0.0,-0.0,"NWS hourly, mid-game hour"
+BAL@BUF,outdoors,3.0,,64.0,0.0,-0.0,"NWS hourly, mid-game hour"
+TEN@CIN,outdoors,3.0,,70.0,40.0,-0.0,"NWS hourly, mid-game hour"
+ARI@DAL,,,,,,,indoor
+MIN@DET,dome,,,,,,indoor
+IND@JAX,outdoors,17.0,,74.0,36.0,-1.33,"NWS hourly, mid-game hour"
+LV@NYJ,outdoors,3.0,,63.0,0.0,-0.0,"NWS hourly, mid-game hour"
+CLE@PIT,outdoors,2.0,,68.0,0.0,-0.0,"NWS hourly, mid-game hour"
+ATL@TB,outdoors,13.0,,80.0,69.0,-0.57,"NWS hourly, mid-game hour"
+LAC@LA,dome,,,,,,indoor
+KC@DEN,outdoors,6.0,,60.0,8.0,-0.0,"NWS hourly, mid-game hour"
+NE@MIA,outdoors,13.0,,78.0,89.0,-0.57,"NWS hourly, mid-game hour"
+PHI@WAS,outdoors,1.0,,52.0,0.0,-0.0,"NWS hourly, mid-game hour"
+CHI@SEA,outdoors,2.0,,51.0,12.0,-0.0,"NWS hourly, mid-game hour"
