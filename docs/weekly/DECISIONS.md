@@ -146,3 +146,10 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - `config/weekly/calibration_params.json`: `qb_share` 0.96. `qb_td` stays 0.95 (no measurable effect, not changed). Live runs from the Week 8 Wednesday run use it; every frozen run is unchanged. `APEX_QB_SHARE` still overrides for backtests.
 - Watch item: 2023 backtest bias is +7.8 yards at 0.96 (2024-25: -6.4, -6.7). Re-check passing-yards bias on the weeks 4-9 live sample at the Week 9 review.
 - Confirmation at the exact shipped configuration (`qb_share` 0.96, `qb_td` 0.95), same 671 QB games: pass-yards MAE 63.217 (base 63.667), pinball 19.578, bias -1.40, completions MAE 5.012, pass TD MAE 0.935 (unchanged); per season MAE -0.161, -0.650, -0.569. Identical to the 0.96/0.96 run, so `qb_td` is confirmed inert.
+
+## 60. Week 8 Thursday CAR@GB (2026-10-29): frozen runs and published screen, no model change
+- Frozen `2026_w08_{market,model}_20261029T2139*` (pre-inactives; ESPN explicit Outs; no prices; no salary file). Published screen in `TNF_CAR_GB_2026_W08.md`: 3 PLAY, 3 LEAN after the red-team pulled or downgraded 10 lines and dropped 4 parlay legs.
+- Publishing rules applied by hand because `tnf_full.py` does not enforce them yet: rush-yard lines LEAN at most and no must-play on a QB rush under (#52); unders on running backs are pulled when the engine's carries run below the player's 2026 average (the model-qa finding: Hubbard 12.5 vs 16.0, Lloyd 5.3 vs 7.7). Open tooling item: encode both in `tnf_full.py` and `slate_full.py`.
+- Anytime-TD probabilities in `tnf_full.py` are conditional on the player being active (`floor_anytime` over the active mask); the report now says so for Questionable players (Golden 40% conditional, about 27% unconditional). Open tooling item: print both.
+- data-auditor: Xavier Smith projected on LA but on SF (practice squad); CHI@SEA has no injury rows in the nflverse feed; neither touches this game.
+- 17:50 ET check: operator's final injury report matches the frozen run; GB CB Nixon (Questionable, late add) scenario moves Young +2 passing yards, nothing else; no re-freeze. Official inactives (T-90) still pending.
