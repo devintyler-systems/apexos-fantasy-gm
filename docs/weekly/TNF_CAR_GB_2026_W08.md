@@ -228,6 +228,9 @@ Golden's receiving line fell 6 yards (his Questionable tag is priced). Jacobs' l
 
 Watson is the only player of yours in this game: 35% anytime TD, about 2.6 league points. Nobody from this game beats Diggs or Meyers for a waiver claim. If Golden sits, Watson's expectation rises to about 3.0.
 
+## Final injury report check (operator-supplied, 5:50 PM ET)
+The operator's Thursday report matches the frozen run: CAR Out Phillips, Lewis, Evans, Simpkins; GB Out Franklin, Glover, Rhyan; Young, Coker (Full) and Banks active; Golden still Questionable (so still 67% in the run). One new name: **GB CB Keisean Nixon, Questionable (late addition)**, not in the nflverse feed. Scenario with Nixon Out: Young +2 passing yards, McMillan +0.6 receiving yards, no change to any probability or pick. **This is the practice-and-game-status report, not the 46-man inactive list**, which publishes at about 6:45 PM ET and is the only thing that settles Golden. No re-freeze: nothing in the report changes a projection.
+
 ## Known limits
 - No book prices: the report cannot say whether any line is +EV; it ranks the model's lean at an assumed -110.
 - QB passing yards run about 10% low for these two quarterbacks (model-qa) and RB carries are under-allocated (Hubbard 12.5 vs 16.0, Lloyd 5.3 vs 7.7 per game actual). Both are known, queued items (DECISIONS #52, #58, #59); the report responds by pulling the lines on the biased side, not by changing the model.
