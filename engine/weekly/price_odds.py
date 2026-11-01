@@ -10,9 +10,10 @@ import run_all as R
 from params import SCHED, norm_name, is_neutral, TARGET_WEEK
 from load import FULL2ABBR
 
-TZ_OFFSET_H = 7        # sheet timestamps are US Pacific (PDT): TNF commence 17:15 == 8:15 PM ET kickoff
+TZ_OFFSET_H = int(os.environ.get("APEX_ODDS_TZ_OFFSET", 7))        # sheet timestamps are US Pacific: 7 while PDT (TNF commence 17:15 == 8:15 PM ET), 8 after the clock change on 2026-11-01 (set APEX_ODDS_TZ_OFFSET=8)
 MK = {"player_receptions": "rec", "player_pass_completions": "pass_cmp", "player_pass_attempts": "pass_att", "player_rush_attempts": "rush_att", "player_1st_td": "first_td",
-      "player_anytime_td": "anytime_td", "player_pass_yds": "pass_yds", "player_reception_yds": "rec_yds", "player_rush_yds": "rush_yds"}
+      "player_anytime_td": "anytime_td", "player_pass_yds": "pass_yds", "player_reception_yds": "rec_yds", "player_rush_yds": "rush_yds",
+      "player_pass_tds": "pass_td", "player_rush_reception_yds": "rush_rec_yds"}
 ONE_SIDED = ("first_td", "anytime_td")
 SD = {"Over": "over", "Under": "under", "Yes": "yes"}
 NAME_ALIAS = {"zonovan knight": "bam knight", "drew ogletree": "andrew ogletree"}      # book name -> nflverse name (verified to exist in the Week 5 sim)
@@ -85,7 +86,7 @@ for (a, h), d in R_.items():
                 out.append(dict(game=f"{a}@{h}", player=r.description, team=team, opp=opp, market=mk, side="yes", line=np.nan, book=r.bookmaker, odds=r.price, model_p=pm, novig_p=nv,
                                 novig_method="Estimated (10% flat haircut, one-sided)", p_active=pl["p_active"], as_of=r.as_of_utc))
             continue
-        x = pl[mk][m]
+        x = (pl["rush_yds"] + pl["rec_yds"])[m] if mk == "rush_rec_yds" else pl[mk][m]      # rush_rec_yds: combined rushing + receiving yards of the same simulated game
         for line, lg in grp.groupby("point"):
             po = float((x > line).mean()); pu = float((x < line).mean()); den = max(po + pu, 1e-9)
             both = {}
