@@ -21,7 +21,7 @@ STALE_H = 2        # lines move fast into kickoff; anything older than 2 hours i
 imp = lambda a: np.where(np.asarray(a, float) < 0, -np.asarray(a, float) / (-np.asarray(a, float) + 100), 100 / (np.asarray(a, float) + 100))
 payout = lambda a: np.where(np.asarray(a, float) < 0, 100 / (-np.asarray(a, float)), np.asarray(a, float) / 100)
 
-raw = pd.concat([pd.read_excel(f).assign(src_file=os.path.basename(f)) for f in os.environ["APEX_ODDS_XLSX"].split(os.pathsep)], ignore_index=True)      # several workbooks: os.pathsep-separated
+raw = pd.concat([sh.assign(src_file=os.path.basename(f)) for f in os.environ["APEX_ODDS_XLSX"].split(os.pathsep) for sh in pd.read_excel(f, sheet_name=None).values()], ignore_index=True)      # every sheet of every workbook (W8: Sunday afternoon/night and Monday are separate sheets)      # several workbooks: os.pathsep-separated
 raw["as_of_utc"] = raw.last_update + pd.Timedelta(hours=TZ_OFFSET_H)
 raw["commence_utc"] = raw.commence_time + pd.Timedelta(hours=TZ_OFFSET_H)
 raw["home"] = raw.home_team.map(FULL2ABBR); raw["away"] = raw.away_team.map(FULL2ABBR)
