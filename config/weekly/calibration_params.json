@@ -10,5 +10,6 @@
   "tgt_TE": 1.17,
   "tgt_RB": 1.05,
   "tgt_WR": 1.05
- }
+ },
+ "qb_yds_shrink": 0.7
 }

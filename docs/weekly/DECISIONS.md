@@ -181,3 +181,18 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - `value_board.py` now prints touchdown tables for plays and lists non-touchdown main lines as "INFORMATION ONLY, NOT PLAYS" (engine versus book, sorted by size of disagreement). Published cards use no PLAY/LEAN/must-play label on a non-touchdown prop and no parlay built from one until the rule is reversed.
 - Reversal test (forward, because the repo holds no historical prices): `calibration_ledger.csv` `board_*` rows. When four priced windows show the blend (`APEX_BLEND_W_NONTD`, try .25 and .5) beating the book on Brier for a market, set that market's weight in `value_board.py` and log it here. Engine projections, fair lines, DFS and fantasy outputs are unchanged.
 - Test added: `tests/weekly/test_value_board.py`. `python -m pytest tests/weekly` passes.
+
+## 65. QB passing-yards shrink toward the league-average starter: `qb_yds_shrink` 0.7 (owner-requested 2026-11-03, QB-only promotion rule #59)
+- Why: slope of actual on projected QB passing yards is .48 in the 2023-25 weeks 4-12 backtest (.58 / .47 / .45) and .69 live weeks 4-8; the engine separates quarterbacks about twice as much as results support (rank correlation .12-.16 backtest, .19 live).
+- Rejected first: shrinking expected team yards per attempt toward the league mean (all passing, receivers included) and shrinking only the QB's yards-per-attempt component. At 0.7 and 0.5 the pooled MAE moved -0.02 / +0.22 and pinball +0.03 / +0.12 against `q960s`; most of the spread between quarterbacks comes from volume and game environment, not yards per attempt.
+- Built: `sim.py` knob `qb_yds_shrink` (calibration_params.json, env `APEX_QB_YDS_SHRINK` overrides, 1.0 = off). The starter's simulated passing yards shift by (1 - s) x (game mean - league-average starter mean), where the league mean is `qb_share x L.ypa x L.plays x L.pr x (1 - L.sk)`. A constant shift per game: simulation noise, completions, attempts, TDs, receivers and team points are untouched (verified: non-QB and team outputs identical to `q960s` in all 27 slates; QB completions identical).
+- Backtest, 2023-25 weeks 4-12, 671 QB games, base `q960s` (qb_share .96, qb_td .95), eval_qb.py:
+
+| Variant | Pooled pass-yds MAE | Pinball | by season MAE (2023 / 24 / 25) | by season pinball | Bias | P25-P75 cov |
+|---|---|---|---|---|---|---|
+| base | 63.217 | 19.578 | 68.03 / 62.23 / 58.59 | 20.72 / 19.29 / 18.55 | -1.4 | .474 |
+| s = 0.7 | **62.462** (-0.755) | **19.473** (-0.105) | -1.115 / -0.841 / -0.230 | -0.059 / -0.095 / -0.171 | -3.2 | .478 |
+| s = 0.5 | 62.299 (-0.918) | 19.493 (-0.084) | -1.571 / -1.031 / -0.010 | -0.002 / -0.058 / -0.212 | -4.5 | .489 |
+
+- Promotion rule check (#59): MAE and pinball both lower pooled and in all three seasons at 0.7 (rule needs two); completions MAE +0.000 (limit 0.05); rec_yds MAE, rec MAE, TD log loss and team RMSE identical (outputs byte-identical). s = 0.5 is rejected: 2025 MAE flat and pinball in 2023 flat. Chosen s = 0.7.
+- Costs and caveats: pooled passing-yards bias moves from -1.4 to -3.2 (live weeks 4-8 bias -4.6 would move to about -6.4); QB passing yards no longer equal the sum of receiver yards in a simulation by up to about 12 yards on an extreme matchup (the 0.96 share already decoupled them slightly). Gain is 1.2% of pooled MAE, 0.5% of pinball. Frozen runs are unchanged; the knob applies to runs from Week 9.

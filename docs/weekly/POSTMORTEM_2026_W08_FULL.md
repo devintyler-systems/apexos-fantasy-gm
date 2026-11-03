@@ -117,7 +117,7 @@ Rejected after review: re-fitting level calibration on live data (bias is inside
 |---|---|---|---|---|
 | 1 | Publish non-TD props as "engine median vs line" information, not PLAY/LEAN, until the ledger has four priced windows; keep TDs, fantasy projections and DFS as the product | -25 units on the rule's picks, 4/20 on mine, book beats blend in every non-TD market, two windows agree | your approval (DECISIONS #53 change) | forward ledger |
 | 2 | T-90 rerun per window with fresh lines and the official inactives pasted | KC@DEN moved 3 points; SEA's backfield (Wilson out, Charbonnet and Price unmodelled); the largest controllable error in the week | you paste the NFL.com lists; I rerun in about 10 minutes | none |
-| 3 | QB efficiency shrink (item 8.2) | small, clean, three-season win in the market we trail most | me; QB-only rule applies | weeks 4-12, 2023-25 |
+| 3 | QB passing-yards shrink (item 8.2): **built and promoted at 0.7, DECISIONS #65** (the yards-per-attempt version failed; the volume-level shift passed in all three seasons) | done 2026-11-03 | done | weeks 4-12, 2023-25 |
 | 4 | Depth-chart-gated p_active (#61) and a trailing-games feature | unmodelled and phantom players cost team totals | me | availability backtest |
 | 5 | Ledger: add every priced window as `board_*`; at four windows, fit shrink by market | turns item 1 into a decision rule | me, with your workbooks | none |
 | 6 | Kicker distance model for Showdown | Stevens' four field goals; flat 3.9 per field goal | me, low | none |
