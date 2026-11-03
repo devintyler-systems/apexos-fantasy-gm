@@ -53,6 +53,7 @@ never re-explain the repo. Open every response with the answer, then tables.
 - Record the price taken for closing line value.
 
 ## 6. Anti-patterns
+- Labelling a non-touchdown prop PLAY/LEAN or building a parlay from one against book prices (DECISIONS #64: information only until the ledger reverses it).
 - Treating 3-4 games as a stable talent signal. Calling a play a lock. Stating over 85% on any single player prop.
 - Comparing lines across books at different half-points. Shipping a number you cannot trace to an input file and a version.
 - Tuning level to the market. Promoting a model change on level alone (improves bias, hurts accuracy) instead of the multi-week backtest.
