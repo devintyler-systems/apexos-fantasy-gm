@@ -2,13 +2,25 @@
 
 Usage: python value_board.py PRICE_OUT_DIR   (the directory holding edges_all_rows.csv from price_odds.py)
 For every (player, market, side, line): model probability, the books' de-vigged probability (mean across books; one-sided touchdown markets use price_odds's flat-haircut estimate), the blend
-final_p = book + 0.5 x (model - book) (the weight that scored best against real prices in Week 7, DECISIONS #53), the best price across books, and EV = final_p x payout - (1 - final_p).
+final_p = book + w x (model - book) with w per market (DECISIONS #64, owner-approved 2026-11-03: w = 0.5 for touchdown markets, 0 for everything else, because the book beat the engine and the
+50/50 blend on every non-touchdown market in the Week 7 Monday and Week 8 late windows), the best price across books, and EV = final_p x payout - (1 - final_p).
 Flags: GAP = the model is 15+ points from the book (Sunday: lines 25+ points off hit 49%), >85 = the model is above the 85 percent ceiling, est = one-sided price with an estimated de-vig.
-This ranks lines; it is not a bet instruction. Passing yards is excluded from the confidence list (the model's Brier was 0.297 against the books' 0.251 in Week 7)."""
+This ranks lines; it is not a bet instruction. Non-touchdown markets are INFORMATION ONLY: they are listed as engine versus book with no PLAY/LEAN label and no EV ranking, until the calibration ledger
+holds four priced windows where the blend beats the book for that market (APEX_BLEND_W_NONTD overrides the non-touchdown weight for that test, default 0)."""
+import os
 import sys
 
 import numpy as np
 import pandas as pd
+
+
+TD_MARKETS = ("anytime_td", "first_td", "pass_td")
+W_TD = 0.5
+W_NONTD = float(os.environ.get("APEX_BLEND_W_NONTD", 0.0))
+
+
+def blend_weight(market):
+    return W_TD if market in TD_MARKETS else W_NONTD
 
 
 def build(path):
@@ -19,7 +31,7 @@ def build(path):
                            ceil=("model_gt_85_suppress", "max"), best_odds=("odds", "max"), est=("novig_method", lambda s: s.str.startswith("Estimated").any())).reset_index()
     bk = e.loc[e.groupby(key).odds.idxmax(), key + ["book"]].rename(columns={"book": "best_book"})
     g = g.merge(bk, on=key)
-    g["final_p"] = g.book_p + 0.5 * (g.model_p - g.book_p); g["gap"] = g.model_p - g.book_p
+    g["w"] = g.market.map(blend_weight); g["final_p"] = g.book_p + g.w * (g.model_p - g.book_p); g["gap"] = g.model_p - g.book_p
     g["ev"] = g.final_p * pay(g.best_odds) - (1 - g.final_p)
     return g[g.pa >= 0.9]
 
@@ -33,7 +45,8 @@ def fmt(df, n):
 
 
 if __name__ == "__main__":
-    g = build(sys.argv[1]); tw = g[~g.market.isin(["anytime_td", "first_td"]) & (g.main == True)]
-    print("HIGHEST CONFIDENCE\n" + fmt(tw[tw.market != "pass_yds"].sort_values("final_p", ascending=False), 12))
-    print("\nHIGHEST VALUE\n" + fmt(g[(g.market != "pass_yds") & (g.final_p >= .3) & (g.gap.abs() <= .25)].sort_values("ev", ascending=False), 14))
-    print("\nANYTIME TD\n" + fmt(g[g.market == "anytime_td"].sort_values("final_p", ascending=False), 14))
+    g = build(sys.argv[1]); td = g[g.market.isin(TD_MARKETS)]; tw = td[(td.main == True) & (td.market == "pass_td")]
+    print("TOUCHDOWN MARKETS (blend w=0.5; the only markets labelled for plays)\n" + fmt(td[td.market == "anytime_td"].sort_values("final_p", ascending=False), 14))
+    print("\nPASS TD, MAIN LINE\n" + fmt(tw.sort_values("final_p", ascending=False), 10))
+    info = g[~g.market.isin(TD_MARKETS) & (g.main == True) & (g.side == "over")].copy(); info["ag"] = info.gap.abs()
+    print("\nINFORMATION ONLY, NOT PLAYS (non-touchdown main lines, engine versus book over probability, sorted by size of disagreement; DECISIONS #64)\n" + fmt(info.sort_values("ag", ascending=False), 20))

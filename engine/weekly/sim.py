@@ -247,6 +247,9 @@ def play_side(rng, t, sd, ns):
             q_ptd = rng.binomial(sd["ptd_n"].astype(np.int64), float(_os.environ.get("APEX_QB_TD", CAL["qb_td"]))); pint = rng.binomial(pint.astype(np.int64), fq)
         else:
             q_py, q_pc, q_pa, q_ptd = team_pass_yds, team_cmp, att, sd["ptd_n"]
+        qs = float(_os.environ.get("APEX_QB_YDS_SHRINK", CAL.get("qb_yds_shrink", 1.0)))     # DECISIONS #65: starter's projected passing yards regress toward the league-average starter (constant shift per game, sim noise unchanged); 1.0 = off
+        if qs != 1.0 and nm == qb_name:
+            q_py = q_py - (1 - qs) * (float(q_py.mean()) - fq * L["ypa"] * L["plays"] * L["pr"] * (1 - L["sk"]))
         pf = fp(p_yds=q_py, p_td=q_ptd, p_int=pint, r_yds=rush_y, r_td=rush_t, fl=fl)
         out.append(dict(player=nm, pos="QB", team=t, mask=mask, p_active=float(pact),
                         pass_yds=q_py, pass_att=q_pa, pass_cmp=q_pc, pass_td=q_ptd, pass_int=pint,
