@@ -25,5 +25,14 @@ Run opened 2026-11-18 21:19 UTC (13:19 PST). Operator: Devin. Phase: **1+2 compl
 - Tools: `tools/replay/{build_vintage,availability_proxy,score_replay}.py`. Engine needs Python 3.12 (`uv venv -p 3.12 /home/user/.venv-apex`; container 3.13 is rejected by pyproject).
 - Replay data/outputs: `var/replay_2026_w{09,10}/` (gitignored).
 
+## Phase 3 in progress (2026-11-18 ~22:30Z; earlier '23:25-23:30Z' notes were wrong, the clock read ~22:00Z)
+- W11 Wednesday run (both tracks, var/out_{model,market}, ~21:57-22:01Z): NOT frozen. data-auditor FAIL and model-qa FAIL for IND@HOU:
+  1. DECISIONS #61 practice-squad defect live (HOU Jawhar Jordan 4.1 car, Ogunbowale, Bond; 40 more slate-wide) -> `tools/intake/w11_manual_out.py` -> var/ro/manual_out_w11_wed.csv (164 Outs, 46 carrying projections).
+  2. TNF injury report had practice status only, no game designations at ~22:00Z -> wait for final report.
+  3. IND target shares sum 0.54: departed players' season volume (Downs, Allen, ...) is counted in the 'other' bucket (params.build_roster_v4 `oth = T - d.Receiving_Tgt.sum()`). Candidate knob `APEX_DEPARTED` (params.py, off = baseline) -> backtest running: var/bt (tags base, dep), eval with `APEX_OUT=var/bt python engine/weekly/eval_candidate.py base dep`.
+- Dismissed QA warnings: anytime floor 0.06 (owner-approved #29/#30); receiver yds > QB yds (documented #65 decoupling; HOU +36 yds noted).
+- Market snapshot parsed: var/w11_sfa_odds_20261118T1927Z.xlsx (2,165 rows; never commit). IND@HOU TD board: no positive-EV line (best Hutchinson -1.1%).
+- TB@DET conditional: Mayfield Q (foot/ankle), missed Wed practice, trending out; books list only Jalon Daniels.
+
 ## Next exact action
-W11: parse D039-D045 (odds/props) by coordinates -> var/w11_odds.xlsx in the price_odds.py format; fetch; run both tracks for week 11 (TNF IND@HOU first); data-auditor + model-qa; freeze before 2026-11-20 01:15Z.
+When backtest finishes: eval_candidate base dep -> promote (DECISIONS entry) or keep off. Then refetch injuries (final TNF report), rebuild manual-out, rerun both tracks, re-audit, freeze IND@HOU before 2026-11-20 01:15Z.
