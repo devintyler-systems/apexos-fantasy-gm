@@ -1,6 +1,6 @@
 # W9/W10 post mortem + W11 package: checkpoint
 
-Run opened 2026-11-18 21:19 UTC (13:19 PST). Operator: Devin. Phase: **0 complete, intake gate OPEN (2026-11-18 ~22:00Z)**.
+Run opened 2026-11-18 21:19 UTC (13:19 PST). Operator: Devin. Phase: **1+2 complete (retro + change register, no model change); phase 3 (W11) next**.
 
 ## Verified at bootstrap
 - Repos (branch `claude/zealous-hopper-0cibcy`, clean): `devintyler-systems/apexos-fantasy-gm` @ 9f00a6d (= origin/main), `devintyler-systems/APEX-OS` @ dffa1ea. Note: the prompt's `devintyler83/...` owner is wrong; the org is `devintyler-systems`.
@@ -20,5 +20,10 @@ Run opened 2026-11-18 21:19 UTC (13:19 PST). Operator: Devin. Phase: **0 complet
 ## Decisions
 - nflverse: operator approved read-only (2026-11-18); access verified. No ESPN substitution needed; ESPN fallback cancelled.
 
+## Phase 1/2 (done 2026-11-18 ~22:50Z)
+- `RETRO_2026_W09_W10.md`: hindsight diagnostic replay (no archived forecasts), scorecard, largest misses, signals, change register R-01..R-09. No model/calibration change.
+- Tools: `tools/replay/{build_vintage,availability_proxy,score_replay}.py`. Engine needs Python 3.12 (`uv venv -p 3.12 /home/user/.venv-apex`; container 3.13 is rejected by pyproject).
+- Replay data/outputs: `var/replay_2026_w{09,10}/` (gitignored).
+
 ## Next exact action
-Build coordinate parsers for F16/F17 (odds, props) and F01 (red zone) into `var/.../parsed/*.csv`, validate 5 sampled values per doc against the page image; in parallel start the W9/W10 actuals reconciliation from ESPN summaries.
+W11: parse D039-D045 (odds/props) by coordinates -> var/w11_odds.xlsx in the price_odds.py format; fetch; run both tracks for week 11 (TNF IND@HOU first); data-auditor + model-qa; freeze before 2026-11-20 01:15Z.
