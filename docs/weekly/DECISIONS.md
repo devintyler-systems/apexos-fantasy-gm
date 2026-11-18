@@ -196,3 +196,18 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 
 - Promotion rule check (#59): MAE and pinball both lower pooled and in all three seasons at 0.7 (rule needs two); completions MAE +0.000 (limit 0.05); rec_yds MAE, rec MAE, TD log loss and team RMSE identical (outputs byte-identical). s = 0.5 is rejected: 2025 MAE flat and pinball in 2023 flat. Chosen s = 0.7.
 - Costs and caveats: pooled passing-yards bias moves from -1.4 to -3.2 (live weeks 4-8 bias -4.6 would move to about -6.4); QB passing yards no longer equal the sum of receiver yards in a simulation by up to about 12 yards on an extreme matchup (the 0.96 share already decoupled them slightly). Gain is 1.2% of pooled MAE, 0.5% of pinball. Frozen runs are unchanged; the knob applies to runs from Week 9.
+
+## 66. Departed-player volume leaves the team pool: `APEX_DEPARTED` (owner-approved 2026-11-18)
+- Defect (model-qa, W11 Wednesday run): `params.build_roster_v4` books a team's season targets and carries from players now on another team into the 'other' bucket (`oth = T - d.Receiving_Tgt.sum()`). IND after Downs and Allen left: target shares summed to 0.54, named receivers 125 rec yds against Daniel Jones 204.5 pass yds. Players still on the team but Out are unaffected (the sim already renormalizes them).
+- Knob `APEX_DEPARTED` (params.py, env, off = baseline, byte-identical): subtract each team's season volume from players whose most recent stats team (through `APEX_THROUGH_WEEK`) is a different team from T and R before 'other' is computed. Time-correct in backtests.
+- Backtest 2023-25 weeks 4-12, 27 slates, model track, 5,000 sims (`bt_variant.sh`; 2023 rerun after fetching the 2022 prior-season files), `eval_candidate.py base dep`, candidate minus baseline:
+
+| | rec_yds MAE | TD log loss | rec MAE | team RMSE | rush_yds MAE |
+|---|---|---|---|---|---|
+| pooled | -0.0163 | -0.0002 | -0.0004 | -0.0092 | -0.0272 |
+| 2023 | +0.0465 | +0.0007 | +0.0029 | -0.0148 | -0.0866 |
+| 2024 | -0.0885 | +0.0000 | -0.0039 | -0.0085 | -0.0364 |
+| 2025 | -0.0084 | -0.0013 | -0.0004 | -0.0044 | +0.0525 |
+
+- Promotion rule (`grading.v0.1.yaml`): passes on the pooled sample (rec_yds MAE and TD log loss lower; rec MAE and team RMSE no worse). Caveats: the TD log-loss gain (0.0002) is under the ~0.0005 run-to-run noise (#24); 2023 is worse on rec_yds and TD log loss. Historical mid-season departures are rare, so the pooled effect is small while the affected team-weeks move a lot: W11 IND target shares 0.54 -> 0.83, receiver yds 125 -> 206 (QB 204.5); Warren 6.3 -> 10.6 targets, anytime 14% -> 20%; Taylor 36% -> 38%; other teams within 0.03.
+- Owner approved 2026-11-18 after the backtest above: default on in `params.py` (`APEX_DEPARTED=0` reproduces the old baseline). Applies from the W11 IND@HOU freeze; frozen runs are unchanged.

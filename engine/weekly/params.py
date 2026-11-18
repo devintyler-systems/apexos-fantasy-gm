@@ -280,6 +280,15 @@ LAST = _last_season_table(SEASON)
 def _fk(stat, pos):
     f = PP[stat].get(pos) or PP[stat].get("RB") or PP[stat].get("WR"); return f["k"], f["a"], f.get("a_changed", f["a"] * 0.5)
 
+DEPARTED = os.environ.get("APEX_DEPARTED", "1") == "1"      # DECISIONS #66, owner-approved 2026-11-18; APEX_DEPARTED=0 reproduces the old baseline
+def _departed_volume():
+    """Season targets and carries each team logged from players whose most recent stats team (through APEX_THROUGH_WEEK) is a different team.
+    Time-correct in backtests: uses only `st` (prep_nv, week <= MAXWEEK)."""
+    s = st[st.position.isin(["QB", "RB", "FB", "WR", "TE"])].sort_values("week")
+    last = s.groupby("player_id").team.last()
+    gone = s[s.team != s.player_id.map(last)]
+    return gone.groupby("team").targets.sum().to_dict(), gone.groupby("team").carries.sum().to_dict()
+DEP_TGT, DEP_CAR = _departed_volume() if DEPARTED else ({}, {})
 def build_roster_v4(team):
     d = sc[(sc.team == team) & (sc.Pos.isin(["QB", "RB", "WR", "TE", "FB"]))].copy()
     d["pos"] = d.Pos.replace({"FB": "RB"})
@@ -323,6 +332,8 @@ def build_roster_v4(team):
     if _gc != 1.0: _m = d.pos == "RB"; d.loc[_m, "car_sh"] = d.loc[_m, "car_sh"] ** _gc
     if _gt != 1.0: _m = d.pos.isin(["WR", "TE", "RB"]); d.loc[_m, "tgt_sh"] = d.loc[_m, "tgt_sh"] ** _gt
     d.attrs["tsum_raw"] = float(d.tgt_sh.sum()); d.attrs["csum_raw"] = float(d.car_sh.sum())
+    if DEPARTED:      # DECISIONS #66: volume of players now on another team leaves the team pool instead of inflating 'other'
+        T = max(T - DEP_TGT.get(team, 0.0), 1.0); R = max(R - DEP_CAR.get(team, 0.0), 1.0)
     oth = max(T - d.Receiving_Tgt.sum(), 0); other_sh = (oth + 18 * OTHER_TGT) / (T + 18)
     oth_c = max(R - d.Rushing_Att.sum(), 0); other_car = (oth_c + 12 * OTHER_CAR) / (R + 12)
     def _norm(sh, budget, keep):
