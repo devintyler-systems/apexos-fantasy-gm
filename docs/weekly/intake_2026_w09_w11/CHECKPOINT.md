@@ -34,5 +34,11 @@ Run opened 2026-11-18 21:19 UTC (13:19 PST). Operator: Devin. Phase: **1+2 compl
 - Market snapshot parsed: var/w11_sfa_odds_20261118T1927Z.xlsx (2,165 rows; never commit). IND@HOU TD board: no positive-EV line (best Hutchinson -1.1%).
 - TB@DET conditional: Mayfield Q (foot/ankle), missed Wed practice, trending out; books list only Jalon Daniels.
 
+## Update 2026-11-18 22:15Z
+- DECISIONS #66 APEX_DEPARTED: backtest passed the pooled promotion rule; owner approved; default ON (commit ac78e42, PR #103). W11 preview with it on + manual-out: IND tgt shares 0.83, rec yds 206 vs QB 204.5.
+- Manual-out (#61) verified: HOU Jawhar Jordan removed; Woody Marks 10.2 carries.
+- 2022 prior-season files added to the cache (needed by 2023 backtests).
+- IND/HOU injury rows at 22:11Z: practice status only, no designations.
+
 ## Next exact action
-When backtest finishes: eval_candidate base dep -> promote (DECISIONS entry) or keep off. Then refetch injuries (final TNF report), rebuild manual-out, rerun both tracks, re-audit, freeze IND@HOU before 2026-11-20 01:15Z.
+Scheduled check-in 2026-11-19 15:30Z (trig_016nSq6Bq8E1uYB1pqhZ7rtT): fetch -> confirm designations -> rebuild manual-out -> rerun both tracks -> reprice -> data-auditor + model-qa -> freeze both tracks -> verify -> commit runs + TNF package to PR #103. Then TB@DET two-QB scenario and Friday Sunday-slate refresh.
