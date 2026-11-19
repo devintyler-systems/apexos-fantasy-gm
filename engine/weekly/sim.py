@@ -11,9 +11,9 @@ CAL = json.load(open(CONF+"calibration_params.json"))
 # Team-volume dispersion and target-share cap. APEX_VOLFILE overrides the file (used by the backtests to compare variants).
 # Defaults reproduce the pre-2026-10-05 behaviour so an absent file changes nothing.
 import os as _os
-VAC = bool(int(_os.environ.get("APEX_VAC", 0)))
+VAC = bool(int(_os.environ.get("APEX_VAC", 0)))      # candidate: vacated-role redistribution (off = baseline, byte-identical; DECISIONS #35)
 RB_VAC_TGT = bool(int(_os.environ.get("APEX_RB_VAC_TGT", 1)))      # DECISIONS #69 (owner-approved 2026-11-19); APEX_RB_VAC_TGT=0 reproduces the old baseline
-RB_VAC_W = float(_os.environ.get("APEX_RB_VAC_W", 0.5))      # fraction of the vacated RB target weight routed to active RBs      # candidate: vacated-role redistribution (off = baseline, byte-identical)
+RB_VAC_W = float(_os.environ.get("APEX_RB_VAC_W", 0.5))      # fraction of the vacated RB target weight routed to active RBs (#69)
 VOL = dict(plays_sd=4.0, pr_margin_slope=0.0022, pr_extra_sd=0.0, pr_cap=0.08, plays_lo=42, plays_hi=85, tgt_share_cap=0.0)
 _vf = _os.environ.get("APEX_VOLFILE", CONF + "volume_params.json")
 if _os.path.exists(_vf):
