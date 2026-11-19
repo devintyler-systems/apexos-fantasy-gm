@@ -20,7 +20,7 @@ if _os.path.exists(_vf):
     VOL.update({k: v for k, v in json.load(open(_vf)).items() if not k.startswith("_")})
 
 NS = 20000
-SEED = 20261004
+SEED = int(_os.environ.get("APEX_SEED", 20261004))      # override only for noise checks (baseline seed unchanged)
 ALPHA_T = 100.0  # Dirichlet concentration for target shares (calibrated vs 2025 weekly logs)
 ALPHA_C = 60.0   # carries
 MAXC = 12   # per-catch draws kept

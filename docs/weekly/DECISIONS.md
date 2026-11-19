@@ -221,3 +221,19 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - Addendum (2026-11-19 ~16:00Z): `price_odds.py` re-simulates each game (`R.run_game`), so it must get the same `APEX_MANUAL_OUT` as the run. The 15:38Z pricing omitted it, so the HOU practice-squad backs came back into the pricing sims. Example: Montgomery rush 52.5 over came out 23.5% against his frozen mean of 52.6. Repriced with the manual-out at about 16:00Z: Montgomery 42.6%; best TD gap Hutchinson +3.75 points (still under 5); market call unchanged (no play). Frozen projections were never affected. Runbook item: pass `APEX_MANUAL_OUT` to every `price_odds.py` call.
 - Operator injury PDF D047 (Sharp, 2026-11-19): matches nflverse for IND/HOU except Charlie Heck (PDF "No designation", NIR-personal; NFL report via nflverse "Questionable"). The NFL report governs (RUNBOOK rule 6). Immaterial to the IND OL index, since Raimann and Travis are Out.
 - Addendum 2 (2026-11-19 22:04Z): operator Thursday prop PDFs D048–D051 (Sharp, "updated Thu 2:32 PM ET" = 19:32Z; TD 183, rec 110, rush 65, pass 26 players) parsed with `parse_market_pdfs.py --orig` (2,030 book rows; rec and pass reconcile exactly; rush 64/65 and TD 168 + D/ST, with misses outside IND@HOU) and priced with the manual-out at 22:04Z. Age 2.53 h, still over the 2-hour rule, so reference only. IND@HOU anytime TD: best Hutchinson DK +270, blended edge +4.16 points (< 5) → no play. Non-TD gaps are information only (#64); Warren rec 37.5 over at 78% engine vs 50% book carries the GAP flag (15+ points), a range where historical hit rates did not support the engine.
+
+## 68. R-11/R-12/R-13 candidates and the backtest noise floor (2026-11-19, no promotion)
+- Candidates from the operator's TNF review (change register R-11..R-13), all off by default. Each was backtested against the production baseline (`dep`, #66 on), 2023-25 weeks 4-12, 27 slates, 5,000 sims, and scored with `eval_candidate.py` (pooled deltas; negative = better):
+
+| Candidate | knob | rec_yds MAE | TD log loss | rec MAE | team RMSE | rush_yds MAE |
+|---|---|---|---|---|---|---|
+| R-11 RB vacated targets to RBs | `APEX_RB_VAC_TGT=1` | -0.085 | +0.0010 | +0.0018 | +0.0067 | +0.026 |
+| R-11h half weight | `+ APEX_RB_VAC_W=0.5` | **-0.079** (all 3 seasons better) | +0.0011 | -0.0020 | +0.0068 | +0.009 |
+| R-12 QB carry k x0.5 | `APEX_QB_CAR_KMULT=0.5` | -0.014 | -0.0011 | -0.0013 | -0.0002 | +0.054 |
+| R-12b QB carry share held | `APEX_QB_CAR_HOLD=1` | -0.006 | +0.0003 | -0.0003 | +0.0061 | **+0.527** |
+| R-13 partial games + prior fallback | `APEX_DROP_PARTIAL=0.35 APEX_PRIOR_FALLBACK=1` | -0.016 | -0.0026 | +0.0048 | +0.0074 | +0.132 |
+| R-13t targets only | `+ APEX_DROP_PARTIAL_TGT_ONLY=1` | **-0.086** | -0.0009 | +0.0018 | +0.0091 | +0.001 |
+
+- **Noise floor** (new `APEX_SEED`; default unchanged): the baseline rerun with only the seed changed moves pooled rec_yds MAE -0.006 (per season up to ±0.058), TD log loss +0.0015, rec MAE -0.0005, team RMSE **+0.016**. The promotion rule's TD log loss and team RMSE tolerances (0.001, #24) are below this floor, so those checks are decided by the seed. #66's TD log loss gain (-0.0002) is inside the noise; its rec_yds gain (-0.016) is about 3x the pooled noise.
+- Reading: R-12 and R-12b rejected. The RB carry multiplier's squeeze on QB carries is right on aggregate; Daniel Jones's low carry projection is a player caution, not an engine defect. R-11h and R-13t improve rec_yds by ~13x the pooled noise and in every season (R-13t 2025 flat), with every other metric inside the noise. Under the rule as written, both fail on team RMSE.
+- **Owner decision needed:** amend `promotion_rule` to a noise-aware test (paired seeds, or deltas compared against measured seed noise) before promoting R-11h and R-13t. No production change tonight; the frozen IND@HOU runs stand.
