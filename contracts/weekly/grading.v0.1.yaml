@@ -13,3 +13,12 @@ metrics:
 comparability: definitions mirror engine/weekly/compare_bt.py so live and backtest numbers are comparable.
 promotion_rule: a model or calibration change is promoted only if the multi-season week 4-12 backtest beats the current baseline on rec_yds MAE and TD log loss and is no worse than 0.001 on rec MAE and team RMSE (amended 2026-10-14, DECISIONS #24: random-number noise between two runs is about 0.0005, and a change that cannot move receptions cannot be required to beat them).
 promotion_rule_qb_only: (DECISIONS #59, owner-approved 2026-10-27) a change that touches only the quarterback passing layer (qb_share, qb_td, QB passing dispersion) is promoted if the multi-season week 4-12 backtest lowers passing-yards MAE and pinball loss in the pooled sample and in at least two of three seasons, is no worse than 0.05 on completions MAE, and leaves rec_yds MAE, rec MAE, TD log loss and team RMSE unchanged to within 0.001 (eval_qb.py and eval_candidate.py).
+promotion_rule_noise_aware: >-
+  (DECISIONS #69, owner-approved 2026-11-19) Supersedes the fixed 0.001 tolerances of promotion_rule, which sit below the backtest's random-number noise
+  (#68: a baseline re-run with only APEX_SEED changed moved pooled team RMSE 0.016 and TD log loss 0.0015).
+  Run the multi-season weeks 4-12 backtest for baseline and candidate on two seeds (default 20261004 and APEX_SEED=777).
+  Noise floor per metric = |pooled delta between the two baseline seeds|.
+  Promote only if (1) rec_yds MAE improves by more than 2x its noise floor on BOTH seeds, and (2) for rec MAE, rush_yds MAE,
+  rush_att MAE, TD log loss and team RMSE, the mean of the two seeds' pooled deltas is not worse than 2x that metric's noise floor.
+  Re-measure the noise floor whenever the baseline changes. Floors measured 2026-11-19 (baseline = #66): rec_yds 0.0064, rec 0.0005,
+  rush_yds 0.0413, rush_att 0.0029, td_ll 0.0015, team_rmse 0.0161.

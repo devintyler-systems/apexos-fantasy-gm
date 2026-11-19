@@ -237,3 +237,14 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - **Noise floor** (new `APEX_SEED`; default unchanged): the baseline rerun with only the seed changed moves pooled rec_yds MAE -0.006 (per season up to ±0.058), TD log loss +0.0015, rec MAE -0.0005, team RMSE **+0.016**. The promotion rule's TD log loss and team RMSE tolerances (0.001, #24) are below this floor, so those checks are decided by the seed. #66's TD log loss gain (-0.0002) is inside the noise; its rec_yds gain (-0.016) is about 3x the pooled noise.
 - Reading: R-12 and R-12b rejected. The RB carry multiplier's squeeze on QB carries is right on aggregate; Daniel Jones's low carry projection is a player caution, not an engine defect. R-11h and R-13t improve rec_yds by ~13x the pooled noise and in every season (R-13t 2025 flat), with every other metric inside the noise. Under the rule as written, both fail on team RMSE.
 - **Owner decision needed:** amend `promotion_rule` to a noise-aware test (paired seeds, or deltas compared against measured seed noise) before promoting R-11h and R-13t. No production change tonight; the frozen IND@HOU runs stand.
+
+## 69. Noise-aware promotion rule; R-11h promoted (owner-approved 2026-11-19)
+- `contracts/weekly/grading.v0.1.yaml` gains `promotion_rule_noise_aware` (two seeds; rec_yds must improve beyond 2x noise on both seeds; other metrics' two-seed mean must not be worse than 2x noise). Reason: #68, where the old fixed tolerances sat below the random-number noise.
+- Second seed (APEX_SEED=777) against the seed-777 baseline:
+  - R-11h: rec_yds -0.0825, rec -0.0002, rush_yds -0.0273, rush_att -0.0025, TD log loss -0.0016, team RMSE -0.0022.
+  - R-13t: rec_yds -0.0754, rec +0.0027, rush_yds -0.0395, rush_att +0.0151, TD log loss -0.0011, team RMSE +0.0035.
+- Two-seed means:
+  - R-11h: rec_yds -0.081 (both seeds beyond 0.0128), rec -0.0011, rush_yds -0.009, rush_att -0.0013, TD log loss -0.0003, team RMSE +0.0023 → **pass**.
+  - R-13t: rec +0.0023 (> 0.0010) and rush_att +0.0145 (> 0.0058), worse beyond noise on both seeds → **fail**. Follow-up: test the partial-game rule without `APEX_PRIOR_FALLBACK` (which reaches carry priors).
+- **Promoted:** `APEX_RB_VAC_TGT` default 1 with `APEX_RB_VAC_W` 0.5 (sim.py). An Out RB's target weight goes half to the active RBs. Applies from the W11 Friday/Sunday runs; the frozen W11 Thursday runs are unchanged. `APEX_RB_VAC_TGT=0` reproduces the old baseline.
+- Re-test of #66 under the new rule is owed: its TD log-loss gain (-0.0002) is inside the noise, but its rec_yds gain (-0.016) exceeds 2x the floor, so it would pass on seed A. Run a seed-B check.
