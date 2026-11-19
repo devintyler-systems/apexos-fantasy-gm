@@ -44,8 +44,9 @@ Run opened 2026-11-18 21:19 UTC (13:19 PST). Operator: Devin. Phase: **1+2 compl
 - IND@HOU frozen (DECISIONS #67): runs/weekly/2026_w11_{market_20261119T153948Z,model_20261119T153952Z}; package w11/TNF_IND_HOU_2026_W11.md. No play.
 - PR #104 (draft) holds the Thursday work.
 
+## Thursday evening 2026-11-19
+- Operator review of TNF reads -> change register R-11/R-12/R-13 -> candidates backtested (DECISIONS #68), noise floor measured, noise-aware promotion rule adopted, **R-11h promoted** (#69, default on from Friday runs). R-12/R-12b rejected; R-13t failed the noise-aware rule (receptions and carries worse on both seeds).
+- Card: DeepDish v2 PNG (scratchpad, not committed). Thursday prop odds D048-D051 parsed to var/w11_sfa_props_20261119T1932Z.xlsx (never commit).
+
 ## Next exact action
-1. TB@DET two-QB scenario (APEX_MANUAL_OUT with Mayfield Out) once TB's Thursday/Friday report lands.
-2. Friday refetch (Sunday reports), rebuild manual-out, rerun both tracks, data-auditor + model-qa, freeze Sunday early window before 2026-11-22 18:00Z.
-3. Fix the price_odds all-stale crash (guard + test).
-4. Ask the operator for a fresh odds snapshot within 2 h of each window.
+Friday scheduled run (2026-11-20 21:30Z): fetch, manual-out, both tracks with #66 and #69 defaults; TB@DET Daniels scenario; data-auditor + model-qa; price_odds all-stale guard + test; pass APEX_MANUAL_OUT to every price_odds call. Owed: #66 seed-B re-check under #69 rule; R-13 partial-games-only (no PRIOR_FALLBACK) backtest on two seeds.
