@@ -11,7 +11,8 @@ CAL = json.load(open(CONF+"calibration_params.json"))
 # Team-volume dispersion and target-share cap. APEX_VOLFILE overrides the file (used by the backtests to compare variants).
 # Defaults reproduce the pre-2026-10-05 behaviour so an absent file changes nothing.
 import os as _os
-VAC = bool(int(_os.environ.get("APEX_VAC", 0)))      # candidate: vacated-role redistribution (off = baseline, byte-identical)
+VAC = bool(int(_os.environ.get("APEX_VAC", 0)))
+RB_VAC_TGT = bool(int(_os.environ.get("APEX_RB_VAC_TGT", 0)))      # candidate R-11      # candidate: vacated-role redistribution (off = baseline, byte-identical)
 VOL = dict(plays_sd=4.0, pr_margin_slope=0.0022, pr_extra_sd=0.0, pr_cap=0.08, plays_lo=42, plays_hi=85, tgt_share_cap=0.0)
 _vf = _os.environ.get("APEX_VOLFILE", CONF + "volume_params.json")
 if _os.path.exists(_vf):
@@ -167,6 +168,12 @@ def play_side(rng, t, sd, ns):
         sh = w0 / w0.sum()
     G = rng.gamma(np.maximum(ALPHA_T * sh, 1e-3)[None, :], 1.0, size=(ns, K + 1))
     wts = G * act * hair[None, :]
+    if RB_VAC_TGT:      # candidate R-11 (off = baseline): an inactive RB's target weight goes to the active RBs (in proportion to their weights) before normalization
+        _rb = np.append(rec.pos.values == "RB", False)
+        if _rb.sum() > 1:
+            _vac = (G * (~act) * hair[None, :])[:, _rb].sum(axis=1)
+            _wrb = wts[:, _rb]; _s = _wrb.sum(axis=1)
+            wts[:, _rb] = _wrb + np.where(_s[:, None] > 0, _wrb / np.maximum(_s[:, None], 1e-12) * _vac[:, None], 0.0)
     if VAC:      # vacated targets go to active peers: the 'other' bucket keeps its fraction instead of growing when peers are Out (DECISIONS #35 candidate)
         wts[:, K] *= (sh[None, :K] * act[:, :K]).sum(axis=1) / sh[:K].sum()
     wts = wts / wts.sum(axis=1, keepdims=True)
