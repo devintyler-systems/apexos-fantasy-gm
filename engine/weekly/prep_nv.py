@@ -52,9 +52,23 @@ sc_ = st.groupby("pfr_id").agg(Receiving_Tgt=("targets", "sum"), Receiving_Rec=(
 _tt = st.groupby(["team", "week"]).agg(tteam=("targets", "sum"), cteam=("carries", "sum")).reset_index()
 _st2 = st.merge(_tt, on=["team", "week"], how="left")
 _st2["tsh"] = _st2.targets / _st2.tteam.replace(0, np.nan); _st2["csh"] = _st2.carries / _st2.cteam.replace(0, np.nan)
+_PARTIAL = float(os.environ.get("APEX_DROP_PARTIAL", 0) or 0)      # candidate R-13a (off = 0): drop games under this offense-snap share when the player has a later game at or above it (return-from-injury ramp, early exits)
+if _PARTIAL > 0:
+    _sp = sn[["pfr_player_id", "week", "offense_pct"]].rename(columns={"pfr_player_id": "pfr_id"})
+    _st2 = _st2.merge(_sp, on=["pfr_id", "week"], how="left")
+    _full = _st2[_st2.offense_pct >= _PARTIAL].groupby("pfr_id").week.max()
+    _st2["drop"] = (_st2.offense_pct < _PARTIAL) & (_st2.week < _st2.pfr_id.map(_full).fillna(-1))
+    _gdrop = _st2[_st2["drop"]].groupby("pfr_id").size()
+    _csh_full = _st2.groupby("pfr_id").csh.sum()
+    _st2 = _st2[~_st2["drop"]]
 _sh = _st2.groupby("pfr_id").agg(tsh_sum=("tsh", "sum"), csh_sum=("csh", "sum")).reset_index()
 sc = _base(st).merge(sc_, on="pfr_id").merge(_sh, on="pfr_id", how="left")
+_G0 = sc.G.copy()
+if _PARTIAL > 0:
+    sc["G"] = (sc.G - sc.pfr_id.map(_gdrop).fillna(0)).clip(lower=1)
 sc["tsh_pg"] = (sc.tsh_sum.fillna(0) / sc.G).fillna(0); sc["csh_pg"] = (sc.csh_sum.fillna(0) / sc.G).fillna(0)
+if _PARTIAL > 0 and os.environ.get("APEX_DROP_PARTIAL_TGT_ONLY", "0") == "1":      # R-13a variant: carries keep every game
+    sc["csh_pg"] = (sc.pfr_id.map(_csh_full).fillna(0) / _G0).fillna(0); sc["G"] = _G0
 # Optional recency blend (APEX_RECENCY=lambda, default 0 = season-to-date mean only): share = (1-lambda) * season mean + lambda * mean of the player's last 3 games (players with 3+ games only).
 # 2026 W5 postmortem experiment: last-3-game target share cut share MAE 3% overall and 7% for players whose snap share moved 10+ points.
 _REC = float(os.environ.get("APEX_RECENCY", 0) or 0)

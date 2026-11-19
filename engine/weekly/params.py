@@ -276,10 +276,18 @@ def _last_season_table(season):
                                          rtd=("receiving_tds", "sum"), car=("carries", "sum"), cyds=("rushing_yards", "sum"), ctd=("rushing_tds", "sum"))
     return g_[g_.n >= 6]
 LAST = _last_season_table(SEASON)
+if os.environ.get("APEX_PRIOR_FALLBACK", "0") == "1":      # candidate R-13b (off = baseline): players with no prior-season row take the season before it
+    try:
+        _L2 = _last_season_table(SEASON - 1)
+        LAST = LAST.combine_first(_L2) if hasattr(LAST, "combine_first") else LAST
+    except Exception:
+        pass
 
 def _fk(stat, pos):
     f = PP[stat].get(pos) or PP[stat].get("RB") or PP[stat].get("WR"); return f["k"], f["a"], f.get("a_changed", f["a"] * 0.5)
 
+QB_CAR_HOLD = os.environ.get("APEX_QB_CAR_HOLD", "0") == "1"      # candidate R-12b
+QB_CAR_KMULT = float(os.environ.get("APEX_QB_CAR_KMULT", 1.0))      # candidate R-12 (1.0 = baseline): <1 trusts a QB's own carry share more
 DEPARTED = os.environ.get("APEX_DEPARTED", "1") == "1"      # DECISIONS #66, owner-approved 2026-11-18; APEX_DEPARTED=0 reproduces the old baseline
 def _departed_volume():
     """Season targets and carries each team logged from players whose most recent stats team (through APEX_THROUGH_WEEK) is a different team.
@@ -320,12 +328,13 @@ def build_roster_v4(team):
             if (kind == "tgt" and r.pos == "QB") or (kind == "car" and r.pos in ("WR", "TE")):
                 role = 0.002 if kind == "tgt" else 0.01; k, a, ach = 3.0, 0.0, 0.0
             else:
-                k, a, ach = _fk(stat, r.pos); role = PP["roles"][kind][r.pos if r.pos in PP["roles"][kind] else "RB"].get(str(float(min(rk[i], 6))), 0.01); rawrk = float(d["trk" if kind == "tgt" else "crk"].iloc[i]); role = role * (6.0 / rawrk) ** 2 if rawrk > 6 else role
+                k, a, ach = _fk(stat, r.pos); k = k * QB_CAR_KMULT if (kind == "car" and r.pos == "QB") else k; role = PP["roles"][kind][r.pos if r.pos in PP["roles"][kind] else "RB"].get(str(float(min(rk[i], 6))), 0.01); rawrk = float(d["trk" if kind == "tgt" else "crk"].iloc[i]); role = role * (6.0 / rawrk) ** 2 if rawrk > 6 else role
             aa = 0.0 if np.isnan(last[i]) else (a if (np.isnan(r.same_team) or r.same_team == 1) else ach)
             prior = aa * (0.0 if np.isnan(last[i]) else last[i]) + (1 - aa) * role
             n = float(r.G); out[i] = (n * obs[i] + k * prior) / (n + k)
         return out
     d["tgt_sh"] = shr_share("tgt"); d["car_sh"] = shr_share("car")
+    _qb_car0 = d.car_sh.where(d.pos == "QB")      # pre-multiplier QB carry share (R-12b)
     for _k, _m in ({} if os.environ.get("APEX_NOMULT") else _CAL.get("share_mult", {})).items():      # position-level share calibration from 2023-25 weeks 4-12 backtests
         _kind, _pos = _k.split("_"); _col = "tgt_sh" if _kind == "tgt" else "car_sh"; d.loc[d.pos == _pos, _col] = d.loc[d.pos == _pos, _col] * _m
     _gc, _gt = float(os.environ.get("APEX_CAR_GAMMA", 1.0)), float(os.environ.get("APEX_TGT_GAMMA", 1.0))      # candidate: concentrate shares on the top of the depth chart (backtest: lead back carry share 0.48 projected vs 0.53 actual)
@@ -346,6 +355,10 @@ def build_roster_v4(team):
         s = (budget - st) / sh[rest].sum(); sh[rest] = sh[rest] * s; return sh
     KT = int(os.environ.get("APEX_KT", _CAL.get("keep_tgt", 0))); KC = int(os.environ.get("APEX_KC", _CAL.get("keep_car", 0)))
     d["car_sh"] = _norm(d.car_sh, 1 - other_car, KC) if d.car_sh.sum() > 0 else d.car_sh
+    if QB_CAR_HOLD and d.car_sh.sum() > 0:      # candidate R-12b (off = baseline): the QB keeps his own fitted carry share; the RB multiplier and normalization act on the rest
+        _q = d.pos == "QB"; _qs = float(_qb_car0[_q].fillna(0).sum()); _rest = d.loc[~_q, "car_sh"].sum()
+        if 0 < _qs < (1 - other_car) and _rest > 0:
+            d.loc[_q, "car_sh"] = _qb_car0[_q].fillna(0); d.loc[~_q, "car_sh"] = d.loc[~_q, "car_sh"] * (1 - other_car - _qs) / _rest
     d["tgt_sh"] = _norm(d.tgt_sh, 1 - other_sh, KT)
     # DvP tilt on target shares
     tilt = d.pos.map(lambda p: P.get("dvp_" + p, 1.0) if p in ("WR", "TE", "RB") else 1.0) ** 0.5

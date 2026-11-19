@@ -211,3 +211,40 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 
 - Promotion rule (`grading.v0.1.yaml`): passes on the pooled sample (rec_yds MAE and TD log loss lower; rec MAE and team RMSE no worse). Caveats: the TD log-loss gain (0.0002) is under the ~0.0005 run-to-run noise (#24); 2023 is worse on rec_yds and TD log loss. Historical mid-season departures are rare, so the pooled effect is small while the affected team-weeks move a lot: W11 IND target shares 0.54 -> 0.83, receiver yds 125 -> 206 (QB 204.5); Warren 6.3 -> 10.6 targets, anytime 14% -> 20%; Taylor 36% -> 38%; other teams within 0.03.
 - Owner approved 2026-11-18 after the backtest above: default on in `params.py` (`APEX_DEPARTED=0` reproduces the old baseline). Applies from the W11 IND@HOU freeze; frozen runs are unchanged.
+
+## 67. Week 11 Thursday IND@HOU freeze (2026-11-19 15:39Z)
+- Frozen: `2026_w11_market_20261119T153948Z`, `2026_w11_model_20261119T153952Z`, both verify intact. First frozen runs with #66 on. The #61 manual-out (`tools/intake/w11_manual_out.py`, 166 rows) travels as `manual_overrides.csv`.
+- Pre-freeze checks: data-auditor passed projections; model-qa passed (IND shares reconcile to 0.996 including Out players; HOU receivers +11% over the QB is the #59/#65 decoupling scaled by HOU's environment). Model-only team points are injury-agnostic (#33/#49), as designed.
+- Pricing defect found and fixed before the freeze: the first Thursday pricing pinned `APEX_NOW_UTC` to the 2026-11-18 19:27Z snapshot, which bypassed the 2-hour stale rule. Repriced on the real clock with `APEX_ODDS_KEEP_STALE=1`: all 1,752 rows `stale=True`, 20.2 h, reference only.
+- **Open engine bug:** `price_odds.py` crashes when every row is stale (empty frame, line 127 `edge_bias_centered`) instead of writing empty outputs. Needs a guard and a test.
+- Market call: no play on IND@HOU. Stale prices, and the best TD gap (Hutchinson, +3.5 points) is under the 5-point minimum.
+- Addendum (2026-11-19 ~16:00Z): `price_odds.py` re-simulates each game (`R.run_game`), so it must get the same `APEX_MANUAL_OUT` as the run. The 15:38Z pricing omitted it, so the HOU practice-squad backs came back into the pricing sims. Example: Montgomery rush 52.5 over came out 23.5% against his frozen mean of 52.6. Repriced with the manual-out at about 16:00Z: Montgomery 42.6%; best TD gap Hutchinson +3.75 points (still under 5); market call unchanged (no play). Frozen projections were never affected. Runbook item: pass `APEX_MANUAL_OUT` to every `price_odds.py` call.
+- Operator injury PDF D047 (Sharp, 2026-11-19): matches nflverse for IND/HOU except Charlie Heck (PDF "No designation", NIR-personal; NFL report via nflverse "Questionable"). The NFL report governs (RUNBOOK rule 6). Immaterial to the IND OL index, since Raimann and Travis are Out.
+- Addendum 2 (2026-11-19 22:04Z): operator Thursday prop PDFs D048–D051 (Sharp, "updated Thu 2:32 PM ET" = 19:32Z; TD 183, rec 110, rush 65, pass 26 players) parsed with `parse_market_pdfs.py --orig` (2,030 book rows; rec and pass reconcile exactly; rush 64/65 and TD 168 + D/ST, with misses outside IND@HOU) and priced with the manual-out at 22:04Z. Age 2.53 h, still over the 2-hour rule, so reference only. IND@HOU anytime TD: best Hutchinson DK +270, blended edge +4.16 points (< 5) → no play. Non-TD gaps are information only (#64); Warren rec 37.5 over at 78% engine vs 50% book carries the GAP flag (15+ points), a range where historical hit rates did not support the engine.
+
+## 68. R-11/R-12/R-13 candidates and the backtest noise floor (2026-11-19, no promotion)
+- Candidates from the operator's TNF review (change register R-11..R-13), all off by default. Each was backtested against the production baseline (`dep`, #66 on), 2023-25 weeks 4-12, 27 slates, 5,000 sims, and scored with `eval_candidate.py` (pooled deltas; negative = better):
+
+| Candidate | knob | rec_yds MAE | TD log loss | rec MAE | team RMSE | rush_yds MAE |
+|---|---|---|---|---|---|---|
+| R-11 RB vacated targets to RBs | `APEX_RB_VAC_TGT=1` | -0.085 | +0.0010 | +0.0018 | +0.0067 | +0.026 |
+| R-11h half weight | `+ APEX_RB_VAC_W=0.5` | **-0.079** (all 3 seasons better) | +0.0011 | -0.0020 | +0.0068 | +0.009 |
+| R-12 QB carry k x0.5 | `APEX_QB_CAR_KMULT=0.5` | -0.014 | -0.0011 | -0.0013 | -0.0002 | +0.054 |
+| R-12b QB carry share held | `APEX_QB_CAR_HOLD=1` | -0.006 | +0.0003 | -0.0003 | +0.0061 | **+0.527** |
+| R-13 partial games + prior fallback | `APEX_DROP_PARTIAL=0.35 APEX_PRIOR_FALLBACK=1` | -0.016 | -0.0026 | +0.0048 | +0.0074 | +0.132 |
+| R-13t targets only | `+ APEX_DROP_PARTIAL_TGT_ONLY=1` | **-0.086** | -0.0009 | +0.0018 | +0.0091 | +0.001 |
+
+- **Noise floor** (new `APEX_SEED`; default unchanged): the baseline rerun with only the seed changed moves pooled rec_yds MAE -0.006 (per season up to ±0.058), TD log loss +0.0015, rec MAE -0.0005, team RMSE **+0.016**. The promotion rule's TD log loss and team RMSE tolerances (0.001, #24) are below this floor, so those checks are decided by the seed. #66's TD log loss gain (-0.0002) is inside the noise; its rec_yds gain (-0.016) is about 3x the pooled noise.
+- Reading: R-12 and R-12b rejected. The RB carry multiplier's squeeze on QB carries is right on aggregate; Daniel Jones's low carry projection is a player caution, not an engine defect. R-11h and R-13t improve rec_yds by ~13x the pooled noise and in every season (R-13t 2025 flat), with every other metric inside the noise. Under the rule as written, both fail on team RMSE.
+- **Owner decision needed:** amend `promotion_rule` to a noise-aware test (paired seeds, or deltas compared against measured seed noise) before promoting R-11h and R-13t. No production change tonight; the frozen IND@HOU runs stand.
+
+## 69. Noise-aware promotion rule; R-11h promoted (owner-approved 2026-11-19)
+- `contracts/weekly/grading.v0.1.yaml` gains `promotion_rule_noise_aware` (two seeds; rec_yds must improve beyond 2x noise on both seeds; other metrics' two-seed mean must not be worse than 2x noise). Reason: #68, where the old fixed tolerances sat below the random-number noise.
+- Second seed (APEX_SEED=777) against the seed-777 baseline:
+  - R-11h: rec_yds -0.0825, rec -0.0002, rush_yds -0.0273, rush_att -0.0025, TD log loss -0.0016, team RMSE -0.0022.
+  - R-13t: rec_yds -0.0754, rec +0.0027, rush_yds -0.0395, rush_att +0.0151, TD log loss -0.0011, team RMSE +0.0035.
+- Two-seed means:
+  - R-11h: rec_yds -0.081 (both seeds beyond 0.0128), rec -0.0011, rush_yds -0.009, rush_att -0.0013, TD log loss -0.0003, team RMSE +0.0023 → **pass**.
+  - R-13t: rec +0.0023 (> 0.0010) and rush_att +0.0145 (> 0.0058), worse beyond noise on both seeds → **fail**. Follow-up: test the partial-game rule without `APEX_PRIOR_FALLBACK` (which reaches carry priors).
+- **Promoted:** `APEX_RB_VAC_TGT` default 1 with `APEX_RB_VAC_W` 0.5 (sim.py). An Out RB's target weight goes half to the active RBs. Applies from the W11 Friday/Sunday runs; the frozen W11 Thursday runs are unchanged. `APEX_RB_VAC_TGT=0` reproduces the old baseline.
+- Re-test of #66 under the new rule is owed: its TD log-loss gain (-0.0002) is inside the noise, but its rec_yds gain (-0.016) exceeds 2x the floor, so it would pass on seed A. Run a seed-B check.

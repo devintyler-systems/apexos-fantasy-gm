@@ -30,7 +30,8 @@ ABBR = {"ARI": "Arizona Cardinals", "ATL": "Atlanta Falcons", "BAL": "Baltimore 
 BOOKS = {"CONSEN…": "consensus", "CONSENSUS": "consensus", "DRAFTKINGS": "draftkings", "FANDUEL": "fanduel", "BETMGM": "betmgm", "FANATICS": "fanatics", "CAESARS": "williamhill_us"}
 DROPPED = []
 NUM = re.compile(r"^[+-]?\d+(\.\d+)?$")
-PROPS = {"QB-PASSING": "player_pass_yds", "REC YDS": "player_reception_yds", "RUSH YDS": "player_rush_yds", "ANYTIME TD": "player_anytime_td"}
+PROPS = {"QB-PASSING": "player_pass_yds", "REC YDS": "player_reception_yds", "RUSH YDS": "player_rush_yds", "ANYTIME TD": "player_anytime_td",
+         "Passing": "player_pass_yds", "Receiving": "player_reception_yds", "Rushing": "player_rush_yds", "Touchdowns": "player_anytime_td"}
 GAMES = {"MONEYLINE": "h2h", "SPREADS": "spreads", "TOTAL.pdf": "totals"}
 
 
@@ -176,10 +177,13 @@ def parse_games(path, market, cols, hdr_y):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--snapshot-et", default="2026-11-18 14:27")
+    ap.add_argument("--orig", default=str(ORIG), help="folder holding exactly one PDF per market (default: intake originals)")
     ap.add_argument("--schedule", default=str(ROOT / "docs/weekly/intake_2026_w09_w11/schedule_w09_w11.csv")); a = ap.parse_args()
     rows = []
     for key, mk in {**PROPS, **GAMES}.items():
-        f = [Path(p) for p in glob.glob(str(ORIG / f"*{key}*"))]
+        f = [Path(p) for p in glob.glob(str(Path(a.orig) / f"*{key}*"))]
+        if not f:
+            print(f"{key}: no file in {a.orig}, market skipped"); continue
         if len(f) != 1:
             raise SystemExit(f"{key}: expected 1 file, got {len(f)}")
         cols, hy = header_cols(pymupdf.open(f[0]))
