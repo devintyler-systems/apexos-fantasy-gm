@@ -211,3 +211,10 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 
 - Promotion rule (`grading.v0.1.yaml`): passes on the pooled sample (rec_yds MAE and TD log loss lower; rec MAE and team RMSE no worse). Caveats: the TD log-loss gain (0.0002) is under the ~0.0005 run-to-run noise (#24); 2023 is worse on rec_yds and TD log loss. Historical mid-season departures are rare, so the pooled effect is small while the affected team-weeks move a lot: W11 IND target shares 0.54 -> 0.83, receiver yds 125 -> 206 (QB 204.5); Warren 6.3 -> 10.6 targets, anytime 14% -> 20%; Taylor 36% -> 38%; other teams within 0.03.
 - Owner approved 2026-11-18 after the backtest above: default on in `params.py` (`APEX_DEPARTED=0` reproduces the old baseline). Applies from the W11 IND@HOU freeze; frozen runs are unchanged.
+
+## 67. Week 11 Thursday IND@HOU freeze (2026-11-19 15:39Z)
+- Frozen: `2026_w11_market_20261119T153948Z`, `2026_w11_model_20261119T153952Z`, both verify intact. First frozen runs with #66 on. The #61 manual-out (`tools/intake/w11_manual_out.py`, 166 rows) travels as `manual_overrides.csv`.
+- Pre-freeze checks: data-auditor passed projections; model-qa passed (IND shares reconcile to 0.996 including Out players; HOU receivers +11% over the QB is the #59/#65 decoupling scaled by HOU's environment). Model-only team points are injury-agnostic (#33/#49), as designed.
+- Pricing defect found and fixed before the freeze: the first Thursday pricing pinned `APEX_NOW_UTC` to the 2026-11-18 19:27Z snapshot, which bypassed the 2-hour stale rule. Repriced on the real clock with `APEX_ODDS_KEEP_STALE=1`: all 1,752 rows `stale=True`, 20.2 h, reference only.
+- **Open engine bug:** `price_odds.py` crashes when every row is stale (empty frame, line 127 `edge_bias_centered`) instead of writing empty outputs. Needs a guard and a test.
+- Market call: no play on IND@HOU. Stale prices, and the best TD gap (Hutchinson, +3.5 points) is under the 5-point minimum.

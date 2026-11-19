@@ -40,5 +40,12 @@ Run opened 2026-11-18 21:19 UTC (13:19 PST). Operator: Devin. Phase: **1+2 compl
 - 2022 prior-season files added to the cache (needed by 2023 backtests).
 - IND/HOU injury rows at 22:11Z: practice status only, no designations.
 
+## Thursday 2026-11-19 (15:30-15:45Z)
+- IND@HOU frozen (DECISIONS #67): runs/weekly/2026_w11_{market_20261119T153948Z,model_20261119T153952Z}; package w11/TNF_IND_HOU_2026_W11.md. No play.
+- PR #104 (draft) holds the Thursday work.
+
 ## Next exact action
-Scheduled check-in 2026-11-19 15:30Z (trig_016nSq6Bq8E1uYB1pqhZ7rtT): fetch -> confirm designations -> rebuild manual-out -> rerun both tracks -> reprice -> data-auditor + model-qa -> freeze both tracks -> verify -> commit runs + TNF package to PR #103. Then TB@DET two-QB scenario and Friday Sunday-slate refresh.
+1. TB@DET two-QB scenario (APEX_MANUAL_OUT with Mayfield Out) once TB's Thursday/Friday report lands.
+2. Friday refetch (Sunday reports), rebuild manual-out, rerun both tracks, data-auditor + model-qa, freeze Sunday early window before 2026-11-22 18:00Z.
+3. Fix the price_odds all-stale crash (guard + test).
+4. Ask the operator for a fresh odds snapshot within 2 h of each window.
