@@ -249,7 +249,7 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - **Promoted:** `APEX_RB_VAC_TGT` default 1 with `APEX_RB_VAC_W` 0.5 (sim.py). An Out RB's target weight goes half to the active RBs. Applies from the W11 Friday/Sunday runs; the frozen W11 Thursday runs are unchanged. `APEX_RB_VAC_TGT=0` reproduces the old baseline.
 - Re-test of #66 under the new rule is owed: its TD log-loss gain (-0.0002) is inside the noise, but its rec_yds gain (-0.016) exceeds 2x the floor, so it would pass on seed A. Run a seed-B check.
 
-## 70. Recency candidates under the noise-aware rule; noise floor from three seeds (PROPOSED 2026-11-20, owner decision pending)
+## 70. Recency 0.3 promoted; noise floor from three seeds (owner-approved 2026-11-20)
 - Prompted by the operator's Seth McGowan review: last-5 carries 7.6/g, over 26.5 rushing yards in 5 of 5, while the season-mean share gave 4.7 carries / 22 yds. With `APEX_RECENCY=0.5` the engine gives 5.7 / 27.2.
 - New baseline = #66 + #69 (tags b69a/b69b/b69c, seeds 20261004/777/999). Pairwise pooled seed deltas:
   - rec_yds 0.0097 / 0.0084 / 0.0181
@@ -269,4 +269,4 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 | `0.5 + APEX_RECENCY_SNAPMOVE=0.10` | -0.055 / -0.049 | -0.005 / -0.005 | +0.045 / +0.055 | -0.023 / -0.011 | -0.0027 / -0.0009 | -0.001 / -0.004 | pass (does not reach McGowan, whose snap move is ~0.05) |
 
 - Caveat on `APEX_RECENCY=0.3`: 2023 rush_yds is +0.20 on both seeds (per-season, beyond noise); 2024 and 2025 are within noise. Monitor rushing yards weekly if promoted.
-- Recommendation: adopt the three-seed floor and promote `APEX_RECENCY=0.3` (calibration_params or default) from the W11 Friday run. Frozen runs are unchanged.
+- Owner approved: three-seed floor written into `promotion_rule_noise_aware`; `APEX_RECENCY` default 0.3 in `prep_nv.py` (`APEX_RECENCY=0` reproduces the old baseline). Applies from the W11 Friday run; frozen runs are unchanged. Monitor rushing yards weekly (2023 caveat). The next noise floor re-measure is owed on the #70 baseline.

@@ -71,7 +71,7 @@ if _PARTIAL > 0 and os.environ.get("APEX_DROP_PARTIAL_TGT_ONLY", "0") == "1":   
     sc["csh_pg"] = (sc.pfr_id.map(_csh_full).fillna(0) / _G0).fillna(0); sc["G"] = _G0
 # Optional recency blend (APEX_RECENCY=lambda, default 0 = season-to-date mean only): share = (1-lambda) * season mean + lambda * mean of the player's last 3 games (players with 3+ games only).
 # 2026 W5 postmortem experiment: last-3-game target share cut share MAE 3% overall and 7% for players whose snap share moved 10+ points.
-_REC = float(os.environ.get("APEX_RECENCY", 0) or 0)
+_REC = float(os.environ.get("APEX_RECENCY", 0.3))      # DECISIONS #70 (owner-approved 2026-11-20); APEX_RECENCY=0 reproduces the old baseline
 if _REC > 0:
     _l3 = _st2.sort_values("week").groupby("pfr_id").tail(3).groupby("pfr_id").agg(tsh3=("tsh", "mean"), csh3=("csh", "mean"), n3=("week", "size")).reset_index()
     sc = sc.merge(_l3, on="pfr_id", how="left"); _ok = sc.n3.fillna(0) >= 3
