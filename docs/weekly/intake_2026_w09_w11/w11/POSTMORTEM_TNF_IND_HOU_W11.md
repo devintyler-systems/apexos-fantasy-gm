@@ -42,7 +42,7 @@ Two more misses:
 | Player | Projected | Actual | Note |
 |---|---|---|---|
 | **David Montgomery** | 13.4 car / 53 yds | **26 car / 107 yds** | 70% of HOU carries. Marks' lead-back carries (15.8 a game) were spread across all rushers, not to the RB2 → R-18 |
-| Tyler Warren | 11.7 tgt / 64 yds | 5 tgt / 22 yds | Vacated targets went to Gould (3), Dulin (4), Watkins (3), Burks (3) → R-15 |
+| Tyler Warren | 11.7 tgt / 64 yds | 5 tgt / 22 yds | **Hurt Q2 5:03, back Q2 3:40** (one drive missed; 76% snaps vs 80% last 3; 1 touch after). The rest of the miss: vacated targets went to Gould (3), Dulin (4), Watkins (3), Burks (3) → R-15 |
 | C.J. Stroud | 259 yds | 194 yds, 3 TD, 1 INT | Lead-protecting script |
 | Daniel Jones | 198 yds | 144 yds (12/29), 1 INT | Efficiency collapse behind backup tackles |
 | Jonathan Taylor | 14.2 car / 60 + 33 rec | 11 car / 21 + 6 rec | Game script |
@@ -51,7 +51,7 @@ Two more misses:
 | **Marlin Klein** (TE) | 0.3 tgt | 4 tgt / 24 yds / TD | TE3 with B. Jordan Out → R-19 |
 | **Quez Watkins** | not projected | 3 tgt / 26 yds | ACT, unmodelled (#62) → R-19 |
 | Anthony Gould | 1.2 tgt (Q, p 0.75) | 3 tgt / 48 yds, 60% snaps | Under-projected |
-| Seth McGowan | 4.7 car / 22 | 3 car / 7 | Engine right; the operator review moved off the under |
+| Seth McGowan | 4.7 car / 22 | 3 car / 7 | **Left the game: hurt on a kickoff return, Q2 0:15, no return.** Injury-voided, so no evidence either way |
 | Cade Stover (HOU TE) | p_active 1.0, 0.8 tgt | no snap | Availability miss (minor) |
 
 **Shared vs engine-only misses.** The game result was shared with the market: both the line and the engine missed by 10–15 points on margin and total. The engine-specific misses are in how volume is split between players:
@@ -74,13 +74,23 @@ Two more misses:
 **3–5.** Three of the misses (Warren, Taylor receiving, Jones passing) were the high-volume IND reads the blowout script killed. Montgomery's rush under was the R-18 miss.
 
 **Removed after operator review:**
-- McGowan U26.5: would have **won** (7 yds).
+- McGowan U26.5: would have cashed (7 yds), but only because he left injured at halftime. **Injury-voided.**
 - Jones U7.5 rush: would have **won** (3).
 - Montgomery U8.5 rec: would have **lost** (17).
 
-Manual overrides of the engine went 1–2. One game; recorded, not acted on.
+Manual overrides of the engine went 1–1, with one injury-voided. One game; recorded, not acted on.
 
 **Touchdown bets:** none qualified, so no bet was placed. Hutchinson, the only price-conditional candidate, did not score. The non-touchdown "information only" rule (#64) held up here: 3–5 would have cost money as plays.
+
+## 4b. In-game availability (`tools/postmortem/ingame_availability.py 2026 11 IND HOU`)
+| Player | Snaps (last-3 avg) | Event | Flag |
+|---|---|---|---|
+| Seth McGowan | 18% (28%) | Hurt on a kickoff return, Q2 0:15; no return, no touches after | EXIT |
+| Tyler Warren | 76% (80%) | Hurt Q2 5:03, returned Q2 3:40; 1 touch after | MISSED_TIME |
+| Anthony Richardson | 6% (21%) | No injury event logged | SNAP_DROP |
+| Cade Stover | 0% (26%) | No injury event logged; projected p_active 1.0 | SNAP_DROP |
+
+Flagged player-games are graded separately from projection error. Warren's miss is mostly distribution and game script (his snap loss was about 4 points); McGowan's is injury.
 
 ## 5. Areas to review
 | ID | Finding | Proposed work |
@@ -91,5 +101,6 @@ Manual overrides of the engine went 1–2. One game; recorded, not acted on.
 | **R-20** | Game-script elasticity: HOU 37 carries (proj 26), IND 29 attempts (proj 33). The sim's rush share responds weakly to the lead. | Backtest the margin slope (`VOL.pr_margin_slope`, currently 0.0022) against 2023–25 by-quarter script. #40 says pregame volume is mostly unforecastable; this tests the in-sim response, not the pregame mean. |
 | #33/#49 | Model-only team points ignore injuries (IND 21 with both tackles Out). | Already queued; this game is a clear example. |
 | — | Sack projection with backup tackles: 3.75 projected vs 2. | Monitor; one game. |
+| R-21 | Post-mortems mixed in-game injuries with projection error (operator caught Warren) | **Done:** `tools/postmortem/ingame_availability.py` runs on every graded game; RUNBOOK §3 updated. |
 
 **No model change ships from one game.** R-18 and R-15 have a direct mechanism and are the next two backtests.

@@ -38,6 +38,7 @@ The ESPN feed shows at most 5 names per team: only explicit Outs are written, no
 Lines only (assumed -110, no prices, no touchdown markets): a line comparison, never an edge. `espn_dk_line_moves.csv` has open vs current for closing-line tracking.
 
 ## 3. Grading (Tuesday)
+In-game availability first (every graded game): `python tools/postmortem/ingame_availability.py SEASON WEEK AWAY HOME --out ...` flags EXIT / MISSED_TIME (play-by-play injury events) and SNAP_DROP (15+ points below the last-3 snap share). Grade flagged player-games separately from projection error.
 One command for the tables: `python engine/weekly/postmortem.py SEASON WEEK` (latest pre-kickoff frozen run per game, team points vs the DraftKings line, player skill vs the naive per-game average, availability, volume). Then `apex-weekly grade` per run and the grader agent.
 `APEX_SEASON=2026 ...` -> compare frozen projections to `stats_player_week_2026` (see `compare_bt.py` for the metric set: MAE, bias,
 TD Brier/log loss, team RMSE). First graded game already in hand: PIT @ CLE (final 24-27).
