@@ -297,3 +297,4 @@ artifacts, as-of + input hashes + version on every run, no future information, p
   - team RMSE +0.0033 / -0.0051
   - **Fail under the rule** (rec_yds gain required). rush_yds is better on both seeds at the noise floor and nothing is worse beyond noise. A data-correctness fix: owner decision.
 - W11 Sunday handling until a fix ships: PHI rushing markets and McBride receiving markets are information only (R-14, R-15). TB passing and receiving are not priced from the Daniels scenario (R-17).
+- **Owner decision 2026-11-20:** `APEX_REST_AS_FP` promoted as a data-correctness fix with a neutral backtest (an owner override of the rec_yds requirement). Default on in `params.py`; `APEX_REST_AS_FP=0` reproduces the old baseline. Applies from the W11 Sunday run; frozen runs are unchanged. Re-measure the noise floor on the new baseline before the next candidate.
