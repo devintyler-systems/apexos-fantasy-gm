@@ -270,3 +270,30 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 
 - Caveat on `APEX_RECENCY=0.3`: 2023 rush_yds is +0.20 on both seeds (per-season, beyond noise); 2024 and 2025 are within noise. Monitor rushing yards weekly if promoted.
 - Owner approved: three-seed floor written into `promotion_rule_noise_aware`; `APEX_RECENCY` default 0.3 in `prep_nv.py` (`APEX_RECENCY=0` reproduces the old baseline). Applies from the W11 Friday run; frozen runs are unchanged. Monitor rushing yards weekly (2023 caveat). The next noise floor re-measure is owed on the #70 baseline.
+
+## 71. Friday W11 candidates: APEX_VAC re-test and APEX_REST_AS_FP (2026-11-20, no promotion yet)
+- New baseline (#66 + #69 + #70), three seeds (b70a/b/c). Pairwise pooled deltas:
+  - rec_yds 0.0224 / 0.0216 / 0.0440
+  - rec 0.0019 / 0.0009 / 0.0010
+  - rush_yds 0.0177 / 0.0264 / 0.0087
+  - rush_att 0.0051 / 0.0062 / 0.0011
+  - TD log loss 0.0015 / 0.0010 / 0.0006
+  - team RMSE 0.0183 / 0.0074 / 0.0109
+  - Floor = max: rec_yds 0.044, rec 0.0019, rush_yds 0.026, rush_att 0.0062, td_ll 0.0015, team 0.018. The rec_yds floor is higher than on the #69 baseline (0.018).
+- `APEX_VAC=1` (R-14, #35 re-test), seed A / B:
+  - rec_yds -0.0005 / -0.0271
+  - rec +0.0015 / -0.0003
+  - rush_yds +0.0162 / -0.0183
+  - rush_att +0.0050 / +0.0001
+  - TD log loss +0.0006 / +0.0004
+  - team RMSE +0.0053 / 0.0000
+  - **Fail:** no rec_yds gain beyond noise; nothing worse beyond noise. Not promoted.
+- `APEX_REST_AS_FP=1` (R-16, new; "not injury related - resting player" practice rows count as Full unless Out/Doubtful), seed A / B:
+  - rec_yds +0.0131 / -0.0091
+  - rec +0.0015 / -0.0000
+  - rush_yds -0.0270 / -0.0269
+  - rush_att +0.0031 / +0.0002
+  - TD log loss +0.0008 / -0.0002
+  - team RMSE +0.0033 / -0.0051
+  - **Fail under the rule** (rec_yds gain required). rush_yds is better on both seeds at the noise floor and nothing is worse beyond noise. A data-correctness fix: owner decision.
+- W11 Sunday handling until a fix ships: PHI rushing markets and McBride receiving markets are information only (R-14, R-15). TB passing and receiving are not priced from the Daniels scenario (R-17).
