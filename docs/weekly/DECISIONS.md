@@ -248,3 +248,25 @@ artifacts, as-of + input hashes + version on every run, no future information, p
   - R-13t: rec +0.0023 (> 0.0010) and rush_att +0.0145 (> 0.0058), worse beyond noise on both seeds → **fail**. Follow-up: test the partial-game rule without `APEX_PRIOR_FALLBACK` (which reaches carry priors).
 - **Promoted:** `APEX_RB_VAC_TGT` default 1 with `APEX_RB_VAC_W` 0.5 (sim.py). An Out RB's target weight goes half to the active RBs. Applies from the W11 Friday/Sunday runs; the frozen W11 Thursday runs are unchanged. `APEX_RB_VAC_TGT=0` reproduces the old baseline.
 - Re-test of #66 under the new rule is owed: its TD log-loss gain (-0.0002) is inside the noise, but its rec_yds gain (-0.016) exceeds 2x the floor, so it would pass on seed A. Run a seed-B check.
+
+## 70. Recency 0.3 promoted; noise floor from three seeds (owner-approved 2026-11-20)
+- Prompted by the operator's Seth McGowan review: last-5 carries 7.6/g, over 26.5 rushing yards in 5 of 5, while the season-mean share gave 4.7 carries / 22 yds. With `APEX_RECENCY=0.5` the engine gives 5.7 / 27.2.
+- New baseline = #66 + #69 (tags b69a/b69b/b69c, seeds 20261004/777/999). Pairwise pooled seed deltas:
+  - rec_yds 0.0097 / 0.0084 / 0.0181
+  - rec 0.0013 / 0.0008 / 0.0005
+  - rush_yds 0.0055 / 0.0352 / 0.0298
+  - rush_att 0.0005 / 0.0064 / 0.0059
+  - TD log loss 0.0011 / 0.0001 / 0.0010
+  - One seed pair under-states the floor: rush_yds 0.0055 vs 0.035. A targets-only change that cannot touch rushing "moved" rush_yds +0.003 / +0.051 across seeds.
+  - **Proposed rule refinement:** noise floor = max pooled delta over three baseline seed pairs.
+- Candidates vs baseline (pooled, seed A / seed B):
+
+| Variant | rec_yds | rec | rush_yds | rush_att | TD log loss | team RMSE | Result (3-seed floor) |
+|---|---|---|---|---|---|---|---|
+| `APEX_RECENCY=0.3` | -0.103 / -0.070 | -0.008 / -0.008 | +0.038 / +0.051 | -0.025 / -0.020 | -0.0036 / -0.0009 | +0.001 / +0.012 | **pass** |
+| `APEX_RECENCY=0.5` | -0.051 / -0.042 | -0.006 / -0.006 | +0.114 / +0.100 | -0.035 / -0.030 | -0.003 / -0.005 | +0.006 / +0.004 | fail (rush_yds) |
+| `0.3 + APEX_RECENCY_TGT_ONLY=1` | -0.092 / -0.074 | -0.006 / -0.008 | +0.003 / +0.051 | +0.002 / +0.010 | -0.0025 / -0.0008 | +0.006 / +0.007 | pass (carries untouched) |
+| `0.5 + APEX_RECENCY_SNAPMOVE=0.10` | -0.055 / -0.049 | -0.005 / -0.005 | +0.045 / +0.055 | -0.023 / -0.011 | -0.0027 / -0.0009 | -0.001 / -0.004 | pass (does not reach McGowan, whose snap move is ~0.05) |
+
+- Caveat on `APEX_RECENCY=0.3`: 2023 rush_yds is +0.20 on both seeds (per-season, beyond noise); 2024 and 2025 are within noise. Monitor rushing yards weekly if promoted.
+- Owner approved: three-seed floor written into `promotion_rule_noise_aware`; `APEX_RECENCY` default 0.3 in `prep_nv.py` (`APEX_RECENCY=0` reproduces the old baseline). Applies from the W11 Friday run; frozen runs are unchanged. Monitor rushing yards weekly (2023 caveat). The next noise floor re-measure is owed on the #70 baseline.

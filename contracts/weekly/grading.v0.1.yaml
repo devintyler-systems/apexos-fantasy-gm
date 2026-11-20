@@ -17,8 +17,9 @@ promotion_rule_noise_aware: >-
   (DECISIONS #69, owner-approved 2026-11-19) Supersedes the fixed 0.001 tolerances of promotion_rule, which sit below the backtest's random-number noise
   (#68: a baseline re-run with only APEX_SEED changed moved pooled team RMSE 0.016 and TD log loss 0.0015).
   Run the multi-season weeks 4-12 backtest for baseline and candidate on two seeds (default 20261004 and APEX_SEED=777).
-  Noise floor per metric = |pooled delta between the two baseline seeds|.
+  Noise floor per metric = the largest |pooled delta| over the three pairs of three baseline seeds (20261004, 777, 999; DECISIONS #70: one pair under-stated rush_yds noise 6x).
   Promote only if (1) rec_yds MAE improves by more than 2x its noise floor on BOTH seeds, and (2) for rec MAE, rush_yds MAE,
   rush_att MAE, TD log loss and team RMSE, the mean of the two seeds' pooled deltas is not worse than 2x that metric's noise floor.
   Re-measure the noise floor whenever the baseline changes. Floors measured 2026-11-19 (baseline = #66): rec_yds 0.0064, rec 0.0005,
   rush_yds 0.0413, rush_att 0.0029, td_ll 0.0015, team_rmse 0.0161.
+  Floors measured 2026-11-20 (baseline = #66 + #69, three seeds): rec_yds 0.0181, rec 0.0013, rush_yds 0.0352, rush_att 0.0064, td_ll 0.0011.

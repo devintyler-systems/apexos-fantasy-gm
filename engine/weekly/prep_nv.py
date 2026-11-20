@@ -71,12 +71,19 @@ if _PARTIAL > 0 and os.environ.get("APEX_DROP_PARTIAL_TGT_ONLY", "0") == "1":   
     sc["csh_pg"] = (sc.pfr_id.map(_csh_full).fillna(0) / _G0).fillna(0); sc["G"] = _G0
 # Optional recency blend (APEX_RECENCY=lambda, default 0 = season-to-date mean only): share = (1-lambda) * season mean + lambda * mean of the player's last 3 games (players with 3+ games only).
 # 2026 W5 postmortem experiment: last-3-game target share cut share MAE 3% overall and 7% for players whose snap share moved 10+ points.
-_REC = float(os.environ.get("APEX_RECENCY", 0) or 0)
+_REC = float(os.environ.get("APEX_RECENCY", 0.3))      # DECISIONS #70 (owner-approved 2026-11-20); APEX_RECENCY=0 reproduces the old baseline
 if _REC > 0:
     _l3 = _st2.sort_values("week").groupby("pfr_id").tail(3).groupby("pfr_id").agg(tsh3=("tsh", "mean"), csh3=("csh", "mean"), n3=("week", "size")).reset_index()
     sc = sc.merge(_l3, on="pfr_id", how="left"); _ok = sc.n3.fillna(0) >= 3
+    _rmove = float(os.environ.get("APEX_RECENCY_SNAPMOVE", 0) or 0)      # variant: only players whose last-3 offense-snap share moved >= this vs their season mean
+    if _rmove > 0:
+        _sp = sn[sn.offense_pct.notna()].sort_values("week")
+        _m_all = _sp.groupby("pfr_player_id").offense_pct.mean(); _m_l3 = _sp.groupby("pfr_player_id").tail(3).groupby("pfr_player_id").offense_pct.mean()
+        _mv = (_m_l3 - _m_all).abs()
+        _ok = _ok & (sc.pfr_id.map(_mv).fillna(0) >= _rmove)
     sc.loc[_ok, "tsh_pg"] = (1 - _REC) * sc.loc[_ok, "tsh_pg"] + _REC * sc.loc[_ok, "tsh3"].fillna(0)
-    sc.loc[_ok, "csh_pg"] = (1 - _REC) * sc.loc[_ok, "csh_pg"] + _REC * sc.loc[_ok, "csh3"].fillna(0)
+    if os.environ.get("APEX_RECENCY_TGT_ONLY", "0") != "1":      # variant: targets only, carries keep the season mean
+        sc.loc[_ok, "csh_pg"] = (1 - _REC) * sc.loc[_ok, "csh_pg"] + _REC * sc.loc[_ok, "csh3"].fillna(0)
     sc = sc.drop(columns=["tsh3", "csh3", "n3"])
 sc = sc[sc.Pos.isin(["QB", "RB", "FB", "WR", "TE", "OL", "P", "NT"])].copy()
 sc["GS"] = 0.0
