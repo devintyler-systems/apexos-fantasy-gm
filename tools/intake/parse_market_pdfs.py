@@ -31,7 +31,7 @@ BOOKS = {"CONSEN…": "consensus", "CONSENSUS": "consensus", "DRAFTKINGS": "draf
 DROPPED = []
 NUM = re.compile(r"^[+-]?\d+(\.\d+)?$")
 PROPS = {"QB-PASSING": "player_pass_yds", "REC YDS": "player_reception_yds", "RUSH YDS": "player_rush_yds", "ANYTIME TD": "player_anytime_td",
-         "Passing": "player_pass_yds", "Receiving": "player_reception_yds", "Rushing": "player_rush_yds", "Touchdowns": "player_anytime_td"}
+         "Passing": "player_pass_yds", "Receiving": "player_reception_yds", "Rushing": "player_rush_yds", "Touchdowns": "player_anytime_td", "AnytimeTD": "player_anytime_td"}
 GAMES = {"MONEYLINE": "h2h", "SPREADS": "spreads", "TOTAL.pdf": "totals"}
 
 
