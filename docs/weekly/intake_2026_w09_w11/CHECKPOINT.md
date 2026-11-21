@@ -48,5 +48,12 @@ Run opened 2026-11-18 21:19 UTC (13:19 PST). Operator: Devin. Phase: **1+2 compl
 - Operator review of TNF reads -> change register R-11/R-12/R-13 -> candidates backtested (DECISIONS #68), noise floor measured, noise-aware promotion rule adopted, **R-11h promoted** (#69, default on from Friday runs). R-12/R-12b rejected; R-13t failed the noise-aware rule (receptions and carries worse on both seeds).
 - Card: DeepDish v2 PNG (scratchpad, not committed). Thursday prop odds D048-D051 parsed to var/w11_sfa_props_20261119T1932Z.xlsx (never commit).
 
+## Friday 2026-11-20 (21:30-22:30Z)
+- Promoted this week (all default on in main / PR #107): #66 departed volume, #69 Out-RB targets to RBs (w 0.5), #70 recency 0.3, #71 rest-day DNP = Full. Noise floor re-measured on the #70 baseline (DECISIONS #71).
+- price_odds all-stale crash fixed + tests (189a353); verified end to end (1,828 stale rows excluded, clean exit).
+- manual-out tool circularity bug fixed (1f7d454); Friday file var/ro/manual_out_w11_fri.csv (166 rows).
+- Provisional Sunday slate: w11/slate_w11_fri.csv. Holds: PHI rushing, McBride receiving, TB passing in the Daniels scenario. TB Mayfield officially Q, trending to start.
+- Open register items: R-14 (VAC re-test failed: no measurable gain), R-15 McBride concentration, R-17 backup-QB proxy.
+
 ## Next exact action
-Friday scheduled run (2026-11-20 21:30Z): fetch, manual-out, both tracks with #66 and #69 defaults; TB@DET Daniels scenario; data-auditor + model-qa; price_odds all-stale guard + test; pass APEX_MANUAL_OUT to every price_odds call. Owed: #66 seed-B re-check under #69 rule; R-13 partial-games-only (no PRIOR_FALLBACK) backtest on two seeds.
+Scheduled Sunday 2026-11-22 16:35Z: fetch designations + inactives, rebuild manual-out, run both tracks, reprice with the operator's Sunday capture or delete stale Thursday odds files, data-auditor + model-qa, freeze before 18:00Z, report plays/no-play.

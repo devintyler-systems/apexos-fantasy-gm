@@ -10,6 +10,11 @@ import run_all as R
 from params import SCHED, norm_name, is_neutral, TARGET_WEEK
 from load import FULL2ABBR
 
+def bias_offset(market, bias):
+    """Per-row market median gap as float. An empty frame (every row stale, DECISIONS #67) must not turn this column into text."""
+    return pd.to_numeric(market.map(bias), errors="coerce").astype(float)
+
+
 TZ_OFFSET_H = int(os.environ.get("APEX_ODDS_TZ_OFFSET", 7))        # sheet timestamps are US Pacific: 7 while PDT (TNF commence 17:15 == 8:15 PM ET), 8 after the clock change on 2026-11-01 (set APEX_ODDS_TZ_OFFSET=8)
 MK = {"player_receptions": "rec", "player_pass_completions": "pass_cmp", "player_pass_attempts": "pass_att", "player_rush_attempts": "rush_att", "player_1st_td": "first_td",
       "player_anytime_td": "anytime_td", "player_pass_yds": "pass_yds", "player_reception_yds": "rec_yds", "player_rush_yds": "rush_yds",
@@ -123,7 +128,7 @@ for k_, g_ in (E[~E.market.isin(ONE_SIDED)].groupby(["game", "player", "market"]
 E["model_gt_85_suppress"] = (E.model_p > 0.85) | (E.model_p < 0.15)
 E["model_gap_flag"] = E.edge.abs() > 0.15
 bias = E[E.side.isin(["over", "yes"])].groupby("market").edge.median() if len(E) else pd.Series(dtype=float)
-E["bias_offset"] = E.market.map(bias)
+E["bias_offset"] = bias_offset(E.market, bias)
 E["edge_bias_centered"] = np.where(E.side.isin(["over", "yes"]), E.edge - E.bias_offset, E.edge + E.bias_offset)
 # names say what they are: model minus book, diagnostic only. No row here is an edge or a pick (postmortem P0 #2); never rank by these.
 E = E.rename(columns={"edge": "gap_model_minus_novig", "ev": "ev_if_model_right_DIAGNOSTIC", "edge_bias_centered": "gap_bias_centered_DIAGNOSTIC", "bias_offset": "market_median_gap_DIAGNOSTIC"})

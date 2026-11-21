@@ -1,0 +1,27 @@
+player,team,pos,snaps,snap_pct,last3_pct,snap_drop_pts,injured_at,returned_at,touches_after_injury,flag
+Cade Stover,HOU,TE,0,0,26.0,26.0,,,,SNAP_DROP
+Anthony Richardson,IND,QB,3,6,21.0,15.0,,,,SNAP_DROP
+Tyler Warren,IND,TE,38,76,80.0,4.0,Q2 05:03,Q2 03:40,1,MISSED_TIME
+Seth McGowan,IND,RB,9,18,28.0,10.0,Q2 00:15,,0,EXIT
+C.J. Stroud,HOU,QB,66,100,96.0,-4.0,,,,
+Nico Collins,HOU,WR,59,89,75.0,-14.0,,,,
+Xavier Hutchinson,HOU,WR,54,82,71.0,-11.0,,,,
+David Montgomery,HOU,RB,48,73,44.0,-29.0,,,,
+Dalton Schultz,HOU,TE,36,55,56.0,1.0,,,,
+Kayshon Boutte,HOU,WR,34,52,45.0,-7.0,,,,
+Foster Moreau,HOU,TE,30,45,31.0,-14.0,,,,
+Tank Dell,HOU,WR,29,44,40.0,-4.0,,,,
+Emari Demercado,HOU,RB,17,26,24.0,-2.0,,,,
+Marlin Klein,HOU,TE,16,24,15.0,-9.0,,,,
+Nikko Remigio,HOU,WR,0,0,3.0,3.0,,,,
+Daniel Jones,IND,QB,47,94,93.0,-1.0,,,,
+Laquon Treadwell,IND,WR,40,80,80.0,0.0,,,,
+Jonathan Taylor,IND,RB,34,68,66.0,-2.0,,,,
+Deion Burks,IND,WR,32,64,39.0,-25.0,,,,
+Anthony Gould,IND,WR,29,58,19.0,-39.0,,,,
+Andrew Ogletree,IND,TE,24,48,35.0,-13.0,,,,
+Ashton Dulin,IND,WR,22,44,25.0,-19.0,,,,
+Pharaoh Brown,IND,TE,8,16,17.0,1.0,,,,
+DJ Giddens,IND,RB,7,14,8.0,-6.0,,,,
+Quez Watkins,IND,WR,5,10,,,,,,
+Nick Westbrook-Ikhine,IND,WR,2,4,15.0,11.0,,,,

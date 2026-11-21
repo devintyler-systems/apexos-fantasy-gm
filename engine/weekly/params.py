@@ -47,6 +47,9 @@ def build_inj():
     if _ov and os.path.exists(_ov):
         i = apply_status_overlay(i, pd.read_csv(_ov, keep_default_na=False), tm)
     i["rs"] = i.report_status.fillna("None"); i["ps"] = i.practice_status.fillna("None").map({"Did Not Participate In Practice":"DNP","Limited Participation in Practice":"LP","Full Participation in Practice":"FP"}).fillna("None")
+    if os.environ.get("APEX_REST_AS_FP", "1") == "1":      # DECISIONS #71 (owner-approved 2026-11-20): a "not injury related - resting player" practice day counts as Full unless the game status is Out/Doubtful; APEX_REST_AS_FP=0 reproduces the old baseline
+        _rest = (i.practice_primary_injury.fillna("") + " " + i.report_primary_injury.fillna("")).str.lower().str.contains("resting player")
+        i.loc[_rest & ~i.rs.isin(["Out", "Doubtful"]), "ps"] = "FP"
     i["pg"] = i.position.map(_pgmap).fillna("OTH")
     o = pd.DataFrame(dict(player=i.full_name, pos=i.position, team=i.team, injury=i.report_primary_injury.fillna(i.practice_primary_injury), practice=i.ps, game_status=i.report_status, nkey=i.full_name.map(norm_name)))
     o["p_active"] = [p_active(a, b, c) for a, b, c in zip(i.rs, i.ps, i.pg)]

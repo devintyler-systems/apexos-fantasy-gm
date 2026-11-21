@@ -36,7 +36,7 @@ for r in dev.itertuples():
     rows.append(dict(player=r.full_name, team=r.team, source=f"nflverse roster w{wk} DEV + depth chart {dc_dt}", as_of_utc=now,
                      note="practice squad, no depth-chart slot (DECISIONS #61)"))
 live = set(zip(R.nkey, R.team))
-for r in P[P.p_active > 0].itertuples():
+for r in P.itertuples():      # every projected row: an earlier manual-out may already have zeroed p_active (circularity bug, 2026-11-20 audit)
     if (r.nkey, r.team) not in live and r.pos in ("QB", "RB", "WR", "TE"):
         rows.append(dict(player=r.player, team=r.team, source=f"nflverse roster w{wk}", as_of_utc=now,
                          note="no week roster row for this team (moved/released)"))

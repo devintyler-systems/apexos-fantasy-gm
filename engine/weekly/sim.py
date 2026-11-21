@@ -13,6 +13,8 @@ CAL = json.load(open(CONF+"calibration_params.json"))
 import os as _os
 VAC = bool(int(_os.environ.get("APEX_VAC", 0)))      # candidate: vacated-role redistribution (off = baseline, byte-identical; DECISIONS #35)
 RB_VAC_TGT = bool(int(_os.environ.get("APEX_RB_VAC_TGT", 1)))      # DECISIONS #69 (owner-approved 2026-11-19); APEX_RB_VAC_TGT=0 reproduces the old baseline
+RB_VAC_CAR = bool(int(_os.environ.get("APEX_RB_VAC_CAR", 0)))      # candidate R-18
+RB_VAC_CAR_W = float(_os.environ.get("APEX_RB_VAC_CAR_W", 1.0))
 RB_VAC_W = float(_os.environ.get("APEX_RB_VAC_W", 0.5))      # fraction of the vacated RB target weight routed to active RBs (#69)
 VOL = dict(plays_sd=4.0, pr_margin_slope=0.0022, pr_extra_sd=0.0, pr_cap=0.08, plays_lo=42, plays_hi=85, tgt_share_cap=0.0)
 _vf = _os.environ.get("APEX_VOLFILE", CONF + "volume_params.json")
@@ -203,7 +205,14 @@ def play_side(rng, t, sd, ns):
     # starter QB inactive: his carries move to backup QB proxy (appended row)
     qb_idx = [i for i, r in rus.iterrows() if r.pos == "QB" and r.player == (qbs.loc[0, "player"] if len(qbs) else "")]
     bk = np.zeros((ns, 1))
-    car_w = rng.gamma(np.maximum(ALPHA_C * sh_c, 1e-3)[None, :], 1.0, size=(ns, R + 1)) * act_c
+    _Gc = rng.gamma(np.maximum(ALPHA_C * sh_c, 1e-3)[None, :], 1.0, size=(ns, R + 1))
+    car_w = _Gc * act_c
+    if RB_VAC_CAR and R > 1:      # candidate R-18 (off = baseline): an inactive RB's carry weight goes to the active RBs (in proportion to their weights)
+        _rbc = np.append(rus.pos.values == "RB", False)
+        if _rbc.sum() > 1:
+            _vacc = (_Gc * (~act_c))[:, _rbc].sum(axis=1)
+            _wc = car_w[:, _rbc]; _sc = _wc.sum(axis=1)
+            car_w[:, _rbc] = _wc + np.where(_sc[:, None] > 0, _wc / np.maximum(_sc[:, None], 1e-12) * _vacc[:, None] * RB_VAC_CAR_W, 0.0)
     if VAC and R > 0:      # same rule for carries: the lead back's vacated carries go to active backs, not to 'other'
         car_w[:, R] *= (sh_c[None, :R] * act_c[:, :R]).sum(axis=1) / sh_c[:R].sum()
     if qb_idx:
