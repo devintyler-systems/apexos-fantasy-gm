@@ -298,3 +298,16 @@ artifacts, as-of + input hashes + version on every run, no future information, p
   - **Fail under the rule** (rec_yds gain required). rush_yds is better on both seeds at the noise floor and nothing is worse beyond noise. A data-correctness fix: owner decision.
 - W11 Sunday handling until a fix ships: PHI rushing markets and McBride receiving markets are information only (R-14, R-15). TB passing and receiving are not priced from the Daniels scenario (R-17).
 - **Owner decision 2026-11-20:** `APEX_REST_AS_FP` promoted as a data-correctness fix with a neutral backtest (an owner override of the rec_yds requirement). Default on in `params.py`; `APEX_REST_AS_FP=0` reproduces the old baseline. Applies from the W11 Sunday run; frozen runs are unchanged. Re-measure the noise floor on the new baseline before the next candidate.
+
+## 72. R-18 (Out-RB carries to active RBs) rejected (2026-11-21)
+- Prompted by the TNF post mortem: Montgomery 26 carries (70% of HOU) vs 13.4 projected with Marks Out.
+- New baseline (#66 + #69 + #70 + #71), three seeds (b71a/b/c). Pairwise pooled deltas:
+  - rec_yds 0.0003 / 0.0368 / 0.0371
+  - rec 0.0004 / 0.0015 / 0.0019
+  - rush_yds 0.0178 / 0.0378 / 0.0201
+  - rush_att 0.0022 / 0.0047 / 0.0025
+  - TD log loss 0.0006 / 0.0003 / 0.0003
+  - Floor = max: rec_yds 0.037, rec 0.0019, rush_yds 0.038, rush_att 0.0047, td_ll 0.0006, team 0.0161.
+- `APEX_RB_VAC_CAR=1` (full weight), seed A / B: rec_yds -0.008 / -0.008, rush_yds **+0.174 / +0.153**, rush_att **+0.021 / +0.021**, TD log loss -0.0003 / +0.0001. On team-weeks with an Out RB/WR/TE (n=3,427), rush_yds MAE 24.73 → 24.94.
+- `APEX_RB_VAC_CAR_W=0.5`, seed A / B: rec_yds -0.037 / -0.008, rush_yds **+0.107 / +0.111**, rush_att +0.004 / +0.009.
+- **Rejected.** Both weights make rushing worse beyond 2x noise on both seeds, including the Out-player subset. Historically, an Out lead back's carries spread wider than to the next RB (QB, promoted backs, lower team rush volume). The TNF case was mostly game script (HOU 37 carries vs 26 projected, 23-point margin). Next lead: R-20 (in-sim script elasticity). The switch stays in code, off.
