@@ -1,0 +1,14 @@
+game,roof,note,wind_mph,gust_mph,temp_f,precip_pct,total_adj_pts
+IND@HOU,open,indoor,,,,,
+MIA@BUF,outdoors,"NWS hourly, mid-game hour",7.0,,66.0,1.0,-0.0
+BAL@CAR,outdoors,"NWS hourly, mid-game hour",7.0,,61.0,37.0,-0.0
+NO@CHI,outdoors,"NWS hourly, mid-game hour",15.0,,52.0,32.0,-0.95
+TEN@DAL,,indoor,,,,,
+TB@DET,dome,indoor,,,,,
+ARI@KC,outdoors,"NWS hourly, mid-game hour",15.0,,50.0,0.0,-0.95
+JAX@NYG,outdoors,"NWS hourly, mid-game hour",7.0,,62.0,63.0,-0.0
+NYJ@LAC,dome,indoor,,,,,
+LV@DEN,outdoors,"NWS hourly, mid-game hour",6.0,,45.0,0.0,-0.0
+PIT@PHI,outdoors,"NWS hourly, mid-game hour",5.0,,64.0,43.0,-0.0
+MIN@SF,outdoors,"neutral site or unknown stadium: no forecast, no adjustment",,,,,
+CIN@WAS,outdoors,"NWS hourly, mid-game hour",9.0,,52.0,0.0,-0.0
