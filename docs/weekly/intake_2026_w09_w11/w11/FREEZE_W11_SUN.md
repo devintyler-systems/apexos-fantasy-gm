@@ -36,3 +36,14 @@
 **Holds:** R-14 PHI rushing, R-15 McBride, R-17 TB passing, R-18 KC backfield.
 
 **Slate:** `slate_w11_sun_final.csv`.
+
+## Addendum, 17:48Z: operator capture (Sharp, printed 17:42 to 17:46Z)
+- **Prop pages are stale.** Every page is stamped "updated Sat 8:27 PM ET", which is **16.4 h old** at pricing. That's past the 2 h limit, so they're priced for reference only (`APEX_ODDS_KEEP_STALE=1`). **No plays.**
+  - The rushing file was named "Riushing" and was skipped until I renamed it.
+  - 2,189 rows priced, 0 unmatched games.
+- **Biggest anytime-TD gaps on those stale prices:**
+  - Dobbins (DEN): +7.0 (model 37.8%, book 23.7%).
+  - Worthy (KC): +6.7 (32.2% vs 18.8%).
+  - Swift (CHI) dropped below the threshold once the line moved.
+- **Sunday injury PDF:** 141 designations. The run isn't missing any Out or Doubtful player. The R48 players are still listed Questionable (no activations), and Mayfield is still Questionable.
+- The frozen runs stand. No refreeze.
