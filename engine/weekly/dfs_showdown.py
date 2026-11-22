@@ -52,7 +52,8 @@ def build(anchor):
             k = (norm_name(kk.player), t)
             if k in fl.index: arrs[k] = (KFG * own["fg"] + own["xp_off"] + own["xp_d"]).astype(np.float32); meta[k] = dict(pos="K", p_active=1.0, scale={})
     for t, own, opp in ((AWAY, A, H), (HOME, H, A)):
-        k = (norm_name({"DAL": "Cowboys", "TB": "Buccaneers", "BUF": "Bills", "LA": "Rams"}.get(t, t)), t)
+        _dst = sal[(sal.Position == "DST") & (sal.TeamAbbrev == t)]      # DK names a DST by nickname ("49ers"): take it from the file instead of a 4-team map (2026 W11 MIN@SF: both DSTs were missing)
+        k = (_dst.nkey.iloc[0], t) if len(_dst) else (norm_name(t), t)
         if k in fl.index: arrs[k] = (opp["sacks"] + 2 * opp["int_n"] + 2 * opp["fl_n"] + 6 * own["dtd"] + 2 * own["saf"] + tier(opp["off_pts"])).astype(np.float32); meta[k] = dict(pos="DST", p_active=1.0, scale={})
     return arrs, meta
 arrs, meta = build(ANCHOR)
