@@ -36,9 +36,8 @@ Takeaway: the player-level engine had a good week. The team level matched the li
 
 ## 3. Where it fell short (ranked by impact)
 
-### 3.1 Carry allocation: "OTHER" bucket leakage and lead-back compression
-- **Team carries:** actual 26.2 a team against 23.9 allocated to players (**2.3 a team, 9% unassigned**), plus 1.7 carries a team to players who were not in the projection file at all.
-- **Lead backs:** projected 13.8 carries, actual 15.3; **6 of 23 lead backs were 6 or more carries above the projection (5 by 8 or more)**:
+### 3.1 Carry allocation: lead backs ran more than projected (correction below)
+- **Lead backs:** projected 13.8 carries, actual 15.3 (+1.5, about 1.5 standard errors on 23 teams). **6 of 23 lead backs were 6 or more carries above the projection (5 by 8 or more)**:
 
 | Lead back | Projected | Actual |
 |---|---|---|
@@ -50,12 +49,12 @@ Takeaway: the player-level engine had a good week. The team level matched the li
 | Saquon Barkley (PHI) | 11.7 | 17 (75 yds) |
 | Montgomery (HOU, TNF) | 13.4 | 26 |
 
-- **RB2:** projected 5.9, actual 4.7. Backups are over-projected as the leaders are under-projected.
+- **RB2:** projected 5.9, actual 4.7. Backups were over-projected as the leaders were under-projected.
 - **Consequence:** rush-yards and anytime-TD errors on the lead back. The pre-game unders I drafted on Coleman (24 carries) and Barkley (75 yards) before the entry was rebuilt for MIN @ SF only would have lost.
-- **Status:** R-18 tested only the vacated-carries case and was rejected. This is broader: R-14 and R-18 evidence together point at the unassigned bucket.
+- **Correction (added 2026-11-24, after the first version of this document).** The first version said the engine left about 9% of team carries unassigned. That came from a subset table and is wrong. In the frozen run's own file the engine gives players 25.2–25.5 of 26.9 projected team carries (a 5–6% OTHER bucket), and players outside the projection actually took 1.7 carries a team. The OTHER bucket is about right. The miss is the split among running backs, and R-22 below is rewritten accordingly.
 
 ### 3.2 Availability rules
-- **R48 players held Out played.** Roman Wilson (PIT, 49 snaps, 6 targets), Croskey-Merritt (WAS, 28 snaps, 13 carries) and Will Shipley (PHI, 19 snaps) were RES on the Sunday roster and Questionable on the injury report. We zeroed all five R48 players; **3 of 5 played** (Brooks and Pittman did not). WAS's backfield was the casualty: Rachaad White projected 8.75 carries, got 0.
+- **R48 players held Out played (R-24 now implemented, DECISIONS #73).** Roman Wilson (PIT, 49 snaps, 6 targets), Croskey-Merritt (WAS, 28 snaps, 13 carries) and Will Shipley (PHI, 19 snaps) were RES on the Sunday roster and Questionable on the injury report. We zeroed all five R48 players; **3 of 5 played** (Brooks and Pittman did not). WAS's backfield was the casualty: Rachaad White projected 8.75 carries, got 0.
 - **Questionable players.** Skill players projected between 5% and 90% to play (n=17, mean 0.63) played 88% of the time (postmortem tool's played flag).
 - **Starting QBs.** Mayfield (TB) was projected 0.35 to play and played every snap. Over 2023–26, starting QBs who were Questionable with Limited practice played **49% of the time (n=35)**, against 16% for backups (n=50). The pooled fit (0.35) mixes the two.
 - **Inactives timing.** The Sunday freeze (16:47Z) preceded the 4:05 and 4:25 and 8:20 PM ET inactives, so late-window Outs were absent from the frozen runs (they were applied in the DFS and Showdown reruns). Dobbins logged 1 snap with no injury event; that is the kind of player the T-90 list catches.
@@ -64,12 +63,13 @@ Takeaway: the player-level engine had a good week. The team level matched the li
 - **Calibration slope 0.84** (actual = 1.7 + 0.84 × projected, n=190); TE 0.72, RB 0.67.
 - **Where:** players projected for 8 or more targets averaged **75 projected yards against 60 actual**; 4–6 targets, 36 against 29. The WR1 target count was right (8.08 vs 8.04); the WR2 and WR3 target counts were over (5.97 vs 4.88; 4.74 vs 4.08). So the miss is mostly yards per target for the top two options.
 - **Examples:** Chase 101 projected, 31 actual; Metcalf 62 projected, 2 actual (4 targets); Burden 62 / 10; Tyson 50 / 6. On the other side, depth players broke out: Antonio Williams 122 yds on 11 targets (projected 38), Jeanty 90, Bech 88, Parker Washington 103.
+- **History says one week.** Across 2023–25 (4,955 receiver-games) the calibration slope is 1.03, not 0.84; only the 80+ yard tier is high (90 projected vs 82). No change proposed.
 - **Versus naive:** W11 is the first of the five graded weeks in which the per-game average (MAE 19.73) edged the engine (19.86); the weeks before it favoured the engine by 0.3 to 1.5 yards. A blend of the two was best this week (19.52).
 
 ### 3.4 Game script and QB passing
 - **Margin errors are market-wide.** The line missed margins by 7.8 on average (engine 7.9), totals by 10.8. Three shootouts did the damage: TEN @ DAL 81 points (line 55.5), BAL @ CAR 68 (44.5), LV @ DEN 62 (41.5). Three games went well under: IND @ HOU 29, MIA @ BUF 35, NO @ CHI 34.
 - **No home-field signal.** Home teams beat the spread by 5.0 points in W11 but by -1.2 on the season (2026 weeks swing ±6; 2023–25 averaged +0.6). Noise; nothing to change.
-- **QB passing yards** correlate -0.29 with the final margin: QBs on teams that lost by 10+ were over-projected by 23 yards, and QBs on teams that won by 10+ were under-projected by 30. Pass TDs were under-projected: 35.3 projected, 41 actual (+16%).
+- **QB passing yards** correlate -0.29 with the final margin: QBs on teams that lost by 10+ were over-projected by 23 yards, and QBs on teams that won by 10+ were under-projected by 30. Pass TDs were under-projected this week (35.3 projected, 41 actual), but over 2023–25 the engine projects 1.36 per QB game against 1.39 actual.
 - **Elasticity check (R-20).** Observed rush share rises 0.0025 per point of margin; the engine uses 0.0022. The engine's response is about right.
 
 ### 3.5 In-game availability (RUNBOOK section 3)
@@ -126,21 +126,32 @@ Snap drops with no injury event logged (mostly blowout script): Swift 46%, Kamar
 
 The 6-pick lost mostly on SF's blowout: all six legs were the same game-script bet (a grind), and that is what correlation does when the script breaks. The "non-touchdown props are information only" rule (#64) stands.
 
-## 6. Change register for Week 12
+## 6. What three seasons of backtest say about each weakness, and what happened to it (added 2026-11-24)
 
-Nothing below ships without the noise-aware multi-season backtest where the item is a model change (`promotion_rule_noise_aware`), and a DECISIONS entry.
+I tested each W11 finding against the 2023–25 weeks 4–12 baseline (b71a, 27 slates) before building anything, because one week can mislead.
 
-| ID | Item | Evidence this week | Next step |
+| Weakness | W11 | 2023–25 baseline | Verdict |
 |---|---|---|---|
-| **R-22** | Carry allocation: close the OTHER bucket (renormalize player carries to team carries, with weight toward the lead back) | 2.3 carries a team unassigned; lead backs +1.5, RB2 -1.2; 6 of 23 leads +6 or more | Backtest `APEX_CARRY_RENORM` on rush_yds MAE, rush_att MAE, TD log loss; subsumes R-14 and the vacated-carry piece of R-18. **Top priority.** |
-| **R-23** | Availability: starter flag for QBs (49% vs 16% at Questionable/LP), then the other positions | Mayfield p 0.35, played every snap; Q players overall 63% projected vs 88% played | Add `starter` (depth-chart #1 or last-week snap leader) to `fit_availability`; refit on the scheduled refit day; backtest. |
-| **R-24** | R48 players with a practice designation: replace the hard Out with a probability | 3 of 5 played (Wilson, Croskey-Merritt, Shipley) | Roster history is too sparse to backtest. Owner decision: provisional p_active 0.5 for RES/R48 players who appear on the report as Questionable or better, logged weekly. |
-| **R-25** | Receiving yards for high-volume receivers (slope 0.84; WR2/WR3 target counts over) | 8+ target players: 75 projected vs 60 actual | Backtest a shrink on yards per target for the top two options, and WR2/WR3 target counts. Do not touch WR1 target counts. |
-| **R-26** | QB pass TD rate (35.3 projected vs 41 actual) and completion dispersion (42% coverage) | One week | Check on the 2023–25 backtest first; QB-only rule (#59) applies if confirmed. |
-| R-15 | Close it. McBride's projected targets (13.5) matched the actual 14. The concentration concern does not hold for the top option; the yardage piece moves to R-25. | | Lift the McBride hold. |
-| R-17 | Fold into R-23. | Mayfield played | |
-| R-20 | Close. Observed 0.0025 vs engine 0.0022. | | No backtest. |
-| Home-field / totals | Close. Noise (+5.0 this week, -1.2 on the season). | | |
+| Receiving yards too high for stars | calibration slope 0.84 | **1.03** (WR 1.02, TE 1.04, RB 0.98; n=4,955). Only the 80+ yard tier is high (90 vs 82, n=62) | One-week effect. R-25 dropped. |
+| QB passing TDs low | 35.3 vs 41 | 1.36 vs 1.39 per QB game | Noise. R-26 dropped. |
+| Lead backs under-projected, OTHER bucket leaking | lead +1.5 carries | lead +0.3, RB2 -0.5, RB3 -0.6; OTHER bucket matches unprojected carries | Premise wrong (see 3.1). Three fixes tested and rejected (#74). |
+| **Rushing yards distribution too narrow** | 39% inside P25–P75 | **40.1%** (1,306 player-weeks; 15% below P10, 14% above P90) | **Confirmed.** Fix built (#75), awaiting approval. |
+| Questionable players under-projected | 63% projected vs 88% played | 2023–26 starting QBs Q/LP played 49% vs 35% fitted (n=35) | Supported. R-23 open. |
+| Designated-for-return reserve players held Out | 3 of 5 played | not backtestable (roster history sparse) | R-24 implemented as a provisional rule (#73). |
+
+### Change register for Week 12
+
+Anything that changes a model default needs the noise-aware multi-season backtest and a DECISIONS entry.
+
+| ID | Status | What |
+|---|---|---|
+| **R-24** | **Done, provisional** (#73) | Reserve + R48 + Questionable is p 0.5, not Out; ESPN's "Injured Reserve" label cannot zero them; outcomes logged to `docs/weekly/r48_log.csv`. |
+| **R-27** | **Built and backtested; awaiting owner approval** (#75) | Rushing form factor `APEX_RUSH_FORM=0.40`: coverage 40% → 49.5%, tails 15%/14% → 9.5%/10.2%, pinball loss -0.06 to -0.08 (noise 0.003), means unchanged. Needs a new dispersion-only promotion rule, which is the owner's call. |
+| **R-23** | Open, next | Starter flag in the availability fit (QB Q/LP 49% vs 35%). Refits run only on the scheduled refit day; the code change and the backtest can be ready before it. |
+| R-22 | **Rejected** (#74) | Carry sharpening, top-share preservation and OTHER-bucket scaling all fail or are null. |
+| R-25, R-26 | Dropped | One-week effects (3-season slope 1.03; QB TD 1.36 vs 1.39). |
+| R-15, R-17, R-20, home field, totals | Closed | McBride's share matched; Mayfield folds into R-23; engine script elasticity 0.0022 vs observed 0.0025; home edge +5.0 this week vs -1.2 on the season. |
+| R-28 | New, not started | Receiving yards: lower tail too wide (6.1% below P10, 12.8% above P90 over three seasons). Same dispersion-only rule would apply. |
 
 ## 7. Operations for Week 12
 

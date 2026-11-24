@@ -40,6 +40,7 @@ def p_active(rs, ps, pg):
     x = _AV_ROOT[(_AV_ROOT.rs == rs) & (_AV_ROOT.ps == ps)]
     return float(x.p_parent.iloc[0]) if len(x) else 0.9
 from status_overlay import apply_status_overlay
+import r48_rule
 def build_inj():
     i = pd.read_parquet(N + f"injuries_{SEASON}.parquet"); i = i[(i.game_type == "REG")]
     i = i[i.week == (int(os.environ["APEX_INJ_WEEK"]) if "APEX_INJ_WEEK" in os.environ else i.week.max())].copy(); i["team"] = i.team.map(tm)
@@ -71,6 +72,9 @@ def _apply_manual_out(o):
     if not path or not os.path.exists(path):
         return o
     m = pd.read_csv(path, keep_default_na=False); m["nkey"] = m.player.map(norm_name); m["team"] = m.team.map(lambda t: tm.get(t, t)) if hasattr(tm, "get") else m.team
+    _prot = o.attrs.get("r48", set())      # R-24: ESPN's pregame feed labels designated-for-return players 'Injured Reserve' (2026 W11: Croskey-Merritt, played 28 snaps); only operator rows can zero them
+    if _prot and "source" in m:
+        m = m[~(m.source.astype(str).str.contains("ESPN", case=False) & pd.Series([(a, b) in _prot for a, b in zip(m.nkey, m.team)], index=m.index))]
     key = set(zip(m.nkey, m.team)); why = {(a, b): c for a, b, c in zip(m.nkey, m.team, m.source)}
     hit = pd.Series([(a, b) in key for a, b in zip(o.nkey, o.team)], index=o.index)
     o.loc[hit, "p_active"] = 0.0; o.loc[hit, "game_status"] = "Out"
@@ -98,17 +102,25 @@ def _apply_roster_out(o, week):
     r = r[r.position.isin(["QB", "RB", "FB", "WR", "TE"])].copy()
     r["nkey"] = r.full_name.map(norm_name); r["team"] = r.team.map(tm)
     live = set(zip(r[r.status.isin(["ACT", "DEV", "INA"])].nkey, r[r.status.isin(["ACT", "DEV", "INA"])].team))     # same player re-signed by the same team stays live
+    r_all = r
     r = r[r.status.isin(_ROSTER_OUT) & ~pd.Series([(a, b) in live for a, b in zip(r.nkey, r.team)], index=r.index)]
     why = dict(zip(zip(r.nkey, r.team), r.status.map(_ROSTER_OUT)))
+    r48 = r48_rule.exempt_keys(r_all, o)      # R-24 (DECISIONS #73, provisional): RES + R48 + listed Questionable is not a hard Out; APEX_R48_P=off restores the old rule
+    for _k in r48: why.pop(_k, None)
     hit = pd.Series([(a, b) in why for a, b in zip(o.nkey, o.team)], index=o.index)
     o.loc[hit, "p_active"] = 0.0
     o.loc[hit, "game_status"] = "Out"
     o.loc[hit, "injury"] = [why[(a, b)] for a, b in zip(o.nkey[hit], o.team[hit])]
+    if r48:
+        _h = pd.Series([(a, b) in r48 for a, b in zip(o.nkey, o.team)], index=o.index)
+        o.loc[_h, "p_active"] = r48_rule.prob()
+        o.loc[_h, "injury"] = "Reserve, designated for return (R48): provisional p=" + str(r48_rule.prob()) + " (R-24)"
     seen = set(zip(o.nkey, o.team)); add = r[[(a, b) not in seen for a, b in zip(r.nkey, r.team)]]
     if len(add):
         o = pd.concat([o, pd.DataFrame(dict(player=add.full_name.values, pos=add.position.values, team=add.team.values, injury=add.status.map(_ROSTER_OUT).values,
                                             practice="None", game_status="Out", nkey=add.nkey.values, p_active=0.0, injury_week=week))], ignore_index=True)
-    return _apply_stale_team_out(o, week)
+    _res = _apply_stale_team_out(o, week); _res.attrs["r48"] = set(r48)
+    return _res
 def _apply_stale_team_out(o, week):
     """Join on gsis_id: a player whose latest team in the stats table is not a team he is live on in the target-week roster (traded/signed elsewhere), or who was cut in an earlier
     roster snapshot and is absent from the target-week roster, cannot play for the stats team (2026 W5: Beckham NYG->MIN, Xavier Smith LA->SF, KhaDarel Hodge cut by SF in W4)."""
@@ -348,6 +360,7 @@ def build_roster_v4(team):
         T = max(T - DEP_TGT.get(team, 0.0), 1.0); R = max(R - DEP_CAR.get(team, 0.0), 1.0)
     oth = max(T - d.Receiving_Tgt.sum(), 0); other_sh = (oth + 18 * OTHER_TGT) / (T + 18)
     oth_c = max(R - d.Rushing_Att.sum(), 0); other_car = (oth_c + 12 * OTHER_CAR) / (R + 12)
+    other_car = min(other_car * float(os.environ.get("APEX_OTHER_CAR_MULT", 1.0)), 0.9)      # candidate R-22b (1.0 = baseline, byte-identical): scale the OTHER carry bucket
     def _norm(sh, budget, keep):
         """star-preserving normalization: the top `keep` shares stay as fitted; the tail absorbs the compression"""
         sh = sh.copy(); tot = sh.sum()

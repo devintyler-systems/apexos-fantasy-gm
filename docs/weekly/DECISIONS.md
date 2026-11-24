@@ -311,3 +311,41 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - `APEX_RB_VAC_CAR=1` (full weight), seed A / B: rec_yds -0.008 / -0.008, rush_yds **+0.174 / +0.153**, rush_att **+0.021 / +0.021**, TD log loss -0.0003 / +0.0001. On team-weeks with an Out RB/WR/TE (n=3,427), rush_yds MAE 24.73 → 24.94.
 - `APEX_RB_VAC_CAR_W=0.5`, seed A / B: rec_yds -0.037 / -0.008, rush_yds **+0.107 / +0.111**, rush_att +0.004 / +0.009.
 - **Rejected.** Both weights make rushing worse beyond 2x noise on both seeds, including the Out-player subset. Historically, an Out lead back's carries spread wider than to the next RB (QB, promoted backs, lower team rush volume). The TNF case was mostly game script (HOU 37 carries vs 26 projected, 23-point margin). Next lead: R-20 (in-sim script elasticity). The switch stays in code, off.
+
+## 73. R-24: reserve players with a designated-for-return code are not hard-zeroed (owner-approved 2026-11-24, provisional, not backtestable)
+- **Evidence (W11):** five players were RES with roster code R48 on the Sunday roster and Questionable on the report. The engine forced all five Out; three played (Wilson PIT 49 snaps and 6 targets, Croskey-Merritt WAS 28 snaps and 13 carries, Shipley PHI 19 snaps); Brooks and Pittman did not. Practice status did not discriminate (Shipley DNP played, Brooks and Pittman full practice did not). Roster history before W11 is too sparse to backtest (`roster_2026.parquet` holds a full snapshot for the newest week only).
+- **Rule** (`engine/weekly/r48_rule.py`, wired into `params._apply_roster_out`): RES + code R48 + listed Questionable on the injury report gets `p_active = APEX_R48_P` (default **0.5**). `APEX_R48_P=off` restores the hard Out exactly. Out, Doubtful, other reserve codes and players not on the report stay Out.
+- **ESPN override fixed:** ESPN's pregame feed labels these players "Injured Reserve" and `espn_inactives.py` writes them as Out. That is how Croskey-Merritt was zeroed twice. `_apply_manual_out` now ignores ESPN-sourced rows for R48 players the rule protects; operator-sourced rows still zero them.
+- **Check:** replay of the W11 roster with the five set back to RES/R48: all five at 0.5 with the rule, all Out with `off`. Unit tests `tests/weekly/test_r48_rule.py`.
+- **Follow-up:** every Tuesday append the week's R48 outcomes to `docs/weekly/r48_log.csv` (seeded with the five W11 rows). Refit the 0.5 once there are about 20 rows.
+
+## 74. R-22 carry-split candidates rejected (2026-11-24)
+- **Premise corrected.** The W11 post mortem first said 9% of team carries were unassigned. Wrong: the frozen runs project 25.2-25.5 of 26.9 team carries to players (5-6%, the OTHER bucket) and players outside the projection took 1.7 actual carries a team. The 2023-25 baseline (b71a, 786 team-weeks) projects 26.3 to players against 25.7 actual plus 1.1 unprojected. Lead back 13.15 projected vs 13.42 actual; RB2 5.91 vs 5.44; RB3 2.36 vs 1.72; backups projected 4-8 carries 5.72 vs 4.97.
+- **Candidates, two seeds (A = default, B = APEX_SEED=777), baseline b71a / b71b.** Noise floors: rush_yds 0.038, rush_att 0.0047.
+
+| Candidate | rush_yds MAE A / B | rush_att MAE A / B | td_ll A / B |
+|---|---|---|---|
+| `APEX_CAR_GAMMA=1.15` | **+0.554 / +0.508** | +0.072 / +0.068 | +0.0024 / -0.0003 |
+| `APEX_CAR_GAMMA=1.30` | **+0.735 / +0.715** | +0.084 / +0.082 | +0.0002 / +0.0021 |
+| `APEX_KC=1` (top-1 share kept) | **+5.43 / +5.36** | +1.008 / +0.994 | +0.0031 / +0.0025 |
+| `APEX_KC=2` | **+2.44 / +2.38** | +0.299 / +0.294 | +0.0037 / +0.0030 |
+| `APEX_OTHER_CAR_MULT=0.5` | +0.019 / +0.001 | +0.0017 / +0.0019 | -0.0001 / -0.0012 |
+
+- **Rejected.** Sharpening and top-share preservation make rushing worse by 13x to 140x the noise floor on both seeds; halving the OTHER bucket is a null (every metric inside the floor, rec_yds -0.011 / -0.017 is also inside 2x). The carry split is already tuned by `share_mult.car_RB = 1.22`. W11's lead-back misses (+1.5 carries on 23 teams, about 1.5 standard errors) are not evidence of bias. `APEX_OTHER_CAR_MULT` stays in code, off (1.0 is byte-identical).
+
+## 75. R-27: rushing yards are under-dispersed (candidate, awaiting owner approval; off by default)
+- **Evidence, three seasons, 1,306 player-weeks with 4+ projected carries (b71a):** only 40.1% of actual rushing yards fall inside the engine's P25-P75 band (target 50%); 15.0% fall below P10 and 13.7% above P90 (targets 10% each). Same on seed B (40.2%) and C (39.7%), and in W11 (39%). Receiving (51.7%) and passing (46.5%) are about right. Cause: carries are drawn independently, so a player's yards per carry average out inside a game; there is no player-game form factor.
+- **Candidate:** `APEX_RUSH_FORM=<sd>` (sim.py): a mean-preserving lognormal yards-per-carry factor per player per simulated game. 0 is byte-identical to baseline.
+- **Results, seeds A / B** (baseline noise: pinball spread 0.0033 over three seeds):
+
+| sd | P25-P75 coverage | below P10 | above P90 | pinball loss | rush_yds MAE | td_ll | team RMSE |
+|---|---|---|---|---|---|---|---|
+| baseline | 40.1% / 40.2% | 15.0% / 15.1% | 13.7% / 13.4% | 7.472 / 7.474 | 24.101 / 24.119 | 0.4507 / 0.4513 | 9.019 / 9.029 |
+| 0.15 | 41.5 / 41.4 | 13.9 / 14.2 | 12.5 / 12.8 | 7.432 / 7.457 | 24.105 / 24.187 | 0.4511 / 0.4528 | 9.017 / 9.024 |
+| 0.25 | 44.4 / 44.0 | 12.3 / 12.6 | 11.5 / 11.5 | 7.395 / 7.419 | 24.106 / 24.189 | 0.4511 / 0.4528 | 9.017 / 9.024 |
+| **0.40** | **49.4 / 49.7** | **9.4 / 9.5** | **10.2 / 10.2** | **7.394 / 7.413** | 24.126 / 24.207 | 0.4511 / 0.4528 | 9.017 / 9.024 |
+| 0.55 | 53.6 / 54.1 | 7.7 / 7.5 | 9.2 / 9.1 | 7.468 / 7.483 | 24.188 / 24.267 | 0.4511 / 0.4528 | 9.017 / 9.024 |
+
+- **Reading:** sd 0.40 puts coverage at the target and both tails at about 10%, and improves pinball loss by 0.078 / 0.061, 19-24x the baseline noise. rush_yds MAE rises +0.024 / +0.088 (mean +0.056, inside 2x the 0.038 floor); TD log loss +0.0004 / +0.0015 (mean +0.0010, inside 2x the 0.0006 floor); rec_yds and team RMSE unchanged. Larger sd overshoots (0.55).
+- **Rule gap.** `promotion_rule_noise_aware` requires rec_yds MAE to improve by 2x its floor, which a rushing-only change cannot do (same gap that blocked R-22). Proposed, for the owner to approve before anything is promoted: **`promotion_rule_dispersion_only`**: a change that leaves projected means unchanged and only widens or narrows a distribution is promoted if (1) quantile pinball loss improves by more than 2x its noise floor on both seeds, (2) the targeted coverage moves to within 3 points of nominal, and (3) rec_yds, rec, rush_yds, rush_att MAE, TD log loss and team RMSE are each no worse than 2x their floor on the two-seed mean.
+- **Effect if promoted:** means and rankings do not move; P90/P95 and over/under probabilities for rushing props and DFS ceilings widen. **Status: not promoted.** The switch stays in code, off.
