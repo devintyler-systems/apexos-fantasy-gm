@@ -32,7 +32,7 @@ def is_neutral(a, h):
 MARKET = {(r.away, r.home): (r.spread_line, r.total_line) for r in SCHED.itertuples()}     # nflverse schedule lines (spread_line > 0 = home favored)
 _pgmap = {"QB":"QB","RB":"RB","FB":"RB","WR":"WRTE","TE":"WRTE","T":"OL","G":"OL","C":"OL","OL":"OL","DE":"DL","DT":"DL","NT":"DL","DL":"DL","LB":"LB","OLB":"LB","ILB":"LB","MLB":"LB","CB":"DB","S":"DB","FS":"DB","SS":"DB","DB":"DB","K":"KP","P":"KP","LS":"KP"}
 _AV_LEAF = pd.read_csv(CONF+"availability_by_status_pos.csv", keep_default_na=False); _AV_ROOT = pd.read_csv(CONF+"availability_by_status.csv", keep_default_na=False)
-AVAIL_ROLE = os.environ.get("APEX_AVAIL_ROLE", "0") == "1"      # candidate R-23 (DECISIONS #76): add the player's recent role (starter / other) to the availability lookup for QB, RB, WR/TE; off = baseline
+AVAIL_ROLE = os.environ.get("APEX_AVAIL_ROLE", "1") == "1"      # R-23 (DECISIONS #76, adopted 2026-11-24): the player's recent role (starter / other) is part of the availability lookup for QB, RB, WR/TE; APEX_AVAIL_ROLE=0 reproduces the old table
 _AV_ROLE = pd.read_csv(CONF + "availability_by_status_pos_role.csv", keep_default_na=False) if AVAIL_ROLE else None
 def p_active(rs, ps, pg, role=None):
     """Empirical P(plays) fit on nflverse 2023-2026 injury history x snap counts (fit_availability.py)."""
