@@ -17,6 +17,10 @@ def shr(obs, n, prior, k):
     return (obs * n + prior * k) / (n + k)
 
 import os
+PR_NEUTRAL = os.environ.get("APEX_PR_NEUTRAL", "0") == "1"      # R-31 candidate, off by default
+PR_NEUTRAL_K = float(os.environ.get("APEX_PR_NEUTRAL_K", 90))
+PR_NEUTRAL_W = float(os.environ.get("APEX_PR_NEUTRAL_W", 1.0))      # weight on the neutral rate (1 = neutral only, 0 = raw)
+
 _G = pd.read_parquet(N + "games.parquet"); _G = _G[(_G.season == SEASON) & (_G.game_type == "REG")].copy()
 for _c in ("home_team", "away_team"): _G[_c] = _G[_c].map(tm)
 BACKTEST = os.environ.get("APEX_BACKTEST", "0") == "1"
@@ -241,6 +245,9 @@ def team_params():
         p["plays_off"] = shr(o.plays / GP, GP, L["plays"], 4.0)
         p["plays_def"] = shr(d["Tot Yds & TO_Ply"] / GP, GP, L["plays"], 4.0)
         p["pr"] = shr(db / o.plays, o.plays, L["pr"], 90)
+        if PR_NEUTRAL and t in NEU_PR.index and NEU_PR.nn.sum() > 0:      # R-31 candidate (off = baseline): team pass rate from neutral situations, shifted to the all-play league level; game script then enters only through the in-sim margin slope
+            _ln = NEU_PR.ndb.sum() / NEU_PR.nn.sum(); _n = NEU_PR.loc[t]
+            p["pr"] = PR_NEUTRAL_W * (shr(_n.ndb / max(_n.nn, 1), _n.nn, _ln, PR_NEUTRAL_K) - _ln + L["pr"]) + (1 - PR_NEUTRAL_W) * p["pr"]
         p["sk"] = shr(o.sacks_taken / db, db, L["sk"], 70)
         p["ypa"] = shr(o.pass_yds / o.pass_att, o.pass_att, L["ypa"], 110)
         p["cmp"] = shr(o.pass_cmp / o.pass_att, o.pass_att, L["cmp"], 110)

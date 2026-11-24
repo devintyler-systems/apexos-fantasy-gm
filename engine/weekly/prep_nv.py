@@ -101,11 +101,17 @@ sco["Pts"] = 3 * sco.FG_FGM + sco.PAT_XPM
 # ---------- red zone from pbp ----------
 import pyarrow.parquet as pq
 _want = ["week", "season_type", "posteam", "defteam", "play_type", "yardline_100", "pass_attempt", "rush_attempt", "receiver_player_id", "rusher_player_id", "complete_pass", "touchdown",
-         "td_player_id", "sack", "interception", "fumble_lost", "two_point_attempt", "passer_player_id", "qb_scramble"]
+         "td_player_id", "sack", "interception", "fumble_lost", "two_point_attempt", "passer_player_id", "qb_scramble", "wp", "qtr", "down", "qb_dropback"]
 _have = set(pq.read_schema(N + f"play_by_play_{SEASON}.parquet").names)
 pb = pd.read_parquet(N + f"play_by_play_{SEASON}.parquet", columns=[c for c in _want if c in _have])
 pb = pb[(pb.season_type == "REG") & (pb.week <= MAXWEEK)]
 pb["posteam"] = pb.posteam.map(tm); pb["defteam"] = pb.defteam.map(tm)
+# R-31 candidate (APEX_PR_NEUTRAL, read in params.team_params): neutral-situation dropback rate (win prob .2-.8, quarters 1-3, downs 1-2), through MAXWEEK only
+if {"wp", "qtr", "down", "qb_dropback"} <= set(pb.columns):
+    _nu = pb[pb.play_type.isin(["pass", "run"]) & pb.posteam.notna() & pb.wp.between(.2, .8) & (pb.qtr <= 3) & (pb.down <= 2)]
+    NEU_PR = _nu.groupby("posteam").agg(ndb=("qb_dropback", "sum"), nn=("qb_dropback", "size"))
+else:
+    NEU_PR = pd.DataFrame(columns=["ndb", "nn"])
 rec = pb[(pb.pass_attempt == 1) & pb.receiver_player_id.notna() & (pb.two_point_attempt != 1)]
 def _rz(df, idcol, cols):
     out = {}

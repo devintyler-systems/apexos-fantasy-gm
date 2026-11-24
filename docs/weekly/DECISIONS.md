@@ -384,3 +384,32 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 ### Adoption record for #76 (2026-11-24)
 - **Owner approved** adopting R-23 and running Week 12 with it. `params.py` now defaults `APEX_AVAIL_ROLE` to 1; `APEX_AVAIL_ROLE=0` reproduces the old table exactly. The committed `config/weekly/availability_by_status_pos_role.csv` (fit on 2023-26) is the table in use. Refit it with `python engine/weekly/fit_availability_role.py` on the scheduled refit day.
 - **New baseline for later candidates:** the backtests after this point should run with R-24, R-27 and R-23 as defaults; the #75 floors stand until re-measured, because R-23 moved no engine metric beyond noise.
+
+## 78. Backtest tooling rebuilt and a new three-seed baseline (2026-11-24, no model change)
+- `tools/backtest/run_tag.sh` (27 slates, 4 parallel, ~85 s a tag, clears stray `APEX_*` knobs, resumable) and `tools/backtest/evaluate.py` (floor, compare with a per-metric noise verdict, quantile pinball and coverage, team bias, TD calibration); `docs/weekly/BACKTEST_HOWTO.md`. Determinism: `2025_w6` run twice under two tags is byte-identical. No stored baseline pickle survived from earlier sessions, so the stored-baseline byte check was replaced by the determinism check plus a level check (rush P25-P75 coverage 49.4%, as in #75).
+- Baseline = current defaults (#66, #69, #70, #71, #73, #75, #76): tags `b12a/b12b/b12c` (seeds 20261004 / 777 / 999). Pooled levels (seed A): rec_yds MAE 20.174, rec 1.5226, rush_yds 24.173, rush_att 4.187, TD log loss 0.4515, team RMSE 9.023, pass_yds MAE 67.74; coverage rec_yds .515, rush_yds .494, pass_yds .461.
+- **Floors (max pairwise pooled delta):** rec_yds 0.0066, rec 0.0011, rush_yds 0.0079, rush_att 0.0050, td_ll 0.0006, team RMSE 0.0022, pass_yds MAE 0.0953, pinball rec_yds 0.0017, rush_yds 0.0111, pass_yds 0.0149. Tighter than the #75 floors (rec_yds 0.0108, rush_yds 0.092); these replace them for candidates from today.
+- Incident: an edit to `sim.py` during the first `b12a` run crashed three slates (NameError); all three seeds were rerun with `BT_FORCE=1`. Rule added to the how-to: never edit `engine/weekly/` while a tag runs.
+
+## 79. R-29: the DvP tilt uses the team's own defense; fixing it does not help, rejected (2026-11-24)
+- **Defect.** `params.build_roster_v4/v3(team)` multiply a team's WR/TE/RB target shares and receiving-TD weights by `TEAM[team]["dvp_"+pos] ** 0.5`, the DK points per game **that team's defense allows** to the position (weight 0.35, hand-set). The roster is built without the opponent; `run_all.py` labels the number "opp DvP".
+- **Switch** (`sim.py`, off = baseline byte-identical): `APEX_DVP_MODE=own|opp|off`, `APEX_DVP_W` (weight in opp mode).
+- **Results vs b12a / b12b** (negative = better; floors from #78):
+
+| Variant | rec_yds MAE A / B | rec MAE | rush_yds | td_ll | team RMSE | rec_yds pinball | Verdict |
+|---|---|---|---|---|---|---|---|
+| opp, w 0.35 | **+0.046 / +0.048** | +0.0034 / +0.0039 | -0.016 / +0.010 | +0.0009 / -0.0003 | -0.0056 / -0.0052 | +0.022 / +0.018 | worse (rec_yds 7x floor) |
+| opp, w 0.15 (seed A) | -0.007 | -0.0001 | -0.006 | +0.0005 | -0.0019 | +0.005 | null / pinball worse |
+| off | +0.011 / +0.012 | +0.0018 / +0.0011 | -0.015 / -0.011 | +0.0006 / -0.0001 | +0.0005 / +0.0014 | +0.013 / +0.004 | null on means, pinball worse |
+
+- **Reading.** Raw DK points allowed by position carry no usable matchup signal at either weight: they mix the opponent's volume (game script, pace) with efficiency. The own-defense tilt is not a matchup effect either, but removing it is a null on means and slightly worse on rec_yds pinball, so the default stays as is. The team-RMSE gain under opp (-0.005, 2.4x floor) does not survive on rec_yds. **Rejected; default unchanged; switch stays off.** Next: R-32 (opponent-adjusted from expected points, ffopportunity), which removes the volume confound, is the real matchup test. The mislabel in `run_all.py` stays a reporting note.
+
+## 80. R-30: anytime-TD calibration layer: rejected, the probabilities are calibrated out of sample (2026-11-24)
+- **Prompt.** b12a calibration by position: WR projected .173 vs .193 hit, TE .143 vs .156, RB .253 vs .256; bucket .2-.3 projected .246, hit .275.
+- **Test** (`tools/backtest/td_calibration.py`, post-sim, leave-one-season-out, 6,700 player-games a seed): logit shift per position, logit slope+shift per position, isotonic. Held-out TD log loss delta, pooled, seeds A / B: shift **-0.0004 / -0.0004**, slope +0.0004 / +0.0003, isotonic +0.0032 / +0.0021. Brier: shift -0.00014 both. Only 2024 improves (-0.0014); 2023 and 2025 get worse.
+- **Reading.** The WR/TE gap is one season's (2024) effect, not a stable bias; the shift is under the 0.0006 floor and isotonic over-fits. **Rejected.** Consequence for betting: the engine's anytime-TD probabilities need no recalibration before blending with a price, so the price feed (ROADMAP P-1) is the binding constraint on touchdown plays, not the model.
+
+## 81. Tooling fixes (2026-11-24, no model effect)
+- `odds_api_fetch.py` wrote Odds API timestamps with a fixed 7-hour Pacific offset while `price_odds.py` adds back `APEX_ODDS_TZ_OFFSET` (8 after the clock change): fresh API prices would have aged an extra hour and could fail the 2-hour rule. It now reads the same variable.
+- `parse_market_pdfs.py`: W12 file names (PASSING / RECEIVING / RUSHING YARDS, _SPREAD) and `--week`.
+- `injury_pdf_overlay.py` now writes the latest practice day; `status_overlay.py` uses it for players the NFL feed does not carry yet (before: practice status None, which sends a Questionable player to the no-practice cell of the availability table). Test added.
