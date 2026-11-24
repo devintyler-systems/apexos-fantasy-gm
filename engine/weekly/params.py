@@ -32,9 +32,14 @@ def is_neutral(a, h):
 MARKET = {(r.away, r.home): (r.spread_line, r.total_line) for r in SCHED.itertuples()}     # nflverse schedule lines (spread_line > 0 = home favored)
 _pgmap = {"QB":"QB","RB":"RB","FB":"RB","WR":"WRTE","TE":"WRTE","T":"OL","G":"OL","C":"OL","OL":"OL","DE":"DL","DT":"DL","NT":"DL","DL":"DL","LB":"LB","OLB":"LB","ILB":"LB","MLB":"LB","CB":"DB","S":"DB","FS":"DB","SS":"DB","DB":"DB","K":"KP","P":"KP","LS":"KP"}
 _AV_LEAF = pd.read_csv(CONF+"availability_by_status_pos.csv", keep_default_na=False); _AV_ROOT = pd.read_csv(CONF+"availability_by_status.csv", keep_default_na=False)
-def p_active(rs, ps, pg):
+AVAIL_ROLE = os.environ.get("APEX_AVAIL_ROLE", "0") == "1"      # candidate R-23 (DECISIONS #76): add the player's recent role (starter / other) to the availability lookup for QB, RB, WR/TE; off = baseline
+_AV_ROLE = pd.read_csv(CONF + "availability_by_status_pos_role.csv", keep_default_na=False) if AVAIL_ROLE else None
+def p_active(rs, ps, pg, role=None):
     """Empirical P(plays) fit on nflverse 2023-2026 injury history x snap counts (fit_availability.py)."""
     if rs == "Out": return 0.0
+    if AVAIL_ROLE and role in ("S", "O"):
+        x = _AV_ROLE[(_AV_ROLE.rs == rs) & (_AV_ROLE.ps == ps) & (_AV_ROLE.pg == pg) & (_AV_ROLE.role == role)]
+        if len(x): return float(x.p.iloc[0])
     x = _AV_LEAF[(_AV_LEAF.rs == rs) & (_AV_LEAF.ps == ps) & (_AV_LEAF.pg == pg)]
     if len(x): return float(x.p.iloc[0])
     x = _AV_ROOT[(_AV_ROOT.rs == rs) & (_AV_ROOT.ps == ps)]
@@ -53,7 +58,14 @@ def build_inj():
         i.loc[_rest & ~i.rs.isin(["Out", "Doubtful"]), "ps"] = "FP"
     i["pg"] = i.position.map(_pgmap).fillna("OTH")
     o = pd.DataFrame(dict(player=i.full_name, pos=i.position, team=i.team, injury=i.report_primary_injury.fillna(i.practice_primary_injury), practice=i.ps, game_status=i.report_status, nkey=i.full_name.map(norm_name)))
-    o["p_active"] = [p_active(a, b, c) for a, b, c in zip(i.rs, i.ps, i.pg)]
+    if AVAIL_ROLE:      # recent role from snap counts of this season's earlier games only (no look-ahead); rows without a gsis_id (status overlay) keep the position-level rate
+        import avail_role
+        _rp = avail_role.recent_pct(pd.read_parquet(N + f"snap_counts_{SEASON}.parquet"), pd.read_parquet(N + "players.parquet", columns=["gsis_id", "pfr_id"]), SEASON, int(i.week.max()))
+        _gs = i.gsis_id if "gsis_id" in i else pd.Series([None] * len(i), index=i.index)
+        _rl = ["U" if (g is None or g != g) else (avail_role.role(_rp.get(g, float("nan")), int(w)) if pg in avail_role.SKILL_PG else "A") for g, w, pg in zip(_gs, i.week, i.pg)]
+    else:
+        _rl = [None] * len(i)
+    o["p_active"] = [p_active(a, b, c, r) for a, b, c, r in zip(i.rs, i.ps, i.pg, _rl)]
     o["injury_week"] = int(i.week.max())
     return _apply_manual_out(_apply_roster_out(o, _roster_week(int(i.week.max())))).reset_index(drop=True)
 def _roster_week(inj_week):

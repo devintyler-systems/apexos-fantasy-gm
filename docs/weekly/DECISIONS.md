@@ -357,3 +357,21 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - **What changes in outputs:** projected means do not move; rushing quantiles (P10-P90), P(over/under) for rushing lines and DFS ceilings widen. Frozen runs are unchanged.
 - **Next:** R-28 (receiving yards tails, same rule), R-23 (QB starter flag in availability).
 
+
+## 76. R-23: a starter flag in the availability table (built and tested 2026-11-24; off by default, awaiting owner approval to adopt as a refit)
+- **Idea.** `P(plays | report status, practice, position)` ignores who the player is. Add his recent role (`avail_role.py`: mean offense snap share over his last three games with a snap, this season only, no look-ahead; 0.5 or more is a starter; no snaps from week 3 on is a non-starter; weeks 1-2 have no history and keep the position rate) for QB, RB and WR/TE.
+- **Correction first.** The W11 post mortem said starting QBs listed Questionable with Limited practice play 49% of the time (n=35, a looser starter definition). With the fit's definition the cell is **34% (n=64)**; Mayfield's 0.35 was priced correctly. The flag's value is elsewhere (below).
+- **Held-out test** (`fit_availability_role.py`: fit on the other seasons plus 2026, test on the held-out season; negative = better):
+
+| Group (pooled, three held-out seasons) | n | Brier | Log loss |
+|---|---|---|---|
+| QB | 603 | **-0.0203** | **-0.0628** |
+| Skill (QB, RB, WR/TE) | 5,254 | -0.0047 | -0.0208 |
+| Skill listed Questionable or Doubtful | 1,436 | -0.0046 | -0.0114 |
+| All positions | 17,188 | -0.0014 | -0.0064 |
+
+  Every group improves in each of 2023, 2024 and 2025 (QB log loss -0.062 / -0.068 / -0.059).
+- **What moves.** QB Questionable: non-starters play 10-18% (pooled table: about 35%); starters with a Full practice play 92%; starters with Limited play 34%; starters with DNP 20%. W11 examples: Bowers and Evans 0.67 to 0.74 (both played), McConkey 0.59 (played), Mayfield 0.34.
+- **Engine backtest** (switch `APEX_AVAIL_ROLE=1`, two seeds, against the #75 baseline, noise floors rec_yds 0.0108, rec 0.0020, rush_yds 0.092, rush_att 0.006, td_ll 0.0018, team 0.0074): seed A rec_yds +0.015, rec +0.0002, rush_yds +0.048, rush_att +0.0026, td_ll +0.0004, team +0.0064; seed B +0.0023, -0.0009, -0.026, +0.0003, -0.0020, +0.0012. **A null at the engine level** (every delta inside its floor): availability only matters for the few players on the report, so projections and TD log loss do not move. Caveat: the table is fit on 2023-26 and the backtest covers 2023-25, so the baseline and the candidate share that in-sample exposure.
+- **Reading.** This is a refit of the availability table, not a model change, and `AGENT_INSTRUCTIONS` allows refits only on the scheduled refit day. The standard noise-aware rule (rec_yds must improve by 2x its floor) cannot apply to a change that moves no projections. Acceptance for an availability refit is held-out Brier and log loss plus no harm in the engine backtest; both hold.
+- **Not adopted.** `config/weekly/availability_by_status_pos_role.csv` is committed as the candidate table; `APEX_AVAIL_ROLE=1` is off by default. To adopt: owner approval, then set the default on the refit day.

@@ -56,7 +56,7 @@ Takeaway: the player-level engine had a good week. The team level matched the li
 ### 3.2 Availability rules
 - **R48 players held Out played (R-24 now implemented, DECISIONS #73).** Roman Wilson (PIT, 49 snaps, 6 targets), Croskey-Merritt (WAS, 28 snaps, 13 carries) and Will Shipley (PHI, 19 snaps) were RES on the Sunday roster and Questionable on the injury report. We zeroed all five R48 players; **3 of 5 played** (Brooks and Pittman did not). WAS's backfield was the casualty: Rachaad White projected 8.75 carries, got 0.
 - **Questionable players.** Skill players projected between 5% and 90% to play (n=17, mean 0.63) played 88% of the time (postmortem tool's played flag).
-- **Starting QBs.** Mayfield (TB) was projected 0.35 to play and played every snap. Over 2023–26, starting QBs who were Questionable with Limited practice played **49% of the time (n=35)**, against 16% for backups (n=50). The pooled fit (0.35) mixes the two.
+- **Starting QBs (corrected 2026-11-24).** Mayfield (TB) was projected 0.35 to play and played every snap. The first version of this document said starters listed Questionable with Limited practice play 49% of the time; that came from a looser starter definition on 35 cases. With the role definition used in the fit (recent snap share of 50% or more, 2023–26, n=64) the rate is **34%**, so Mayfield's 0.35 was priced correctly and he was one of the one in three. The starter flag helps elsewhere: backup QBs listed Questionable play 10–18% (the pooled table says 35%), and starters who practiced fully play 92%.
 - **Inactives timing.** The Sunday freeze (16:47Z) preceded the 4:05 and 4:25 and 8:20 PM ET inactives, so late-window Outs were absent from the frozen runs (they were applied in the DFS and Showdown reruns). Dobbins logged 1 snap with no injury event; that is the kind of player the T-90 list catches.
 
 ### 3.3 Receiving yards for high-volume players
@@ -136,7 +136,7 @@ I tested each W11 finding against the 2023–25 weeks 4–12 baseline (b71a, 27 
 | QB passing TDs low | 35.3 vs 41 | 1.36 vs 1.39 per QB game | Noise. R-26 dropped. |
 | Lead backs under-projected, OTHER bucket leaking | lead +1.5 carries | lead +0.3, RB2 -0.5, RB3 -0.6; OTHER bucket matches unprojected carries | Premise wrong (see 3.1). Three fixes tested and rejected (#74). |
 | **Rushing yards distribution too narrow** | 39% inside P25–P75 | **40.1%** (1,306 player-weeks; 15% below P10, 14% above P90) | **Confirmed.** Fix built (#75), awaiting approval. |
-| Questionable players under-projected | 63% projected vs 88% played | 2023–26 starting QBs Q/LP played 49% vs 35% fitted (n=35) | Supported. R-23 open. |
+| Questionable players under-projected | 63% projected vs 88% played | Starter flag improves held-out availability log loss in every season (QB -0.063, skill -0.021); the Q/LP starter cell itself is 34% | R-23 built, results in #76. |
 | Designated-for-return reserve players held Out | 3 of 5 played | not backtestable (roster history sparse) | R-24 implemented as a provisional rule (#73). |
 
 ### Change register for Week 12
@@ -147,7 +147,7 @@ Anything that changes a model default needs the noise-aware multi-season backtes
 |---|---|---|
 | **R-24** | **Done, provisional** (#73) | Reserve + R48 + Questionable is p 0.5, not Out; ESPN's "Injured Reserve" label cannot zero them; outcomes logged to `docs/weekly/r48_log.csv`. |
 | **R-27** | **Promoted** (#75, owner-approved 2026-11-24) | Rushing form factor `APEX_RUSH_FORM=0.40` is now the default: P25-P75 coverage 40% → 49.5%, tails 15%/14% → 9.5%/10.2%, rush pinball loss 3.0x its noise floor better on the three-seed mean, means unchanged. Dispersion-only promotion rule added to the grading contract. |
-| **R-23** | Open, next | Starter flag in the availability fit (QB Q/LP 49% vs 35%). Refits run only on the scheduled refit day; the code change and the backtest can be ready before it. |
+| **R-23** | **Built and tested; awaiting owner approval to refit** (#76) | Starter flag in the availability table (`APEX_AVAIL_ROLE=1`, off). Held-out log loss improves in all three seasons; engine metrics are a null. |
 | R-22 | **Rejected** (#74) | Carry sharpening, top-share preservation and OTHER-bucket scaling all fail or are null. |
 | R-25, R-26 | Dropped | One-week effects (3-season slope 1.03; QB TD 1.36 vs 1.39). |
 | R-15, R-17, R-20, home field, totals | Closed | McBride's share matched; Mayfield folds into R-23; engine script elasticity 0.0022 vs observed 0.0025; home edge +5.0 this week vs -1.2 on the season. |
