@@ -146,7 +146,7 @@ Anything that changes a model default needs the noise-aware multi-season backtes
 | ID | Status | What |
 |---|---|---|
 | **R-24** | **Done, provisional** (#73) | Reserve + R48 + Questionable is p 0.5, not Out; ESPN's "Injured Reserve" label cannot zero them; outcomes logged to `docs/weekly/r48_log.csv`. |
-| **R-27** | **Built and backtested; awaiting owner approval** (#75) | Rushing form factor `APEX_RUSH_FORM=0.40`: coverage 40% → 49.5%, tails 15%/14% → 9.5%/10.2%, pinball loss -0.06 to -0.08 (noise 0.003), means unchanged. Needs a new dispersion-only promotion rule, which is the owner's call. |
+| **R-27** | **Promoted** (#75, owner-approved 2026-11-24) | Rushing form factor `APEX_RUSH_FORM=0.40` is now the default: P25-P75 coverage 40% → 49.5%, tails 15%/14% → 9.5%/10.2%, rush pinball loss 3.0x its noise floor better on the three-seed mean, means unchanged. Dispersion-only promotion rule added to the grading contract. |
 | **R-23** | Open, next | Starter flag in the availability fit (QB Q/LP 49% vs 35%). Refits run only on the scheduled refit day; the code change and the backtest can be ready before it. |
 | R-22 | **Rejected** (#74) | Carry sharpening, top-share preservation and OTHER-bucket scaling all fail or are null. |
 | R-25, R-26 | Dropped | One-week effects (3-season slope 1.03; QB TD 1.36 vs 1.39). |
