@@ -31,8 +31,9 @@ BOOKS = {"CONSEN…": "consensus", "CONSENSUS": "consensus", "DRAFTKINGS": "draf
 DROPPED = []
 NUM = re.compile(r"^[+-]?\d+(\.\d+)?$")
 PROPS = {"QB-PASSING": "player_pass_yds", "REC YDS": "player_reception_yds", "RUSH YDS": "player_rush_yds", "ANYTIME TD": "player_anytime_td",
-         "Passing": "player_pass_yds", "Receiving": "player_reception_yds", "Rushing": "player_rush_yds", "Touchdowns": "player_anytime_td", "AnytimeTD": "player_anytime_td"}
-GAMES = {"MONEYLINE": "h2h", "SPREADS": "spreads", "TOTAL.pdf": "totals"}
+         "Passing": "player_pass_yds", "Receiving": "player_reception_yds", "Rushing": "player_rush_yds", "Touchdowns": "player_anytime_td", "AnytimeTD": "player_anytime_td",
+         "PASSING YARDS": "player_pass_yds", "RECEIVING YARDS": "player_reception_yds", "RUSHING YARDS": "player_rush_yds"}      # W12 file names
+GAMES = {"MONEYLINE": "h2h", "SPREADS": "spreads", "_SPREAD.pdf": "spreads", "TOTAL.pdf": "totals"}
 
 
 def words(page):
@@ -178,7 +179,8 @@ def parse_games(path, market, cols, hdr_y):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--snapshot-et", default="2026-11-18 14:27")
     ap.add_argument("--orig", default=str(ORIG), help="folder holding exactly one PDF per market (default: intake originals)")
-    ap.add_argument("--schedule", default=str(ROOT / "docs/weekly/intake_2026_w09_w11/schedule_w09_w11.csv")); a = ap.parse_args()
+    ap.add_argument("--schedule", default=str(ROOT / "docs/weekly/intake_2026_w09_w11/schedule_w09_w11.csv"))
+    ap.add_argument("--week", type=int, default=11); a = ap.parse_args()
     rows = []
     for key, mk in {**PROPS, **GAMES}.items():
         f = [Path(p) for p in glob.glob(str(Path(a.orig) / f"*{key}*"))]
@@ -190,7 +192,7 @@ def main():
         rows += (parse_props if mk.startswith("player") else parse_games)(f[0], mk, cols, hy)
     d = pd.DataFrame(rows)
     d["home_team"] = d.home.map(lambda t: ABBR.get(t, t)); d["away_team"] = d.away.map(lambda t: ABBR.get(t, t))
-    sc = pd.read_csv(a.schedule); sc = sc[sc.week == 11]
+    sc = pd.read_csv(a.schedule); sc = sc[sc.week == a.week]
     sc["home_team"] = sc.home.map(ABBR); sc["away_team"] = sc.away.map(ABBR)
     ko = {(r.away_team, r.home_team): pd.Timestamp(r.kickoff_utc).tz_localize(None) - pd.Timedelta(hours=8) for r in sc.itertuples()}
     d["commence_time"] = [ko.get((x, y)) for x, y in zip(d.away_team, d.home_team)]

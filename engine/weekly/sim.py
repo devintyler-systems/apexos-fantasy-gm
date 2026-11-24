@@ -27,6 +27,8 @@ ALPHA_T = 100.0  # Dirichlet concentration for target shares (calibrated vs 2025
 ALPHA_C = 60.0   # carries
 MAXC = 12   # per-catch draws kept
 MAXR = 26   # per-carry draws kept
+DVP_MODE = _os.environ.get("APEX_DVP_MODE", "own")      # R-29 candidate: own (baseline) | opp | off
+DVP_W = float(_os.environ.get("APEX_DVP_W", 0.35))      # R-29: DvP weight when DVP_MODE=opp (0.35 = the hand-set weight in params.py)
 RUSH_FORM = float(_os.environ.get("APEX_RUSH_FORM", 0.40))      # R-27 (DECISIONS #75, owner-approved 2026-11-24): sd of the lognormal player-game rushing form factor; APEX_RUSH_FORM=0 reproduces the old baseline
 
 def _norm(w):
@@ -141,6 +143,14 @@ def play_side(rng, t, sd, ns):
         return avail[pid]
     # ---------------- receiving ----------------
     K = len(rec)
+    if DVP_MODE != "own" and K:      # candidate R-29 (off = baseline "own"): build_roster tilts by the team's OWN defense DvP; "opp" uses the opponent's, "off" removes the tilt
+        _own = rec.tilt.values
+        if DVP_MODE == "opp":
+            _O = TEAM[sd["opp"]]
+            _new = np.array([(1 + DVP_W / 0.35 * (_O.get("dvp_" + p, 1.0) - 1)) ** 0.5 if p in ("WR", "TE", "RB") else 1.0 for p in rec.pos])
+        else:
+            _new = np.ones(K)
+        rec = rec.copy(); rec["w_rec_td"] = rec.w_rec_td.values / _own * _new; rec["tilt"] = _new
     base_sh = np.append(rec.tgt_sh.values, oth_t) * np.append(rec.tilt.values, 1.0)
     # reconcile catch rate and ypr to team means
     catch0 = np.append(rec.catch.values, 0.64)

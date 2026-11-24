@@ -16,7 +16,7 @@ import pandas as pd
 BASE = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl"
 DEFAULT_MARKETS = ["player_pass_yds", "player_pass_tds", "player_pass_attempts", "player_pass_completions", "player_rush_yds", "player_rush_attempts", "player_receptions", "player_reception_yds",
                    "player_anytime_td", "player_1st_td"]
-PT = dt.timedelta(hours=7)      # PDT; price_odds.py adds 7 hours back
+PT = dt.timedelta(hours=int(os.environ.get("APEX_ODDS_TZ_OFFSET", 7)))      # must equal the offset price_odds.py adds back: 7 (PDT) before the November clock change, 8 (PST) after
 
 
 def _pt(s):
