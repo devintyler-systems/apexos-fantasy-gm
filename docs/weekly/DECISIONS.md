@@ -413,3 +413,25 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - `odds_api_fetch.py` wrote Odds API timestamps with a fixed 7-hour Pacific offset while `price_odds.py` adds back `APEX_ODDS_TZ_OFFSET` (8 after the clock change): fresh API prices would have aged an extra hour and could fail the 2-hour rule. It now reads the same variable.
 - `parse_market_pdfs.py`: W12 file names (PASSING / RECEIVING / RUSHING YARDS, _SPREAD) and `--week`.
 - `injury_pdf_overlay.py` now writes the latest practice day; `status_overlay.py` uses it for players the NFL feed does not carry yet (before: practice status None, which sends a Questionable player to the no-practice cell of the availability table). Test added.
+
+## 82. R-31: team pass rate from neutral situations (built and tested 2026-11-24; passes the noise-aware rule at w 0.3; awaiting owner approval)
+- **Hypothesis.** `params.team_params` sets `pr` (the team's base pass rate) from its raw season dropback share, shrunk with k 90. The sim then moves it by game script (`pr_margin_slope` x margin). Raw `pr` already contains last weeks' script, so script is counted twice: a team that trailed is projected to keep throwing even as a favourite.
+- **Probe** (pbp 2023-25, weeks 4-12, 786 team-weeks, before any engine change): target = the week's dropback rate with the observed margin effect removed (y - 0.0025 x (-margin)). Neutral rate (win prob .2-.8, quarters 1-3, downs 1-2, shifted to the all-play level) MAE **0.0682** vs raw 0.0721, correlation .25 vs .17, better in all three seasons.
+- **Switch** (off = byte-identical, checked on `2025_w6`): `APEX_PR_NEUTRAL=1`, `APEX_PR_NEUTRAL_W` (weight on the neutral rate; the rest stays raw), `APEX_PR_NEUTRAL_K` (90). prep_nv.py reads four more pbp columns (wp, qtr, down, qb_dropback) through `MAXWEEK` only: no look-ahead.
+- **Results vs b12a / b12b** (negative = better; floors from #78: rec_yds 0.0066, rec 0.0011, rush_yds 0.0079, rush_att 0.0050, td_ll 0.0006, team 0.0022, pass_yds MAE 0.0953):
+
+| w | rec_yds A / B | rec | rush_yds | rush_att | td_ll | team RMSE | pass_yds MAE | pass pinball | Rule |
+|---|---|---|---|---|---|---|---|---|---|
+| 1.0 | -0.042 / -0.023 | -0.005 / -0.005 | **+0.105 / +0.162** | **+0.046 / +0.045** | -0.0014 / +0.0017 | -0.003 / -0.002 | **-1.117 / -1.057** | -0.199 / -0.163 | fail (rushing) |
+| 0.7 (A) | -0.025 | -0.004 | +0.103 | +0.025 | 0.0000 | -0.008 | -0.832 | -0.160 | fail (rushing) |
+| 0.5 | -0.027 / -0.061 | -0.005 / -0.005 | +0.007 / +0.027 (mean +0.0167 vs limit 0.0158) | +0.014 / +0.005 | +0.0002 / +0.0010 | -0.005 / -0.004 | -0.606 / -0.590 | -0.139 / -0.132 | fail by 0.0009 on rush_yds (seed C: rush -0.003) |
+| **0.3** | **-0.034 / -0.017** | **-0.003 / -0.004** | **-0.048 / -0.041** | -0.002 / -0.003 | +0.0005 / -0.0001 | -0.010 / -0.004 | **-0.316 / -0.380** | -0.062 / -0.102 | **pass** |
+
+- **Reading at w 0.3.** rec_yds improves beyond 2x the floor on both seeds (per seed -0.034 and -0.017 against 2x floor 0.013); rec, rush_yds and pass_yds also better beyond 2x; nothing worse beyond 2x. Per season: 2024 rec_yds is +0.019 on both seeds (worse, inside 3x the floor), 2025 rush_yds +0.05 on seed B; 2023 carries most of the gain. Pass-yards MAE -0.35 is the largest QB gain since #65 (-0.76).
+- **Caveat (selection).** w was chosen from four values on the same 27 slates. The direction is monotone (more weight, more passing gain, more rushing cost) and w 0.3 is the most conservative passing value; a forward check on 2026 weeks 4-11 is owed before more weight is considered.
+- **Status: not promoted.** Owner decision: default `APEX_PR_NEUTRAL=1`, `APEX_PR_NEUTRAL_W=0.3`. If approved, it applies to runs after the approval; frozen runs are unchanged; `APEX_PR_NEUTRAL=0` restores the baseline.
+
+## 83. R-32: positional matchup from expected points: no signal, closed at the probe stage (2026-11-24)
+- **Test** (`tools/backtest/r32_matchup_probe.py`, no engine change): for each defense and position (WR/TE/RB), receiving yards over expected allowed per target (ffopportunity `ep_weekly`, weeks before W only, shrunk k 60) minus the same defense's all-position rate (the team-level part the engine already has in `d_ypa`). Effect = that difference x projected receptions x 1.5, against the b12a receiving-yards residual, 4,935 player-games.
+- **Result:** correlation 0.0005 / 0.006 / -0.030 (2023 / 24 / 25), pooled -0.010; leave-one-season-out MAE 20.201 → 20.201, 20.229 → 20.231, 20.088 → 20.089 (no gain in any season). Position-level target volume allowed vs reception residual: correlation 0.050 / 0.008 / 0.018 (tiny, same sign).
+- **Reading.** Beyond the team-level pass defense the engine already models, how a defense fares against WRs vs TEs vs RBs does not carry over week to week. Together with #79 this closes the defense-vs-position family, including the operator's Sharp DvP, coverage-by-position and xFP pages, as projection inputs. Not built.
