@@ -3,7 +3,13 @@ from paths import OUT, NFLV, DELIV, CONF
 import sys, numpy as np, pandas as pd, pickle, warnings; warnings.filterwarnings("ignore")
 import run_all as R
 from params import SCHED, norm_name, is_neutral, ENV_MODE
-SLATE={("KC","LV"),("DEN","SF"),("LAC","SEA"),("DAL","HOU"),("LA","PHI"),("ARI","NYG"),("MIA","MIN"),("GB","TB"),("NYJ","CHI"),("TEN","BAL"),("JAX","CIN"),("NE","BUF")}
+import os
+_TM={"LAR":"LA","JAC":"JAX","WSH":"WAS"}
+def _slate_from_dk(path):
+    """Slate = the games in the operator's DKSalaries file ('Game Info' = 'AWAY@HOME MM/DD/YYYY ...'). The old hard-coded set was a W4 leftover and matched no other week (2026 W11: 'collected 0')."""
+    s=pd.read_csv(path,encoding="utf-8-sig")
+    return {tuple(_TM.get(t,t) for t in str(gi).split()[0].split("@")) for gi in s["Game Info"].dropna() if "@" in str(gi)}
+SLATE=_slate_from_dk(os.environ["APEX_DK_SALARIES"]) if os.environ.get("APEX_DK_SALARIES") else set()
 NS=20000; out={}; meta={}
 def dk(pl):
     base=0.04*pl["pass_yds"]+4*pl["pass_td"]-2*pl["pass_int"]+0.1*(pl["rush_yds"]+pl["rec_yds"])+6*(pl["rush_td"]+pl["rec_td"])+pl["rec"]

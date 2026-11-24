@@ -37,6 +37,8 @@ The ESPN feed shows at most 5 names per team: only explicit Outs are written, no
 `python engine/weekly/espn_props.py --week N [--games AWAY@HOME,...] --out var/espn_dk_lines.xlsx`, then `APEX_ODDS_XLSX=var/espn_dk_lines.xlsx APEX_ENV=<track> python engine/weekly/price_odds.py` against the finished run.
 Lines only (assumed -110, no prices, no touchdown markets): a line comparison, never an edge. `espn_dk_line_moves.csv` has open vs current for closing-line tracking.
 
+R-24 (DECISIONS #73): a player on reserve with roster code R48 who is listed Questionable is projected at p_active 0.5 (`APEX_R48_P`), not Out, and ESPN's "Injured Reserve" label cannot zero him; only an operator row does. Every Tuesday append that week's R48 outcomes (played, snaps) to `docs/weekly/r48_log.csv`.
+
 ## 3. Grading (Tuesday)
 In-game availability first (every graded game): `python tools/postmortem/ingame_availability.py SEASON WEEK AWAY HOME --out ...` flags EXIT / MISSED_TIME (play-by-play injury events) and SNAP_DROP (15+ points below the last-3 snap share). Grade flagged player-games separately from projection error.
 One command for the tables: `python engine/weekly/postmortem.py SEASON WEEK` (latest pre-kickoff frozen run per game, team points vs the DraftKings line, player skill vs the naive per-game average, availability, volume). Then `apex-weekly grade` per run and the grader agent.

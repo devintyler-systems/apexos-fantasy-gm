@@ -23,3 +23,10 @@ promotion_rule_noise_aware: >-
   Re-measure the noise floor whenever the baseline changes. Floors measured 2026-11-19 (baseline = #66): rec_yds 0.0064, rec 0.0005,
   rush_yds 0.0413, rush_att 0.0029, td_ll 0.0015, team_rmse 0.0161.
   Floors measured 2026-11-20 (baseline = #66 + #69, three seeds): rec_yds 0.0181, rec 0.0013, rush_yds 0.0352, rush_att 0.0064, td_ll 0.0011.
+  Floors measured 2026-11-24 (baseline = #66 + #69 + #70 + #71 + #75 rush form 0.40, three seeds): rec_yds 0.0108, rec 0.0020, rush_yds 0.0922, rush_att 0.0060, td_ll 0.0018, team_rmse 0.0074, rush_pinball 0.0249, rush_iqr_coverage 0.0031.
+promotion_rule_dispersion_only: >-
+  (DECISIONS #75, owner-approved 2026-11-24) A change that leaves projected means unchanged and only widens or narrows a distribution is promoted if, on the multi-season weeks 4-12 backtest on two seeds:
+  (1) the quantile pinball loss of the targeted market (quantiles 10, 25, 75, 90 from the backtest tables) improves by more than 2x its noise floor on BOTH seeds,
+  (2) the targeted P25-P75 coverage ends within 3 points of 50% and both tails (below P10, above P90) within 2 points of 10%, and
+  (3) rec_yds MAE, rec MAE, rush_yds MAE, rush_att MAE, TD log loss and team RMSE are each no worse than 2x their noise floor on the mean of the two seeds.
+  Noise floors are measured on the baseline (largest |delta| over the three pairs of three seeds); re-measure after every promotion, because a dispersion change adds sampling noise to the metrics it touches.

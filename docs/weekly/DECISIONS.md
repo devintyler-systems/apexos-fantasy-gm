@@ -311,3 +311,76 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - `APEX_RB_VAC_CAR=1` (full weight), seed A / B: rec_yds -0.008 / -0.008, rush_yds **+0.174 / +0.153**, rush_att **+0.021 / +0.021**, TD log loss -0.0003 / +0.0001. On team-weeks with an Out RB/WR/TE (n=3,427), rush_yds MAE 24.73 → 24.94.
 - `APEX_RB_VAC_CAR_W=0.5`, seed A / B: rec_yds -0.037 / -0.008, rush_yds **+0.107 / +0.111**, rush_att +0.004 / +0.009.
 - **Rejected.** Both weights make rushing worse beyond 2x noise on both seeds, including the Out-player subset. Historically, an Out lead back's carries spread wider than to the next RB (QB, promoted backs, lower team rush volume). The TNF case was mostly game script (HOU 37 carries vs 26 projected, 23-point margin). Next lead: R-20 (in-sim script elasticity). The switch stays in code, off.
+
+## 73. R-24: reserve players with a designated-for-return code are not hard-zeroed (owner-approved 2026-11-24, provisional, not backtestable)
+- **Evidence (W11):** five players were RES with roster code R48 on the Sunday roster and Questionable on the report. The engine forced all five Out; three played (Wilson PIT 49 snaps and 6 targets, Croskey-Merritt WAS 28 snaps and 13 carries, Shipley PHI 19 snaps); Brooks and Pittman did not. Practice status did not discriminate (Shipley DNP played, Brooks and Pittman full practice did not). Roster history before W11 is too sparse to backtest (`roster_2026.parquet` holds a full snapshot for the newest week only).
+- **Rule** (`engine/weekly/r48_rule.py`, wired into `params._apply_roster_out`): RES + code R48 + listed Questionable on the injury report gets `p_active = APEX_R48_P` (default **0.5**). `APEX_R48_P=off` restores the hard Out exactly. Out, Doubtful, other reserve codes and players not on the report stay Out.
+- **ESPN override fixed:** ESPN's pregame feed labels these players "Injured Reserve" and `espn_inactives.py` writes them as Out. That is how Croskey-Merritt was zeroed twice. `_apply_manual_out` now ignores ESPN-sourced rows for R48 players the rule protects; operator-sourced rows still zero them.
+- **Check:** replay of the W11 roster with the five set back to RES/R48: all five at 0.5 with the rule, all Out with `off`. Unit tests `tests/weekly/test_r48_rule.py`.
+- **Follow-up:** every Tuesday append the week's R48 outcomes to `docs/weekly/r48_log.csv` (seeded with the five W11 rows). Refit the 0.5 once there are about 20 rows.
+
+## 74. R-22 carry-split candidates rejected (2026-11-24)
+- **Premise corrected.** The W11 post mortem first said 9% of team carries were unassigned. Wrong: the frozen runs project 25.2-25.5 of 26.9 team carries to players (5-6%, the OTHER bucket) and players outside the projection took 1.7 actual carries a team. The 2023-25 baseline (b71a, 786 team-weeks) projects 26.3 to players against 25.7 actual plus 1.1 unprojected. Lead back 13.15 projected vs 13.42 actual; RB2 5.91 vs 5.44; RB3 2.36 vs 1.72; backups projected 4-8 carries 5.72 vs 4.97.
+- **Candidates, two seeds (A = default, B = APEX_SEED=777), baseline b71a / b71b.** Noise floors: rush_yds 0.038, rush_att 0.0047.
+
+| Candidate | rush_yds MAE A / B | rush_att MAE A / B | td_ll A / B |
+|---|---|---|---|
+| `APEX_CAR_GAMMA=1.15` | **+0.554 / +0.508** | +0.072 / +0.068 | +0.0024 / -0.0003 |
+| `APEX_CAR_GAMMA=1.30` | **+0.735 / +0.715** | +0.084 / +0.082 | +0.0002 / +0.0021 |
+| `APEX_KC=1` (top-1 share kept) | **+5.43 / +5.36** | +1.008 / +0.994 | +0.0031 / +0.0025 |
+| `APEX_KC=2` | **+2.44 / +2.38** | +0.299 / +0.294 | +0.0037 / +0.0030 |
+| `APEX_OTHER_CAR_MULT=0.5` | +0.019 / +0.001 | +0.0017 / +0.0019 | -0.0001 / -0.0012 |
+
+- **Rejected.** Sharpening and top-share preservation make rushing worse by 13x to 140x the noise floor on both seeds; halving the OTHER bucket is a null (every metric inside the floor, rec_yds -0.011 / -0.017 is also inside 2x). The carry split is already tuned by `share_mult.car_RB = 1.22`. W11's lead-back misses (+1.5 carries on 23 teams, about 1.5 standard errors) are not evidence of bias. `APEX_OTHER_CAR_MULT` stays in code, off (1.0 is byte-identical).
+
+## 75. R-27: rushing yards are under-dispersed; rush form factor 0.40 PROMOTED (owner-approved 2026-11-24)
+- **Evidence, three seasons, 1,306 player-weeks with 4+ projected carries (b71a):** only 40.1% of actual rushing yards fall inside the engine's P25-P75 band (target 50%); 15.0% fall below P10 and 13.7% above P90 (targets 10% each). Same on seed B (40.2%) and C (39.7%), and in W11 (39%). Receiving (51.7%) and passing (46.5%) are about right. Cause: carries are drawn independently, so a player's yards per carry average out inside a game; there is no player-game form factor.
+- **Candidate:** `APEX_RUSH_FORM=<sd>` (sim.py): a mean-preserving lognormal yards-per-carry factor per player per simulated game. 0 is byte-identical to baseline.
+- **Results, seeds A / B** (baseline noise: pinball spread 0.0033 over three seeds):
+
+| sd | P25-P75 coverage | below P10 | above P90 | pinball loss | rush_yds MAE | td_ll | team RMSE |
+|---|---|---|---|---|---|---|---|
+| baseline | 40.1% / 40.2% | 15.0% / 15.1% | 13.7% / 13.4% | 7.472 / 7.474 | 24.101 / 24.119 | 0.4507 / 0.4513 | 9.019 / 9.029 |
+| 0.15 | 41.5 / 41.4 | 13.9 / 14.2 | 12.5 / 12.8 | 7.432 / 7.457 | 24.105 / 24.187 | 0.4511 / 0.4528 | 9.017 / 9.024 |
+| 0.25 | 44.4 / 44.0 | 12.3 / 12.6 | 11.5 / 11.5 | 7.395 / 7.419 | 24.106 / 24.189 | 0.4511 / 0.4528 | 9.017 / 9.024 |
+| **0.40** | **49.4 / 49.7** | **9.4 / 9.5** | **10.2 / 10.2** | **7.394 / 7.413** | 24.126 / 24.207 | 0.4511 / 0.4528 | 9.017 / 9.024 |
+| 0.55 | 53.6 / 54.1 | 7.7 / 7.5 | 9.2 / 9.1 | 7.468 / 7.483 | 24.188 / 24.267 | 0.4511 / 0.4528 | 9.017 / 9.024 |
+
+- **Reading:** sd 0.40 puts coverage at the target and both tails at about 10%, and improves pinball loss by 0.078 / 0.061, 19-24x the baseline noise. rush_yds MAE rises +0.024 / +0.088 (mean +0.056, inside 2x the 0.038 floor); TD log loss +0.0004 / +0.0015 (mean +0.0010, inside 2x the 0.0006 floor); rec_yds and team RMSE unchanged. Larger sd overshoots (0.55).
+- **Rule gap.** `promotion_rule_noise_aware` requires rec_yds MAE to improve by 2x its floor, which a rushing-only change cannot do (same gap that blocked R-22). Proposed, for the owner to approve before anything is promoted: **`promotion_rule_dispersion_only`**: a change that leaves projected means unchanged and only widens or narrows a distribution is promoted if (1) quantile pinball loss improves by more than 2x its noise floor on both seeds, (2) the targeted coverage moves to within 3 points of nominal, and (3) rec_yds, rec, rush_yds, rush_att MAE, TD log loss and team RMSE are each no worse than 2x their floor on the two-seed mean.
+- **Effect if promoted:** means and rankings do not move; P90/P95 and over/under probabilities for rushing props and DFS ceilings widen. **Status: not promoted.** The switch stays in code, off.
+
+### Promotion record (2026-11-24)
+- **Owner approved** the `promotion_rule_dispersion_only` rule (added to `contracts/weekly/grading.v0.1.yaml`) and the promotion of `APEX_RUSH_FORM` at **0.40**. `sim.py` now defaults to 0.40; `APEX_RUSH_FORM=0` reproduces the old baseline exactly.
+- **Correction to the evidence above.** The "19-24x noise" figure used the pinball noise of the old baseline (0.0033, three seeds without the form factor). The form factor adds sampling noise, so the floor was re-measured on the new baseline with a third seed (`rf40c`, APEX_SEED=999): **rush pinball 0.0249**. Against that floor the improvement is **3.1x on seed A (-0.078), 2.4x on seed B (-0.061)**, and 3.0x on the three-seed means (7.4739 baseline vs 7.3982). Rule (1) asks for more than 2x on both seeds: it holds, with less room than first stated.
+- **Rule check on the new floors** (new baseline, 3 seeds): rec_yds 0.0108, rec 0.0020, rush_yds 0.0922, rush_att 0.0060, td_ll 0.0018, team_rmse 0.0074, rush pinball 0.0249, IQR coverage 0.0031. (1) pinball: holds on both seeds. (2) coverage 49.4% / 49.7% / 49.5% (seeds A / B / C), tails 9.4 and 10.2 (A), 9.5 and 10.2 (B): within 3 and 2 points. (3) rush_yds MAE mean delta +0.056 (limit 0.184), TD log loss +0.0010 (limit 0.0036), rec_yds -0.0127 / -0.002, team RMSE unchanged: all inside. Over three seeds the rush_yds MAE moves +0.029 on average (seed C -0.024), so the change is not a real loss of accuracy.
+- **What changes in outputs:** projected means do not move; rushing quantiles (P10-P90), P(over/under) for rushing lines and DFS ceilings widen. Frozen runs are unchanged.
+- **Next:** R-28 (receiving yards tails, same rule), R-23 (QB starter flag in availability).
+
+
+## 76. R-23: a starter flag in the availability table (built and tested 2026-11-24; off by default, awaiting owner approval to adopt as a refit)
+- **Idea.** `P(plays | report status, practice, position)` ignores who the player is. Add his recent role (`avail_role.py`: mean offense snap share over his last three games with a snap, this season only, no look-ahead; 0.5 or more is a starter; no snaps from week 3 on is a non-starter; weeks 1-2 have no history and keep the position rate) for QB, RB and WR/TE.
+- **Correction first.** The W11 post mortem said starting QBs listed Questionable with Limited practice play 49% of the time (n=35, a looser starter definition). With the fit's definition the cell is **34% (n=64)**; Mayfield's 0.35 was priced correctly. The flag's value is elsewhere (below).
+- **Held-out test** (`fit_availability_role.py`: fit on the other seasons plus 2026, test on the held-out season; negative = better):
+
+| Group (pooled, three held-out seasons) | n | Brier | Log loss |
+|---|---|---|---|
+| QB | 603 | **-0.0203** | **-0.0628** |
+| Skill (QB, RB, WR/TE) | 5,254 | -0.0047 | -0.0208 |
+| Skill listed Questionable or Doubtful | 1,436 | -0.0046 | -0.0114 |
+| All positions | 17,188 | -0.0014 | -0.0064 |
+
+  Every group improves in each of 2023, 2024 and 2025 (QB log loss -0.062 / -0.068 / -0.059).
+- **What moves.** QB Questionable: non-starters play 10-18% (pooled table: about 35%); starters with a Full practice play 92%; starters with Limited play 34%; starters with DNP 20%. W11 examples: Bowers and Evans 0.67 to 0.74 (both played), McConkey 0.59 (played), Mayfield 0.34.
+- **Engine backtest** (switch `APEX_AVAIL_ROLE=1`, two seeds, against the #75 baseline, noise floors rec_yds 0.0108, rec 0.0020, rush_yds 0.092, rush_att 0.006, td_ll 0.0018, team 0.0074): seed A rec_yds +0.015, rec +0.0002, rush_yds +0.048, rush_att +0.0026, td_ll +0.0004, team +0.0064; seed B +0.0023, -0.0009, -0.026, +0.0003, -0.0020, +0.0012. **A null at the engine level** (every delta inside its floor): availability only matters for the few players on the report, so projections and TD log loss do not move. Caveat: the table is fit on 2023-26 and the backtest covers 2023-25, so the baseline and the candidate share that in-sample exposure.
+- **Reading.** This is a refit of the availability table, not a model change, and `AGENT_INSTRUCTIONS` allows refits only on the scheduled refit day. The standard noise-aware rule (rec_yds must improve by 2x its floor) cannot apply to a change that moves no projections. Acceptance for an availability refit is held-out Brier and log loss plus no harm in the engine backtest; both hold.
+- **Not adopted.** `config/weekly/availability_by_status_pos_role.csv` is committed as the candidate table; `APEX_AVAIL_ROLE=1` is off by default. To adopt: owner approval, then set the default on the refit day.
+
+## 77. R-28 receiving-yards tails: rejected (2026-11-24)
+- **The lower-tail finding was an artifact.** Half of all receivers' P10 is exactly 0 (50.0% of 4,960 player-weeks), so "6% below P10" cannot be read as a miss: 19.4% land at or below P10. The middle-50% band is fine (51.7-52.0%). What remains is a mild thin upper tail: 28.4% above P75 (25% nominal) and 12.7-12.9% above P90 (10% nominal).
+- **Test.** A per-player-game lognormal yards-per-catch form factor on receivers (the mechanism that fixed rushing), sd 0.10 and 0.20, two seeds. Rec-yards pinball loss (P10, P25, P75, P90) vs the #75 baseline (6.1455 / 6.1478, seed noise 0.0043): sd 0.10 6.1495 / 6.1525, sd 0.20 6.1514 / 6.1533, i.e. slightly worse; above P90 12.7 to 12.8% (A) and 12.8 to 12.4% (B) at sd 0.20; rec_yds MAE +0.014 / +0.008. Nothing meets the dispersion-only rule.
+- **Reading.** Receiving yards are driven by the reception count and by who gets the targets, not by yards per catch; a yards-per-catch factor has no leverage on the upper tail. Not worth more code; the experimental switch was removed (not committed).
+
+### Adoption record for #76 (2026-11-24)
+- **Owner approved** adopting R-23 and running Week 12 with it. `params.py` now defaults `APEX_AVAIL_ROLE` to 1; `APEX_AVAIL_ROLE=0` reproduces the old table exactly. The committed `config/weekly/availability_by_status_pos_role.csv` (fit on 2023-26) is the table in use. Refit it with `python engine/weekly/fit_availability_role.py` on the scheduled refit day.
+- **New baseline for later candidates:** the backtests after this point should run with R-24, R-27 and R-23 as defaults; the #75 floors stand until re-measured, because R-23 moved no engine metric beyond noise.

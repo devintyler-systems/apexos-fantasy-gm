@@ -37,9 +37,16 @@ def test_reserve_released_players_are_never_projected_active(tmp_path):
     live = set(zip(ro[ro.status.isin(["ACT", "DEV", "INA"])].full_name, ro[ro.status.isin(["ACT", "DEV", "INA"])].team))
     gone = ro[ro.status.isin(["RES", "CUT", "RET", "EXE"])]
     gone = {(a, b) for a, b in zip(gone.full_name, gone.team)} - live
+    # R-24 (DECISIONS #73, owner-approved 2026-11-24): a reserve player with roster code R48 who is listed Questionable is projected at APEX_R48_P (default 0.5), not Out.
+    ij = pd.read_parquet(os.path.join(CACHE, "injuries_2026.parquet")); ij = ij[(ij.game_type == "REG") & (ij.week == ij.week.max()) & (ij.report_status == "Questionable")]
+    r48 = ro[(ro.status == "RES") & (ro.get("status_description_abbr") == "R48")]
+    r48 = {(a, b) for a, b in zip(r48.full_name, r48.team)} & {(a, b) for a, b in zip(ij.full_name, ij.team)} - live
     pa = pd.read_pickle(tmp_path / "rank_raw.pkl")
-    bad = pa[pd.Series([(a, b) in gone for a, b in zip(pa.player, pa.team)], index=pa.index) & (pa.p_active > 0.01)]
+    key = pd.Series([(a, b) for a, b in zip(pa.player, pa.team)], index=pa.index)
+    bad = pa[key.isin(gone - r48) & (pa.p_active > 0.01)]
     assert bad.empty, bad[["player", "team", "p_active"]].to_string()
+    over = pa[key.isin(r48) & (pa.p_active > 0.5 + 1e-9)]
+    assert over.empty, "R48 returners must not exceed the provisional probability:\n" + over[["player", "team", "p_active"]].to_string()
 
 
 @pytest.mark.skipif(not CACHE or not os.path.exists(os.path.join(CACHE or "", "roster_2026.parquet")), reason="no nflverse cache")

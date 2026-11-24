@@ -27,6 +27,7 @@ ALPHA_T = 100.0  # Dirichlet concentration for target shares (calibrated vs 2025
 ALPHA_C = 60.0   # carries
 MAXC = 12   # per-catch draws kept
 MAXR = 26   # per-carry draws kept
+RUSH_FORM = float(_os.environ.get("APEX_RUSH_FORM", 0.40))      # R-27 (DECISIONS #75, owner-approved 2026-11-24): sd of the lognormal player-game rushing form factor; APEX_RUSH_FORM=0 reproduces the old baseline
 
 def _norm(w):
     w = np.clip(w, 1e-12, None); return w / w.sum(axis=1, keepdims=True)
@@ -230,7 +231,8 @@ def play_side(rng, t, sd, ns):
     ypc = ypc0 * scy
     ry = np.zeros((ns, R + 2)); rl = np.zeros((ns, R + 2))
     for k in range(R + 2):
-        ry[:, k], rl[:, k] = _rush_draws(rng, ca[:, k], ypc[k] * np.exp(0.05 * z) * rtd_adj, MAXR)
+        _ff = np.exp(rng.normal(0, RUSH_FORM, ns) - RUSH_FORM ** 2 / 2) if RUSH_FORM > 0 else 1.0      # R-27 (promoted default 0.40; 0 = old baseline, byte-identical): a per-player-game yards-per-carry 'form' factor shared by all of his carries
+        ry[:, k], rl[:, k] = _rush_draws(rng, ca[:, k], ypc[k] * np.exp(0.05 * z) * rtd_adj * _ff, MAXR)
     wr = np.append(np.append(rus.w_rush_td.values, oth_c * 0.9), 0.0)
     wr_m = np.tile(wr, (ns, 1)) * (car_w > 0) * 1.0
     if qb_idx: wr_m[:, R + 1] = rus.w_rush_td.values[qb_idx[0]] * (~start); wr_m[:, qb_idx[0]] = wr_m[:, qb_idx[0]] * start
