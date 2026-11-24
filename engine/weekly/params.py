@@ -17,9 +17,9 @@ def shr(obs, n, prior, k):
     return (obs * n + prior * k) / (n + k)
 
 import os
-PR_NEUTRAL = os.environ.get("APEX_PR_NEUTRAL", "0") == "1"      # R-31 candidate, off by default
+PR_NEUTRAL = os.environ.get("APEX_PR_NEUTRAL", "1") == "1"      # R-31 (DECISIONS #82, owner-approved 2026-11-24): neutral-situation pass rate in the team prior; APEX_PR_NEUTRAL=0 reproduces the old baseline
 PR_NEUTRAL_K = float(os.environ.get("APEX_PR_NEUTRAL_K", 90))
-PR_NEUTRAL_W = float(os.environ.get("APEX_PR_NEUTRAL_W", 1.0))      # weight on the neutral rate (1 = neutral only, 0 = raw)
+PR_NEUTRAL_W = float(os.environ.get("APEX_PR_NEUTRAL_W", 0.3))      # weight on the neutral rate (1 = neutral only, 0 = raw)
 
 _G = pd.read_parquet(N + "games.parquet"); _G = _G[(_G.season == SEASON) & (_G.game_type == "REG")].copy()
 for _c in ("home_team", "away_team"): _G[_c] = _G[_c].map(tm)
