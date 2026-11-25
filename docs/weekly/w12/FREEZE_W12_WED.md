@@ -15,3 +15,6 @@ All verify intact. Engine defaults: #66, #69, #70, #71, #73, #75, #76, R-31 (#82
 **Market-track game projections (raw):** GB 20.6 @ LA 23.1; CHI 28.5 @ DET 26.9; PHI 19.6 @ DAL 27.9; KC 21.8 @ BUF 24.6; DEN 20.0 @ PIT 16.5.
 
 **Next:** re-freeze the Thursday games after their Wednesday-afternoon designations (by 00:30Z); anchored T-2h re-freezes per game in the backfill session; DEN@PIT re-freeze after PIT's Thursday report.
+
+## Thursday-designation re-freeze (22:34Z)
+`2026_w12_market_20261125T223401Z`, `2026_w12_model_20261125T223402Z` (verify intact). nflverse still carried W12 designations only for GB/LA at 22:31Z, so the Thursday/Friday designations come from the DraftKings status column (Out: Walker KC, J. Ferguson DAL, Mingo DAL, Roschon Johnson CHI, Dobbins DEN, Rodgers PIT; Questionable: Kincaid BUF, N. Gray KC, Skowronek PIT). Barkley PHI: Full practice, no designation. These supersede the 21:12Z runs for the Thursday/Friday games. Emmett Johnson is KC's lead back (15.4 carries).
