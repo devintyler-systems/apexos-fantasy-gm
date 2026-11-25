@@ -105,7 +105,7 @@ for (a, h), d in R_.items():
                 k, how = td_devig_k(r.bookmaker)
                 nv = float(imp(r.price)) * k
                 out.append(dict(game=f"{a}@{h}", player=r.description, team=team, opp=opp, market=mk, side="yes", line=np.nan, book=r.bookmaker, odds=r.price, model_p=pm, novig_p=nv,
-                                novig_method=f"Estimated (one-sided, {how} k {k:.3f})", p_active=pl["p_active"], as_of=r.as_of_utc))
+                                novig_method=f"Estimated (one-sided, {how} k {k:.3f})", p_active=pl["p_active"], as_of=r.as_of_utc, pos=pl.get("pos")))
             continue
         x = (pl["rush_yds"] + pl["rec_yds"])[m] if mk == "rush_rec_yds" else pl[mk][m]      # rush_rec_yds: combined rushing + receiving yards of the same simulated game
         for line, lg in grp.groupby("point"):

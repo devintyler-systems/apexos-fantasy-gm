@@ -25,3 +25,11 @@ def test_forward_test_flag_only_for_5_to_10_point_gaps(tmp_path):
     pd.DataFrame(rows).to_csv(tmp_path / "edges_all_rows.csv", index=False)
     g = build(str(tmp_path)).set_index("player")
     assert list(g.fwd_test) == [False, True, False]
+
+
+def test_forward_test_excludes_quarterbacks(tmp_path):
+    rows = [dict(player=n, team="XX", market="anytime_td", side="yes", line=None, book="b1", odds=200, novig_p=0.30, model_p=0.37, p_active=1.0, is_main_line=True,
+                 model_gap_flag=False, model_gt_85_suppress=False, novig_method="Estimated one-sided", pos=p) for n, p in (("Q B", "QB"), ("R B", "RB"))]
+    pd.DataFrame(rows).to_csv(tmp_path / "edges_all_rows.csv", index=False)
+    g = build(str(tmp_path)).set_index("player")
+    assert not bool(g.loc["Q B", "fwd_test"]) and bool(g.loc["R B", "fwd_test"])

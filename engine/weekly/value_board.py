@@ -35,6 +35,9 @@ def build(path):
     g["w"] = g.market.map(blend_weight); g["final_p"] = g.book_p + g.w * (g.model_p - g.book_p); g["gap"] = g.model_p - g.book_p
     g["ev"] = g.final_p * pay(g.best_odds) - (1 - g.final_p)
     g["fwd_test"] = (g.market == "anytime_td") & g.gap.between(*FT_GAP)
+    if "pos" in e.columns:      # the 2023-25 evidence (#84/#85) covers RB/WR/TE only: QBs and others never enter the forward test
+        _pos = e.groupby(key).pos.first().reindex(pd.MultiIndex.from_frame(g[key])).values
+        g["fwd_test"] = g.fwd_test & pd.Series(_pos, index=g.index).isin(["RB", "WR", "TE"])
     return g[g.pa >= 0.9]
 
 
