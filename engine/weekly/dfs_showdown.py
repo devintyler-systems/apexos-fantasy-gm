@@ -102,6 +102,26 @@ R_ = pd.DataFrame(rows); tag = "anchored" if ANCHOR else "raw"
 R_.to_csv(OUT + f"showdown_{AWAY}_{HOME}_{tag}.csv", index=False)
 pd.set_option("display.width", 250); pd.set_option("display.max_colwidth", 80)
 print(R_.head(8)[["rank", "captain", "flex", "salary", "search_mean", "hold_mean", "hold_p90", "hold_p99", "hold_top1pct_mean", "hold_p_ge_150", "hold_p_ge_200"]].round(1).to_string(index=False))
+if "--portfolio" in sys.argv:      # N-lineup GPP set: greedy by holdout top-1% mean with exposure caps and an overlap limit (exploratory, ungraded)
+    import math
+    N = int(sys.argv[sys.argv.index("--portfolio") + 1]); MAXEXP = float(os.environ.get("APEX_SD_MAXEXP", 0.6)); MAXCPT = float(os.environ.get("APEX_SD_MAXCPT", 0.35))
+    ids = {("CPT", k): int(cp.loc[k, "ID"]) for k in cp.index} | {("FLEX", k): int(fl.loc[k, "ID"]) for k in fl.index}
+    used, cpt_used, picked = {}, {}, []
+    for j in order[:20000]:
+        li = int(res[j, 0]); idx = L[li]; pids = [pid[a] for a in idx]; c = pid[idx[0]]
+        if any(used.get(q, 0) + 1 > math.ceil(MAXEXP * N) for q in pids) or cpt_used.get(c, 0) + 1 > math.ceil(MAXCPT * N): continue
+        if any(len(set(pids) & set(pp)) > 4 for pp in [[pid[a] for a in L[x]] for x in picked]): continue
+        picked.append(li); cpt_used[c] = cpt_used.get(c, 0) + 1
+        for q in pids: used[q] = used.get(q, 0) + 1
+        if len(picked) == N: break
+    P = []
+    for li in picked:
+        h = XH[L[li]].sum(0); hk = int(0.99 * len(h)); a0 = assets[L[li, 0]]
+        P.append(dict(CPT=f"{a0[0][0]} ({ids[('CPT', a0[0])]})", **{f"FLEX{i}": f"{assets[f][0][0]} ({ids[('FLEX', assets[f][0])]})" for i, f in enumerate(L[li, 1:], 1)},
+                      salary=int(cost[L[li]].sum()), hold_mean=round(float(h.mean()), 1), hold_p99=round(float(np.percentile(h, 99)), 1), hold_top1pct=round(float(np.partition(h, hk)[hk:].mean()), 1)))
+    P = pd.DataFrame(P); P.to_csv(OUT + f"showdown_{AWAY}_{HOME}_{tag}_portfolio{N}.csv", index=False)
+    print(f"\nPORTFOLIO {len(P)} lineups (max exposure {MAXEXP:.0%}, max captain {MAXCPT:.0%}, overlap <= 4 of 6)"); print(P.to_string(index=False))
+    ex = pd.Series({pool[q][0]: v / len(P) for q, v in used.items()}).sort_values(ascending=False); print("exposure:", ex.round(2).to_dict())
 sc_applied = {a: m["scale"] for a, m in meta.items() if m["scale"]}
 if ANCHOR: print("anchoring scales applied:", {f"{k[0]}": {m_: round(v, 2) for m_, v in s.items()} for k, s in sc_applied.items()})
 
