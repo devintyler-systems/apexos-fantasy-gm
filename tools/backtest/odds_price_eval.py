@@ -9,7 +9,7 @@ Book de-vig (anytime TD is one-sided at every book except barstool):
   mult  : multiplicative, p = k_book x implied, k_book = sum(hits) / sum(implied) for that book over the OTHER two seasons (over-round estimated out of sample)
   flat  : implied x 0.90 (the price_odds.py haircut)
   2way  : yes / (yes + no) where a No price exists (barstool only), else mult
-Consensus = mean of the per-book de-vigged probabilities (value_board.py book_p). Bets are flat 1 unit at the best listed price across books.
+Consensus = mean of the per-book de-vigged probabilities (2way where a No price exists, else mult) (value_board.py book_p). Bets are flat 1 unit at the best listed price across books.
 """
 import glob, json, os, sys
 import numpy as np, pandas as pd
@@ -123,7 +123,8 @@ def td(tags):
         for S in SEASONS:
             tr = yes[yes.season != S].groupby("book").agg(h=("y", "sum"), i=("imp", "sum")); k = (tr.h / tr.i)
             sel = yes.season == S
-            if sel.any() and len(tr): yes.loc[sel, "k"] = yes.loc[sel, "book"].map(k).astype(float).values
+            k_all = float(tr.h.sum() / tr.i.sum()) if len(tr) else np.nan   # book with no other-season rows: pooled factor of the other seasons
+            if sel.any() and len(tr): yes.loc[sel, "k"] = yes.loc[sel, "book"].map(k).astype(float).fillna(k_all).values
         yes["p_mult"] = np.clip(yes.k * yes.imp, .005, .99); yes["p_flat"] = yes.imp * .90
         tw = yes.no_price.notna(); yes["p_2way"] = yes.p_mult
         yes.loc[tw, "p_2way"] = yes.imp[tw] / (yes.imp[tw] + imp(yes.no_price[tw]))
@@ -145,7 +146,7 @@ def td(tags):
         pb = pd.DataFrame(pb)
         print("\nper book (book = mult de-vig; blend = 50/50 with the engine; lower is better)\n" + pb[pb.season == "all"].round(5).to_string(index=False))
         # consensus per player-game
-        T = yes.groupby("di").agg(cons=("p_mult", "mean"), cons_flat=("p_flat", "mean"), cons_2way=("p_2way", "mean"), nb=("book", "nunique"), best=("price", "max"), season=("season", "first"), y=("y", "first"),
+        T = yes.groupby("di").agg(cons=("p_2way", "mean"), cons_flat=("p_flat", "mean"), cons_2way=("p_2way", "mean"), nb=("book", "nunique"), best=("price", "max"), season=("season", "first"), y=("y", "first"),
                                   game_id=("game_id", "first")).reset_index()
         T["eng"] = np.clip(D.loc[T.di, "any_td"].values, .005, .99); T["pa"] = D.loc[T.di, "p_active"].values; T["pos"] = D.loc[T.di, "pos"].values
         T["blend"] = T.cons + .5 * (T.eng - T.cons)
