@@ -516,9 +516,7 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - **price_odds.py:** one-sided TD prices use a per-book de-vig factor from `config/weekly/td_book_devig.json` (fitted on 2023-25 closing prices, #84), else a pooled factor, else the old flat 0.90; the method column names which. Until the json is committed the flat 0.90 applies (the backfill session supplies it).
 - **Reversal test:** the early-line test (2025 Tuesday prices, line movement toward the engine) and the Weeks 12-15 forward ledger. A play label comes back only with a positive held-out result on both seeds.
 - Tests updated (`tests/weekly/test_value_board.py`, forward-test boundary test added). Frozen runs unchanged.
-<<<<<<< HEAD
 - **Addendum to #86 (2026-11-25):** the fitted per-book factors apply to anytime TD only; first-TD prices keep the flat 0.90 (their over-round is larger and was never fitted; first TD is not a play market). Merged `config/weekly/td_book_devig.json` (pooled .8298; FanDuel .9006 to Unibet .7080).
-=======
 
 ## 87. Miss diagnosis on the #84 anytime-TD set: a feature-gated trust model is a null over the w0.2 blend; the engine's misses are at the extremes, with named mechanisms (2026-11-25, no model change)
 - **Question** (owner via the parent session): when is the engine's disagreement with the book information, and when is it error? Turn the answer into engine fixes.
@@ -569,7 +567,6 @@ artifacts, as-of + input hashes + version on every run, no future information, p
   5. **Team implied total** (d > 0): both engine and book under-react to high totals in the TD split. Check that the engine's team TD expectation scales fully with the market total in the market track.
   6. **Players back from missed games** (d < 0) score below both. Candidate: a role ramp (reduced share for the first game back).
 - **Status.** A null for the trust model, so the forward-test rule (#86: w0.2, gap 5-10) stands unchanged. Mechanisms 1-3 are the strongest, from deciles and from c intervals clear of zero on both seeds. Each needs its own week 4-12 backtest against prn3 under the promotion rule before any change.
->>>>>>> 2e61e0b3d40255c44f80f6dc555dcde535761899
 
 ## 88. #87 leads, first pass: red-zone TD weighting candidates (2026-11-25, no promotion)
 - **Switches** (`params.py`, defaults = baseline, byte-identical on `2025_w6`): `APEX_TD_RZ_W_REC` (red-zone share weight in receiving TD weight, 0.40), `APEX_TD_RZ_W_RUSH` (inside-10 share weight in rushing TD weight, 0.40), `APEX_TD_RZ_MR` (shrink of red-zone shares toward overall share, 8), `APEX_TD_GL5` (rushing TD weight blends inside-5 with inside-10 carry share: goal-line back vs committee back, lead #2 of #87). All four constants were hand-set.
