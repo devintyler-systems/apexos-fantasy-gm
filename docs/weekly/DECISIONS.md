@@ -516,3 +516,53 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - **price_odds.py:** one-sided TD prices use a per-book de-vig factor from `config/weekly/td_book_devig.json` (fitted on 2023-25 closing prices, #84), else a pooled factor, else the old flat 0.90; the method column names which. Until the json is committed the flat 0.90 applies (the backfill session supplies it).
 - **Reversal test:** the early-line test (2025 Tuesday prices, line movement toward the engine) and the Weeks 12-15 forward ledger. A play label comes back only with a positive held-out result on both seeds.
 - Tests updated (`tests/weekly/test_value_board.py`, forward-test boundary test added). Frozen runs unchanged.
+
+## 87. Miss diagnosis on the #84 anytime-TD set: a feature-gated trust model is a null over the w0.2 blend; the engine's misses are at the extremes, with named mechanisms (2026-11-25, no model change)
+- **Question** (owner via the parent session): when is the engine's disagreement with the book information, and when is it error? Turn the answer into engine fixes.
+- **Tool.** `tools/backtest/td_miss_diagnosis.py` (post-sim, no API calls). Data: the #84 set (7,944 RB/WR/TE player-games, 2023-25, closing consensus de-vigged out of sample) and the #85 early set (2025, healthy). Model: logit p = i + a·Lb + b·Le + Σ c_k·f_k·(Le − Lb) + d_k·f_k, with Lb/Le the logits of book and engine. Features are standardised, L2 on c and d only, and lambda is picked by inner leave-one-season-out (300 in every fold). Every score is leave-one-season-out; seeds prn3A / prn3B. Coefficient intervals: 90% cluster bootstrap by game, 150 reps, full-sample fit.
+- **Features and look-ahead check** (13; p_active < 1 dropped because it is identical to on_report in these pickles):
+  - |gap| >= 10 points; engine below the book.
+  - Snap-share change: last 3 games minus season mean, weeks < W only.
+  - Missed 2+ team games before W. "Games played < 4" is the same as week 4-5 for everyone in a week 4-12 sample, so it was replaced.
+  - Rookie (season roster); new team (last team in S-1).
+  - On week W's injury report; a teammate at the same position Out. Both use the final report, published before kickoff.
+  - Projected QB1 is not the week-1 starter (engine projection vs week-1 stats).
+  - Team implied points from the nflverse closing total and spread (pre-kickoff).
+  - Inside-20 share minus overall share (pbp, weeks < W); position RB / TE.
+- **Held-out log loss, pooled (seed A / B):**
+
+| Book | Fixed w0.2 blend | 2-parameter stack | Feature model |
+|---|---|---|---|
+| .40309 | .40258 / .40254 | .40303 / .40293 | .40229 / .40224 |
+
+  By season, the model vs w0.2 is -0.0010 (2023), -0.0004 / -0.0002 (2024) and **+0.0005 / +0.0003 (2025)**. Brier: model .12629 / .12630 vs w0.2 .12657. The gain over w0.2 is 0.0003, about a seventh of the TD log-loss floor (0.0022, #82), and it reverses in 2025. **Verdict: null.** No feature-gated trust rule beats the fixed w0.2 blend beyond seed noise, so none is proposed as a bet filter.
+- **Interaction coefficients** (c > 0: the gap is information when the feature is up; c < 0: it is error; d = level shift; seed A, seed B within 0.005). Intervals clear of zero on both seeds:
+  - big gap: c **-0.044 (-0.074, -0.016)**.
+  - new team: c **-0.032 (-0.061, -0.002)**.
+  - rising snap share: c **+0.034 (+0.005, +0.059)** and d +0.041 (+0.009, +0.070).
+  - implied team total: d **+0.047 (+0.011, +0.076)**.
+  - missed games: d -0.036 (-0.067, -0.005).
+  - Every other c, including rookie, injury report, teammate Out, backup QB and inside-20 share, has an interval spanning zero.
+- **Where the misses are** (gap deciles, seed A):
+  - Engine 11.5 points below the book (bottom decile, n 795): hit .282, book .276, engine .162. In the top book tercile: hit .472, book .404, engine .277. Names: Kelce, Kittle, Lamb, Nacua, McLaurin, J. Taylor, Taysom Hill.
+  - Engine 8.4 points above the book (top decile, n 795): hit .260, book .239, engine .323. 44% are RBs averaging 10 projected carries: Justice Hill, Zack Moss, Ray Davis, Charbonnet, Jerome Ford, Rachaad White, Kamara.
+  - New-team players in the top decile: hit .207, book .232, engine .312. The book beats the engine outright.
+  - Backup-QB teams in the top decile: hit .160, book .196, engine .284 (n 125; c not significant).
+- **CLV check on the 2025 early set** (model fit on 2023-24 close, applied to Wednesday prices; healthy players). Caveat: the implied-total and teammate-Out features use the closing line and the final report, which a Wednesday bettor would not yet have.
+
+| Rule | Relative move, seed A | Seed B |
+|---|---|---|
+| Plain gap 5-10 rule (#85) | +1.27 (0.93, 1.66), n 139 | +1.25, n 143 |
+| Model top-N by model edge | +0.22 (-0.20, 0.62) | +0.20 |
+| Gap 5-10 and model edge > 0 | +1.49 (0.95, 2.07), n 65 | +1.42, n 71 |
+| Gap 5-10 and model edge <= 0 | +1.08 (0.62, 1.56), n 74 | +1.09, n 72 |
+
+  **The model-selected subset moves toward the engine less than the plain rule.** Its picks are driven by the level terms (implied total, role), not by the engine's information. Inside the plain rule the model's split is not separable (overlapping intervals), and ROI runs the opposite way (-12% vs +35%), which is noise.
+- **Engine mechanisms to fix** (candidates for the parent; no engine code changed here):
+  1. **Elite red-zone targets are under-priced** (bottom decile: engine .16 vs hit .28; top book tercile .28 vs .47). The per-player receiving/rushing TD share is shrunk too hard toward the position or team mean for established high-TD-rate players. Candidate switch: a lighter TD-share shrink (or a multi-season prior) for players with large career TD samples. Taysom Hill-type gadget QB-rushing roles are not modelled.
+  2. **Secondary and committee RBs are over-priced** (top decile, mostly RBs on about 10 carries). The rushing TD split follows carry share rather than goal-line share. Candidate: allocate rushing TDs by inside-5 / inside-10 carry share (prep_nv already builds Inside 5_Att / 10_Att), shrunk to carry share. The pooled inside-20 feature did not separate this; the goal-line cut is the specific test.
+  3. **New-team players' gaps are error** (c < 0). The engine carries prior-season role and TD rate across a team change. Candidate: down-weight S-1 share and TD-rate priors for team changers (shorter memory) until 3-4 games are on the new team.
+  4. **Rising snap share is information, and both engine and book under-react** (c > 0, d > 0). Candidate: more weight on the last 3 games in the role/share estimate (recency), tested on receiving yards and TD log loss with the #59 rule.
+  5. **Team implied total** (d > 0): both engine and book under-react to high totals in the TD split. Check that the engine's team TD expectation scales fully with the market total in the market track.
+  6. **Players back from missed games** (d < 0) score below both. Candidate: a role ramp (reduced share for the first game back).
+- **Status.** A null for the trust model, so the forward-test rule (#86: w0.2, gap 5-10) stands unchanged. Mechanisms 1-3 are the strongest, from deciles and from c intervals clear of zero on both seeds. Each needs its own week 4-12 backtest against prn3 under the promotion rule before any change.
