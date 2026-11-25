@@ -687,3 +687,69 @@ artifacts, as-of + input hashes + version on every run, no future information, p
      - Grade MAE and pinball loss on rec, rush and pass yds, and DK-point MAE, against prn3 under the #59 noise-aware rule.
      - Grade lines as of T-2h, not the close, for the live-equivalent test. That needs a further historical pull at about 10-30 credits per game-snapshot; this test used none.
 - **Caveats.** Closing lines are the sharpest snapshot; the live version would anchor to T-2h or Wednesday lines, which are less accurate (the #85 early book was worse than the close on TD). Engine medians come from four stored quantiles, a coarse shape. Yardage actuals exclude pushes.
+
+## 91. Market-anchored engine output (APEX_ANCHOR_XLSX): built, off by default; passes the noise-aware rule on every core metric with no regression; T-2h lines are as good as the close (2026-11-25, backfill session; switch shipped OFF, promotion is an owner call)
+- **What was built** (`engine/weekly/anchor.py`, called from `run_all.run_game` right after the joint simulation, only when `APEX_ANCHOR_XLSX` is set):
+  - **Input.** Either a price_odds-schema workbook (bookmaker, home_team, away_team, market, label, description, price, point; several files joined with the path separator) or a prepared lines CSV (season, week, away, home, nkey, market, line, p). Workbook parsing (`anchor.lines_from_rows`): main line = the point most books post, ties to the one nearest even; two-way de-vig per book, mean over books; anytime TD de-vigged per book with `config/weekly/td_book_devig.json` (#84 k factors).
+  - **Step 1, yardage** (rec, rush, pass yds). Active draws above 0 are shifted by s, floored at 0, with s solved by bisection so that P(X > line | active) = p_book. Draws of 0 yards stay 0, so the shape, the tails and the within-game correlation stay the engine's.
+  - **Step 2, anytime TD.** TD draws are thinned, or a TD is added to 0-TD draws, until P(TD >= 1 | active) = p_book. An added TD goes to receiving or rushing in proportion to the player's simulated split. The RNG is separate, seeded by crc32(season, week, away, home), so no other draw moves.
+  - **Step 3, lineless teammates.** Receivers without a line: receiving yards are rescaled so the team's receiving total follows the anchored QB's passing yards (when the QB is anchored), otherwise it is held. Rushers without a line: rushing yards are rescaled to hold the team's simulated rushing total. Factor clipped to [0.5, 1.5]. Everything not rescaled counts as fixed; the first build left an unanchored QB's rushing out of "fixed" and inflated the free rushers. That was caught and fixed before the graded runs, and `tests/weekly/test_anchor.py` holds the regression.
+  - **Step 4, fantasy points** are recomputed from the deltas. Raw arrays are kept in `pl["raw"]` and markets in `pl["anchored"]`; backtest pickles add `anchored`, `raw_rec_yds`, `raw_rush_yds`, `raw_pass_yds` and `raw_any_td`.
+  - **Not built:** a receptions or attempts scale (no such lines in the backfill), and rescaling team scores to the market total (team arrays are untouched, so team RMSE is identical by construction). `APEX_ANCHOR_W` (default 0) is the engine weight; #90's held-out optimum was 0-0.1.
+- **Switch off = byte-identical.** 2025 week 6 with no knob set: `cmp` of the player and team pickles against rise6A is identical. The off path never imports `anchor`.
+- **Closing-line backtest** (27 slates, weeks 4-12, 2023-25). Lines are `var/anchor/lines_close_2023_25.csv`, built by `tools/backtest/build_anchor_lines.py` from the #84 closing sets: 15,552 lines (TD 7,944, rec yds 4,819, rush yds 2,127, pass yds 662). TD p is the LOSO de-vigged consensus, so no season's outcomes set its own TD level; yardage p is two-way no-vig, with no outcome fitting. Candidate anchA / anchB vs the current defaults rise6A / rise6B, seeds 20261004 / 777. Noise floors were re-measured on rise6 with seeds 20261004 / 777 / 999 and equal the floors recorded with the R-40 promotion.
+
+| Metric | Floor | Delta seed A | Delta seed B | Verdict |
+|---|---|---|---|---|
+| rec_yds MAE | .0265 | **-0.323** | **-0.326** | BETTER (12x floor) |
+| rec MAE | .0024 | 0 | 0 | unchanged (no reception lines) |
+| rush_yds MAE | .0392 | **-0.531** | **-0.540** | BETTER |
+| rush_att MAE | .0043 | 0 | 0 | unchanged |
+| TD log loss | .0007 | **-0.0493** | **-0.0495** | BETTER (0.451 -> 0.402, -10.9%) |
+| team RMSE | .0145 | 0 | 0 | unchanged by construction |
+| pass_yds MAE | .0256 | **-2.59** | **-2.57** | BETTER |
+| pinball rec / rush / pass yds | .013 / .014 / .022 | -0.196 / -0.230 / -0.557 | -0.187 / -0.235 / -0.558 | BETTER |
+
+  - Per season: rec yds, TD log loss, pass yds and every pinball improve in all three seasons on both seeds. Rush yds MAE improves in 2023 (-0.83) and 2024 (-0.94) but is **worse in 2025 (+0.27 / +0.26)**, while 2025 rush pinball still improves (-0.16).
+  - Against prn3 (pre-R-40): rec yds -0.340 / -0.368, rush yds -0.558 / -0.621, TD log loss -0.050 / -0.049, pass yds -2.75 / -2.66. R-40 accounts for about 0.017 of the rec-yds gain; the anchor for the rest.
+- **DK-point MAE** (`tools/backtest/anchor_backtest.py`; no bonuses, INT or fumbles, which are the same on both sides). Player-games with a snap:
+
+| Group | n | rise6A | anchA | Delta A | Delta B | TD log loss delta (A) |
+|---|---|---|---|---|---|---|
+| All | 8,729 | 4.051 | 3.967 | **-0.084** | **-0.085** | -0.049 |
+| Own yardage line | 5,690 | 5.070 | 4.945 | -0.124 | -0.126 | -0.015 |
+| No own yardage line (TD-only or none; the rescale group) | 3,039 | 2.143 | 2.135 | -0.008 | -0.009 | -0.031 |
+| No own line at all | 72 | 7.04 | 6.99 | -0.046 | -0.049 | 0 |
+
+  - Every season improves (-0.083 to -0.087).
+  - Anytime-TD markets cover almost every skill player with a snap: only 72 player-games (0.8%) have no own line at all, but 35% (10% of projected DK points) have no yardage line.
+  - The team rescale is about neutral for those players: -0.008 DK pts. Their TD gain comes from their own TD line.
+- **Coverage** (quantile calibration, seed A; seed B the same within 0.002). The anchor moves medians, not widths:
+  - rec yds P25-P75 0.516 -> 0.523; below P10 0.190 -> 0.208; above P90 0.130 -> 0.108.
+  - rush yds P25-P75 0.498 -> 0.491; below P10 0.100 -> 0.148; above P90 0.103 -> 0.084.
+  - pass yds P25-P75 0.475 -> 0.486; below P10 0.128 -> 0.154; above P90 0.090 -> 0.062.
+  - The low tail is now too heavy in all three: the shift lifts positive draws, but a shortfall below the line is often a bust the engine's shape does not hold. This is a dispersion follow-up under the #75 rule, not a reason to hold the anchor; pinball improves in all three markets.
+- **Live equivalence** (920 credits; 1,677 left). Snapshot taken 2h04m before kickoff, all four markets, 23 games: 2025 week 6 (15) and week 7 (8). Cap 920 credits, then stopped. Files in `var/odds_hist/t2h/`, not committed.
+  - Built with `tools/backtest/build_anchor_lines_raw.py`, which runs the engine's own workbook parser (the live path, with no snap filtering).
+  - Closing lines for the same games went through the same parser (ancC). anchA uses the pickle-built LOSO lines.
+  - T-2h vs close: 1,238 lines match, 40 appear only at T-2h, 17 only at close. Yardage lines moved on 40-76% of player-markets, but by only 0.7-1.7 yds on average; p moved by 0.004-0.008.
+  - Sample results (494 player-games), delta vs rise6A:
+
+| | DK MAE | rec yds MAE | rush yds MAE | pass yds MAE | TD log loss | rec / rush / pass pinball |
+|---|---|---|---|---|---|---|
+| anchA (close, pickle-built lines) | -0.132 | -0.39 | +0.21 | -4.18 | -0.0401 | -0.15 / -0.38 / -0.44 |
+| ancC (close, live parser) | -0.130 | -0.36 | +0.20 | -4.24 | -0.0402 | -0.14 / -0.38 / -0.44 |
+| **ancT (T-2h, live parser)** | **-0.134** | **-0.54** | **-0.01** | -4.00 | -0.0397 | -0.18 / -0.38 / -0.51 |
+
+  - **The T-2h anchor is as good as the close.** A 23-game sample cannot separate them; the point is that the gain does not depend on closing information.
+  - ancC equals anchA. So neither the snap-filtered line set nor the out-of-sample TD k was inflating the full backtest, and the live parser reproduces it.
+  - **Not tested:** Wednesday lines. #85 found them thinner and less sharp on TD. A Wednesday freeze anchored to Wednesday lines needs its own check before it is trusted.
+- **Verdict.** It passes `promotion_rule_noise_aware` (#69): rec yds MAE beats 2x floor on both seeds (-0.32 vs 0.053), and no guarded metric is worse (rec, rush att and team RMSE unchanged; rush yds and TD log loss far better). The #59 QB-only rule does not apply, because this is not a QB-layer change. Its passing conditions are met anyway: pass yds MAE and pinball are lower pooled and in all three seasons.
+  - **The switch ships OFF.** Turning it on for a frozen run is an owner decision: it changes what the deliverables say.
+  - Recommended live form: Sunday reruns with `APEX_ANCHOR_XLSX` = the `price_odds` workbook pulled T-2h or later, and raw plus anchored columns kept in the frozen run.
+  - **Open items:**
+    1. 2025 rush yds MAE (+0.27).
+    2. The heavy low tail (dispersion follow-up).
+    3. Wednesday-line anchoring.
+    4. Pickle anchored columns into `runs/weekly` output (the frozen-run writer is not touched here).
+- **Tools.** `tools/backtest/build_anchor_lines.py`, `build_anchor_lines_raw.py`, `anchor_backtest.py`, `anchor_live_check.py`. Tags: anchA, anchB, ancC, ancT, offchk, rise6C (seed 31337, unused), rise6D (seed 999). Tests: `tests/weekly/test_anchor.py`.
