@@ -576,3 +576,22 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - **Seed A vs prn3A, TD log loss (floor 0.0022):** rec weight 0.6 **+0.0063** (worse); rush weight 0.7 -0.0001; shrink 4 +0.0021; **GL5 -0.0021** (2023 -0.0037, 2024 -0.0021, 2025 -0.0004). GL5 seed B: -0.0015 (2023 -0.0023, 2024 -0.0022, 2025 +0.0003). Every other metric inside its floor on both seeds (rec_yds moves are RNG desync, +0.020 mean vs floor 0.0153).
 - **Reading.** Lead #1 (more red-zone weight for elite targets) fails at the engine level: more weight on red-zone targets makes TD log loss worse beyond the floor. GL5 is consistently better (5 of 6 season-seeds) but inside 1x the floor; a TD-only change cannot meet `promotion_rule_noise_aware` (it needs a rec_yds gain), the same gap #75 met for dispersion. The decisive test for GL5 is against prices: the backfill session re-scores the 7,944 priced player-games with GL5 (does the committee-RB over-pricing decile shrink, does held-out log loss vs the book improve).
 - **Status:** GL5 testing; the other three rejected at these values.
+
+### Addendum to #88: GL5 against prices (2026-11-25, backfill session; no promotion)
+- **Runs.** `tdGl5A` / `tdGl5B` = `APEX_TD_GL5=1` (seeds 20261004 / 777) against `prn3A` / `prn3B`, run on head 71ce646. Re-scored on the same 7,944 priced RB/WR/TE player-games as #84 (identical rows), plus the #85 2025 early set. Tools: `odds_price_eval.py`, `odds_early_eval.py`, new `tools/backtest/gl5_price_compare.py`. Engine probabilities are not fitted to outcomes, so these scores are out of sample by construction.
+- **Log loss on the priced set, GL5 minus baseline** (positive = GL5 worse):
+
+| | 2023 | 2024 | 2025 | All |
+|---|---|---|---|---|
+| Engine alone, seed A | +0.0006 | +0.0000 | +0.0008 | **+0.0005** |
+| Engine alone, seed B | +0.0004 | -0.0003 | +0.0003 | **+0.0001** |
+| w0.2 blend, seed A / B | +0.0001 / +0.0001 | 0.0000 / 0.0000 | +0.0001 / 0.0000 | +0.0001 / 0.0000 |
+
+  Brier moves by +0.0001 or less. Levels, seed A: engine .41215 vs .41168, w0.2 .40267 vs .40258, book .40309. On the population the books price, GL5 is no better and slightly worse on seed A. That is the opposite of its -0.0021 / -0.0015 on the full backtest population (#88): the gain there comes from players the books do not list, i.e. deep-roster backs with tiny probabilities.
+- **Top decile** (engine over book; baseline decile edges held fixed):
+  - Seed A: RB share .438 → .445; RB engine-minus-hit 7.4 → 8.9 points; committee RBs (6-14 projected carries) 13.7 → 13.4 points (n 157 → 164).
+  - Seed B: committee RBs 14.8 → 14.5 points.
+  - **The committee-RB over-pricing does not shrink.**
+  - Over ALL committee-RB player-games (n 750), the engine is calibrated: projected .334 vs hit .339 (book .344), both before and after GL5. The top-decile over-pricing is mostly selection on the gap (regression to the mean among the engine's most optimistic calls), not a systematic carry-share bias. This **weakens #87 lead #2**.
+- **2025 early set, healthy players, gap 5-10 rule.** Relative CLV: seed A +1.27 (0.93, 1.66) → +1.21 (0.88, 1.56); seed B +1.25 → +1.26. ROI: seed A +13.3% → -0.8%; seed B +21.2% → +13.4%. Early log loss of the 50/50 blend: .41974 → .41994 (A), .41952 → .41966 (B).
+- **Verdict: null-to-negative against prices; GL5 is not promoted.** It does not reduce the over-pricing it was built for and does not improve priced-set log loss on either seed. Its full-population gain is real but sits where no bet is possible. Recommend closing R-38. The remaining #87 leads (new-team prior memory, snap-share recency) target players the books do list; test them on this priced set first, using `gl5_price_compare.py BASE CAND`.
