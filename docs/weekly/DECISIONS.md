@@ -470,3 +470,41 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - **Reading.** The engine carries real but small information beyond the closing price: where it is 5+ points over the book the bets roughly break even at best price (+1%), against -7.5% for every listed player and -14% where it is 5+ under. Where it disagrees by 10+ points (the live trigger), it is wrong more often than right: -28% to -31% ROI, interval below zero on both seeds. Large engine-book gaps behave like engine error (likely candidates: stale roles and late news that the 5-minute price has and the engine does not; not diagnosed here), so the rule bets exactly its worst cases. Caveats: prices are 5 minutes before kickoff (sharper than the T-2h prices the live card uses, so this is the hard test), best-of-11-books pricing flatters every rule, and 2023 is the weakest season throughout.
 - **Yardage markets (information only, #64).** Engine P(over) is interpolated from the pickle quantiles (the backtest stores P10/P25/P75/P90, not the draws), which costs the engine some log loss; read the levels with that in mind. Main line, seed A, pooled: reception yds n 4,819, Brier engine .2636 / book .2497 / 50-50 .2525, LOSO w 0.04-0.10; rush yds n 2,127, .2688 / .2468 / .2507, w 0.08-0.15; pass yds n 662, .2648 / .2497 / .2547, w 0.00 in every season. Blended edge >= 5 at best price: reception 1,714 bets +0.3% (-3.6, +4.2), rush 1,065 +1.0% (-3.8, +5.6), pass 203 -11.0% (-21.5, +0.1); seed B -0.4%, 0.0%, -7.2%. #64 stands: no non-TD prop is a play.
 - **Recommendation (owner decision; nothing changed in `value_board.py` or the runbook).** (1) Stop labelling anytime-TD plays from the 5-point blended-edge rule now; it is the one tested rule with a significantly negative result. (2) If TD plays continue, use w 0.2 (the held-out optimum, rounded down) and require the raw engine-book gap to sit between 5 and 10 points, flagged as a forward test in the ledger, not a promoted rule: the +1% result is inside noise. (3) Live "Estimated" book prices should use the per-book factors above, not the flat 0.90. (4) Use the remaining 4,033 credits for T-2h and close pulls in Weeks 12-15, so CLV can be measured forward.
+
+## 85. Early-line test (2025): the engine does not beat early anytime-TD prices on ROI, but prices move toward it by the close (2026-11-25, no model change)
+- **Question** (owner-approved via the parent session 2026-11-25): #84 measured the engine against the 5-minute close. Does it beat EARLY prices, before the week's news, and do those prices move toward it?
+- **Data.** The Odds API historical, `player_anytime_td`, region us, 2025 weeks 4-12. **Deviation from the brief:** a Tuesday 17:00Z snapshot lists only DraftKings with about 4 players for Sunday games (checked on 14 games), so the early snapshot is **Wednesday 17:00Z** of the game week (before the first injury report), Thursday 17:00Z when Wednesday had no market. Snapshots used: 3 Tuesday (full boards, kept), 99 Wednesday, 25 Thursday; 3 games had no early market (HOU@BAL w5, NO@CHI w7, HOU@TEN w11). 127 of 130 games, 2,129 RB/WR/TE player-games priced early. Credits for this test: **1,420** (210 of them on the Tuesday attempt, 14 thin Tuesday files kept aside in `var/odds_hist/early_2025_tue/`); **2,613 left**. Prices in `var/odds_hist/early_2025/` (gitignored).
+- **Tools.** `odds_backfill.py --early`; new `tools/backtest/odds_early_eval.py`. De-vig: per-book factor from the 2023-24 close (out of sample for 2025), the same factor early and close, so a price move is not a de-vig artifact. Early prices carry more over-round than the close (early consensus .198 vs close .186 on the same players); a rescaled early book (x 0.938) is reported as a sensitivity.
+- **Look-ahead control.** The backtest engine uses the week's final injury report; a Wednesday price does not. **Primary population:** players with no entry of any kind on that week's nflverse injury report and p_active >= 0.9: 1,773 player-games. Full population (2,129) labelled optimistic; it tells the same story.
+- **Accuracy, primary (seed A / B; hit rate .1906):**
+
+| | Engine | Early book | Close book | Early 50/50 | Early w0.2 | Close 50/50 |
+|---|---|---|---|---|---|---|
+| Log loss | .4253 / .4251 | .4216 | .4198 | **.4195 / .4193** | .4201 / .4200 | .4194 / .4192 |
+| Brier | .1360 / .1359 | .1346 | .1337 | .1344 / .1344 | .1343 / .1343 | .1342 / .1341 |
+
+  The engine alone still loses to the early book. Blended 50/50 with the early price, it beats the early book by 0.002 log loss on both seeds and reaches the level of the close book, i.e. the engine supplies about what the market learns between Wednesday and kickoff.
+- **ROI at the best early price, primary (1 unit, cluster bootstrap by game):**
+
+| Rule | Seed A: bets, units, ROI (90%) | Seed B |
+|---|---|---|
+| Raw gap >= 5 vs early | 190, +16.3 u, **+8.6% (-20.9, +42.0)** | 195, +31.8 u, **+16.3% (-15.9, +52.5)** |
+| w0.2 blend, gap 5-10 | 139, +18.5 u, +13.3% (-23.8, +54.5) | 143, +30.3 u, +21.2% (-19.4, +66.0) |
+| Live rule (gap >= 10) | 51, -4.2% (-46.3, +49.7) | 52, +2.8% (-38.5, +55.6) |
+| Rescaled early, gap >= 5 | 269, +2.2% (-20.3, +25.5) | 276, +10.4% (-13.4, +36.0) |
+| Control: every priced player | 1,773, -17.3% (-26.2, -8.0) | same |
+| Same gap >= 5 picks at the close price | 190, +6.8% (-24.0, +38.4) | 195, +19.4% (-16.4, +57.9) |
+
+  **The early-line edge does not clear zero on either seed.** Point estimates are positive (+9% / +16%), 25 points better than betting every listed player, but every interval spans zero.
+- **CLV (the key evidence), primary.** Change in de-vigged probability from early to close, relative to the game's average move (removes the drift from the higher early over-round), 90% interval:
+
+| Group | n (A) | Seed A | Seed B |
+|---|---|---|---|
+| Engine 5+ over early | 190 | **+1.49 pts (1.09, 1.91)** | +1.46 (1.10, 1.85) |
+| Engine 5-10 over early | 139 | +1.27 (0.93, 1.65) | +1.25 (0.91, 1.63) |
+| Control: engine within 2 pts | 508 | +0.47 (0.29, 0.66) | +0.44 (0.26, 0.62) |
+| Engine 5+ under early | 400 | **-1.46 (-1.77, -1.16)** | -1.44 (-1.75, -1.14) |
+
+  Prices move toward the engine in both directions, about 1 point more than the control, with intervals clear of zero on both seeds. The engine's average gap is 8.7 points, so the market closes roughly an eighth of it; the rest, per #84, is mostly engine error.
+- **Reading.** The engine carries real early information: the market moves its way, and a 50/50 blend with the Wednesday price is as good as the close. It is not yet enough to show profit on one season of about 190 bets. Caveats: one season only, and 2025 was the engine's best season in #84 (gap >= 5 at the close +13% that year), so these ROI numbers are likely the optimistic end; Thursday-fallback games are priced after Wednesday's practice report (the healthy filter covers them); best-of-books pricing flatters every rule.
+- **Recommendation (owner decision; nothing changed).** If TD plays continue, take them early (Wednesday), not at T-2h: w0.2 blend, raw gap 5-10 points, players not on the injury report, logged in the ledger with the close price so CLV is measured forward. CLV, not short-run ROI, is the promotion test: about +1 point per bet over the control is the bar from this backtest. The remaining credits (2,613) can fund Wednesday and close pulls for Weeks 12-15.
