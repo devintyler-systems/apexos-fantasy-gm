@@ -592,3 +592,16 @@ artifacts, as-of + input hashes + version on every run, no future information, p
   - Over ALL committee-RB player-games (n 750), the engine is calibrated: projected .334 vs hit .339 (book .344), both before and after GL5. The top-decile over-pricing is mostly selection on the gap (regression to the mean among the engine's most optimistic calls), not a systematic carry-share bias. This **weakens #87 lead #2**.
 - **2025 early set, healthy players, gap 5-10 rule.** Relative CLV: seed A +1.27 (0.93, 1.66) → +1.21 (0.88, 1.56); seed B +1.25 → +1.26. ROI: seed A +13.3% → -0.8%; seed B +21.2% → +13.4%. Early log loss of the 50/50 blend: .41974 → .41994 (A), .41952 → .41966 (B).
 - **Verdict: null-to-negative against prices; GL5 is not promoted.** It does not reduce the over-pricing it was built for and does not improve priced-set log loss on either seed. Its full-population gain is real but sits where no bet is possible. Recommend closing R-38. The remaining #87 leads (new-team prior memory, snap-share recency) target players the books do list; test them on this priced set first, using `gl5_price_compare.py BASE CAND`.
+
+## 89. #87 leads 3 and 4: team-changer memory rejected; rising-role recency R-40 is a near-pass (2026-11-25, no promotion)
+- **Switches** (off = byte-identical on `2025_w6`): `APEX_ACH_MULT` (scales the fitted last-season share-prior weight for players who changed teams; params.py) and `APEX_RECENCY_RISE` (recency weight for players whose last-3 offense-snap share rose 10+ points above their season mean, instead of the default 0.3; prep_nv.py, snap counts through `MAXWEEK` only).
+- **R-39 `APEX_ACH_MULT=0.5`** vs prn3A / prn3B (floors #82 record): rec_yds **+0.123 / +0.090**, rec +0.0050 / +0.0038, rush_yds +0.052 / +0.046: worse beyond 2x on both seeds. The fitted team-changer weight is right; the new-team over-pricing in #87 is not a prior-memory problem at the engine level. **Rejected.**
+- **R-40 `APEX_RECENCY_RISE`**, seeds A / B (and C):
+
+| value | rec_yds | rec | rush_yds | rush_att | td_ll | team RMSE | pass_yds |
+|---|---|---|---|---|---|---|---|
+| 0.6 | -0.017 / -0.042 (C -0.015) | **-0.0029 / -0.0024** (C -0.0014) | -0.027 / -0.082 (C -0.058) | **-0.012 / -0.016** (C -0.010) | -0.0006 / +0.0010 (C -0.0019) | -0.004 / +0.003 | -0.16 / -0.09 |
+| 0.8 | +0.004 / -0.057 | -0.0024 / -0.0059 | -0.025 / -0.038 | -0.011 / -0.016 | -0.0008 / 0.0000 | -0.001 / 0.000 | -0.06 / -0.01 |
+
+- **Rule check (0.6):** receptions and carries better beyond 2x the floor on both seeds; rush_yds better on all three seeds (mean -0.054, 3.4x the floor); nothing worse. rec_yds is better on all three seeds but beyond 2x (0.031) only on seed B, so `promotion_rule_noise_aware` (rec_yds beyond 2x on both seeds) is **not met**. 0.8 is not better. Per season (seed B) 2024 carries most of the receiving gain; rushing gains are in every season.
+- **Next:** price check by the backfill session (TD set, and the yardage set where the gain lives): if R-40 improves held-out log loss against the book on rush or reception props, it goes to the owner as an approval card with the rule shortfall stated. **Status: testing.**
