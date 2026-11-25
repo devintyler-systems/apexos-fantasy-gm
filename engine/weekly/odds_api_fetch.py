@@ -43,6 +43,7 @@ def _get(path, key, **q):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--out", required=True); ap.add_argument("--markets", default=",".join(DEFAULT_MARKETS))
     ap.add_argument("--books", default="draftkings,fanduel,betmgm,bovada,betrivers,betonlineag"); ap.add_argument("--week-days", type=int, default=7, help="only events starting within this many days")
+    ap.add_argument("--regions", default="us,us2", help="Odds API regions; each region is billed per market per event (us only halves the cost)")
     a = ap.parse_args()
     key = os.environ.get("ODDS_API_KEY")
     if not key:
@@ -54,7 +55,7 @@ if __name__ == "__main__":
         ko = dt.datetime.fromisoformat(ev["commence_time"].replace("Z", "+00:00"))
         if ko < now or ko > horizon:
             continue
-        j, hdr = _get(f"/events/{ev['id']}/odds", key, regions="us,us2", markets=a.markets, oddsFormat="american", bookmakers=a.books)
+        j, hdr = _get(f"/events/{ev['id']}/odds", key, regions=a.regions, markets=a.markets, oddsFormat="american", bookmakers=a.books)
         rows += flatten(j); used = hdr.get("x-requests-remaining", used)
     df = pd.DataFrame(rows)
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True); df.to_csv(a.out, index=False)

@@ -206,6 +206,7 @@ def yds(tag, odir):
     T["eng"] = [1 - cdf_from_q(pt, [D.at[i, f"{YMK[m][0]}_q{k}"] for k in (10, 25, 75, 90)]) for i, m, pt in zip(T.di, T.market, T.point)]
     T["eng"] = T.eng.clip(.02, .98); T = T[T.act != T.point].copy(); T["y"] = (T.act > T.point).astype(float)
     T["blend"] = .5 * (T.eng + T.book)
+    T.to_pickle(os.path.join(REPO, "var", "bt", f"odds_yds_{tag}.pkl"))
     for mk, G in T.groupby("market"):
         rows = []
         for S in list(SEASONS) + ["all"]:
