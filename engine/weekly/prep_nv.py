@@ -82,7 +82,7 @@ if _REC > 0:
         _mv = (_m_l3 - _m_all).abs()
         _ok = _ok & (sc.pfr_id.map(_mv).fillna(0) >= _rmove)
     _lam = pd.Series(_REC, index=sc.index)
-    _rise = float(os.environ.get("APEX_RECENCY_RISE", 0) or 0)      # R-40 candidate (#87 lead 4): recency weight for players whose last-3 offense-snap share rose 10+ points over their season mean; 0 = off (baseline)
+    _rise = float(os.environ.get("APEX_RECENCY_RISE", 0.6) or 0)      # R-40 (DECISIONS #89, owner-approved 2026-11-25): recency weight 0.6 for players whose last-3 offense-snap share rose 10+ points over their season mean; APEX_RECENCY_RISE=0 reproduces the old baseline
     if _rise > 0:
         _sp2 = sn[sn.offense_pct.notna()].sort_values("week")
         _up = _sp2.groupby("pfr_player_id").tail(3).groupby("pfr_player_id").offense_pct.mean() - _sp2.groupby("pfr_player_id").offense_pct.mean()
