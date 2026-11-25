@@ -10,7 +10,7 @@ GET /v4/historical/sports/americanfootball_nfl/events/{id}/odds?date=<kickoff - 
 Cost per odds call = 10 x markets returned x regions (empty responses free). The script stops before --max-credits and is resumable (one json per game).
 Kickoffs come from nflverse games.parquet (gameday + gametime, US Eastern).
 """
-import argparse, datetime as dt, json, os, sys, time, urllib.parse, urllib.request
+import argparse, datetime as dt, json, os, sys, time, urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -29,8 +29,11 @@ NICK = {"ARI": "Arizona Cardinals", "ATL": "Atlanta Falcons", "BAL": "Baltimore 
 
 def get(path, key, **q):
     q["apiKey"] = key
-    with urllib.request.urlopen(f"{BASE}{path}?{urllib.parse.urlencode(q)}", timeout=60) as r:
-        return json.load(r), {k.lower(): v for k, v in r.headers.items()}
+    try:
+        with urllib.request.urlopen(f"{BASE}{path}?{urllib.parse.urlencode(q)}", timeout=60) as r:
+            return json.load(r), {k.lower(): v for k, v in r.headers.items()}
+    except urllib.error.HTTPError as e:  # never let the URL (it carries the key) reach a traceback
+        raise SystemExit(f"HTTP {e.code} on {path}: {e.read()[:300]!r}") from None
 
 
 def iso(t):
@@ -47,28 +50,40 @@ def games(seasons, weeks):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--seasons", type=int, nargs="+", default=[2023, 2024, 2025]); ap.add_argument("--weeks", default="4-12")
     ap.add_argument("--markets", default="player_anytime_td"); ap.add_argument("--minutes-before", type=int, default=5); ap.add_argument("--max-credits", type=int, default=18000)
-    ap.add_argument("--check", action="store_true"); a = ap.parse_args()
+    ap.add_argument("--check", action="store_true")
+    ap.add_argument("--out", default=str(OUTD), help="output folder (default var/odds_hist); event ids are reused from any json under var/odds_hist")
+    a = ap.parse_args()
     key = os.environ.get("ODDS_API_KEY")
     if not key:
         raise SystemExit("ODDS_API_KEY is not set (environment secret only)")
     w0, w1 = map(int, a.weeks.split("-")); G = games(a.seasons, range(w0, w1 + 1))
     if a.check:
         G = G.sort_values("ko").iloc[[0, -1]]
-    OUTD.mkdir(parents=True, exist_ok=True); used = 0
+    out = Path(a.out); out.mkdir(parents=True, exist_ok=True); used = 0
+    known = {}  # game_id -> event id from earlier passes (saves the 1-credit events lookup)
+    for jf in OUTD.rglob("*.json"):
+        try:
+            d = json.loads(jf.read_text()); eid = d.get("event_id") or (d.get("data") or {}).get("id")
+            if eid: known[d["game_id"]] = eid
+        except Exception:
+            pass
     for r in G.itertuples():
-        f = OUTD / f"{r.game_id}.json"
+        f = out / f"{r.game_id}.json"
         if f.exists() and not a.check:
             continue
-        ev, h = get("/events", key, date=iso(r.ko - dt.timedelta(hours=1)))
-        m = [e for e in ev.get("data", []) if e["home_team"] == NICK.get(r.home_team) and e["away_team"] == NICK.get(r.away_team)]
-        if not m:
-            print("no event", r.game_id); continue
-        eid = m[0]["id"]
+        eid = None if a.check else known.get(r.game_id)
+        if eid is None:
+            ev, h = get("/events", key, date=iso(r.ko - dt.timedelta(hours=1)))
+            used += int(h.get("x-requests-last", 0) or 0)
+            m = [e for e in ev.get("data", []) if e["home_team"] == NICK.get(r.home_team) and e["away_team"] == NICK.get(r.away_team)]
+            if not m:
+                print("no event", r.game_id); continue
+            eid = m[0]["id"]
         if a.check:
             mk, h = get(f"/events/{eid}/markets", key, date=iso(r.ko - dt.timedelta(minutes=a.minutes_before)), regions="us")
             print(r.game_id, json.dumps(mk)[:1500], "| cost", h.get("x-requests-last"), "remaining", h.get("x-requests-remaining")); continue
         od, h = get(f"/events/{eid}/odds", key, date=iso(r.ko - dt.timedelta(minutes=a.minutes_before)), markets=a.markets, regions="us", oddsFormat="american")
-        f.write_text(json.dumps(dict(game_id=r.game_id, kickoff_utc=iso(r.ko), snapshot=od.get("timestamp"), data=od.get("data"))))
+        f.write_text(json.dumps(dict(game_id=r.game_id, event_id=eid, markets=a.markets, kickoff_utc=iso(r.ko), snapshot=od.get("timestamp"), data=od.get("data"))))
         used += int(h.get("x-requests-last", 0) or 0)
         print(r.game_id, "cost", h.get("x-requests-last"), "used", used, "remaining", h.get("x-requests-remaining"))
         if used >= a.max_credits:
