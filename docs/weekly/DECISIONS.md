@@ -753,3 +753,8 @@ artifacts, as-of + input hashes + version on every run, no future information, p
     3. Wednesday-line anchoring.
     4. Pickle anchored columns into `runs/weekly` output (the frozen-run writer is not touched here).
 - **Tools.** `tools/backtest/build_anchor_lines.py`, `build_anchor_lines_raw.py`, `anchor_backtest.py`, `anchor_live_check.py`. Tags: anchA, anchB, ancC, ancT, offchk, rise6C (seed 31337, unused), rise6D (seed 999). Tests: `tests/weekly/test_anchor.py`.
+
+### Promotion record for #91, market anchoring (owner-approved 2026-11-25)
+- **Owner approved** the market-anchored output for live runs ("approve anchoring", 2026-11-25 ~19:00Z), on the #91 evidence (noise-aware rule met on every core metric; rec yds -0.32, rush yds -0.53, pass yds -2.6 MAE; TD log loss 0.451 → 0.402; DK-point MAE 4.05 → 3.97; T-2h lines as good as the close).
+- **Operating rule:** every live window freezes a raw run (no `APEX_ANCHOR_XLSX`) and, when a lines workbook exists, an anchored run with `APEX_ANCHOR_XLSX` set; the run notes state the lines snapshot time. Lines older than T-2h are labelled "early-line anchored" (Wednesday anchoring is untested, #91 open item 3); the T-2h re-anchor supersedes them. The engine default does not change: with no lines file the engine is byte-identical to the R-40 baseline.
+- **Open items carried:** 2025 rush yds MAE +0.27; rush lower tail too heavy after anchoring (14.8% below P10); anchored columns in the frozen-run writer.
