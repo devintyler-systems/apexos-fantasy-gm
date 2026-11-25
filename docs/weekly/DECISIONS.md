@@ -605,3 +605,23 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 
 - **Rule check (0.6):** receptions and carries better beyond 2x the floor on both seeds; rush_yds better on all three seeds (mean -0.054, 3.4x the floor); nothing worse. rec_yds is better on all three seeds but beyond 2x (0.031) only on seed B, so `promotion_rule_noise_aware` (rec_yds beyond 2x on both seeds) is **not met**. 0.8 is not better. Per season (seed B) 2024 carries most of the receiving gain; rushing gains are in every season.
 - **Next:** price check by the backfill session (TD set, and the yardage set where the gain lives): if R-40 improves held-out log loss against the book on rush or reception props, it goes to the owner as an approval card with the rule shortfall stated. **Status: testing.**
+
+### Addendum to #89: R-40 against prices (2026-11-25, backfill session; no promotion recommended on price grounds)
+- **Runs.** `rise6A` / `rise6B` = `APEX_RECENCY_RISE=0.6` (seeds 20261004 / 777) against `prn3A` / `prn3B`, run on head 9381726. Re-scored on the priced sets: main-line rush yds (2,127) and reception yds (4,819) from #84, the 7,944 anytime-TD player-games, and the #85 2025 early set. Line and row sets are identical between base and candidate.
+- **Rising-role subset** = last-3 offense-snap share at least 10 points above the season mean, weeks < W (the R-40 trigger): 114 rush lines, 372 reception lines, 495 TD player-games.
+- **Tools.** New `tools/backtest/cand_price_compare.py BASE_A CAND_A BASE_B CAND_B`. `odds_price_eval.py yds` now saves `var/bt/odds_yds_{TAG}.pkl`. The blend weight is leave-one-season-out. Engine probabilities are not fitted to outcomes, so engine-alone scores are out of sample by construction.
+- **Results, log loss, candidate minus base, seed A / B** (negative = R-40 better). Pooled levels, seed A: rush engine .744 / LOSO blend .686 / book .686; reception .725 / .692 / .692; TD .4117 / .4029 / .4031.
+
+| Set | Engine alone | LOSO blend with book | w0.2 blend |
+|---|---|---|---|
+| Rush yds, all | -0.0001 / -0.0003 | -0.0001 / +0.0000 | +0.0000 / +0.0000 |
+| Rush yds, rising role | **-0.014 / -0.016** | 0.0000 / 0.0000 (held-out weight 0) | -0.0007 / -0.0009 |
+| Reception yds, all | -0.0003 / -0.0000 | +0.0001 / +0.0001 | +0.0001 / +0.0001 |
+| Reception yds, rising role | **-0.0038 / -0.0041** | +0.0016 / +0.0016 | +0.0015 / +0.0015 |
+| Anytime TD, all | -0.0001 / +0.0002 | 0.0000 / +0.0000 | 0.0000 / +0.0001 |
+| Anytime TD, rising role | -0.0008 / -0.0020 | +0.0007 / -0.0000 | +0.0002 / 0.0000 |
+
+  Brier moves the same way (rush rising role engine -0.005 / -0.006; every blended set within ±0.0008).
+- **2025 early set, healthy players, gap 5-10.** Relative CLV +1.27 → +1.38 (A), +1.25 → +1.18 (B). ROI +13.3% → +15.1% (A), +21.2% → +10.4% (B). Early 50/50 log loss .41974 → .41987, .41952 → .41985. The rising-role part of the rule is 5-7 bets: too few to read.
+- **Reading.** R-40 does what it claims inside the engine: on the players it changes, engine-alone log loss improves on both seeds, sharply for rushing (-0.015) and modestly for receiving and TD. Against prices it adds nothing. On rush props the engine carries no information beyond the book even after R-40 (held-out blend weight 0). On the rising-role reception subset, the blend is slightly worse than the book alone. Full-population priced scores move within ±0.0003 everywhere. Caveat: engine yardage P(over) is interpolated from the backtest quantiles (#84), which handicaps engine-alone yardage scores (worse than a coin flip at .72-.74); the before/after comparison is like for like.
+- **Verdict (prices): null.** R-40 is a projection-accuracy candidate, not a betting one. Its promotion stands or falls on the noise-aware rule in #89 (rec_yds not met); the price check neither adds support nor raises an objection. Recommend no change to the TD card or the non-TD information-only status (#64).
