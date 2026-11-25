@@ -625,3 +625,59 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 - **2025 early set, healthy players, gap 5-10.** Relative CLV +1.27 → +1.38 (A), +1.25 → +1.18 (B). ROI +13.3% → +15.1% (A), +21.2% → +10.4% (B). Early 50/50 log loss .41974 → .41987, .41952 → .41985. The rising-role part of the rule is 5-7 bets: too few to read.
 - **Reading.** R-40 does what it claims inside the engine: on the players it changes, engine-alone log loss improves on both seeds, sharply for rushing (-0.015) and modestly for receiving and TD. Against prices it adds nothing. On rush props the engine carries no information beyond the book even after R-40 (held-out blend weight 0). On the rising-role reception subset, the blend is slightly worse than the book alone. Full-population priced scores move within ±0.0003 everywhere. Caveat: engine yardage P(over) is interpolated from the backtest quantiles (#84), which handicaps engine-alone yardage scores (worse than a coin flip at .72-.74); the before/after comparison is like for like.
 - **Verdict (prices): null.** R-40 is a projection-accuracy candidate, not a betting one. Its promotion stands or falls on the noise-aware rule in #89 (rec_yds not met); the price check neither adds support nor raises an objection. Recommend no change to the TD card or the non-TD information-only status (#64).
+
+## 90. Market-anchored player projections: the book's implied median is the better point projection in every market; the held-out engine weight is 0-0.1 (2026-11-25, no model change; design sketch for an anchored output)
+- **Question** (owner directive 2026-11-25: projection accuracy is the #1 goal, above betting): as point projections against actual stats, how do the engine and the book's lines compare, and does a blend beat both?
+- **Tool.** `tools/backtest/anchor_eval.py TAG` (post-sim; no API calls).
+- **Data.** The #84 closing-price sets: main lines for reception yds (4,819), rush yds (2,127) and pass yds (662), plus 7,944 anytime-TD player-games. Seeds prn3A / prn3B; seed B within 0.01 yd of seed A everywhere.
+- **Point projections compared:**
+  - engine mean;
+  - engine median (midpoint of the pickle's P25/P75);
+  - the line itself;
+  - book-implied median: the engine's own distribution shape shifted until P(over the line) equals the de-vigged two-way book probability, i.e. median_book = line + median_eng - Q_eng(1 - p_book);
+  - blend w x engine + (1 - w) x book median, with w fit leave-one-season-out on MAE.
+  - Pushes were dropped upstream.
+- **Yardage, MAE in yards (RMSE), pooled 2023-25, seed A:**
+
+| Market | n | Engine mean | Engine median | Line | Book median | LOSO blend (engine mean) | Held-out engine weight |
+|---|---|---|---|---|---|---|---|
+| Reception yds | 4,819 | 20.22 (27.82) | 20.14 (28.33) | 19.44 (27.25) | **19.43 (27.23)** | 19.43 (27.22) | 0.05 / 0.00 / 0.05 |
+| Rush yds | 2,127 | 19.15 (27.03) | 19.06 (27.55) | 18.05 (25.76) | **18.03 (25.76)** | 18.04 (25.74) | 0.10 / 0.10 / 0.00 |
+| Pass yds | 662 | 59.02 (73.71) | 59.58 (74.39) | 56.33 (71.20) | **56.28 (71.05)** | 56.28 (71.05) | 0 / 0 / 0 |
+
+  - **The book's median is the better point projection in every market and every season:** -3.9% MAE for reception yds, -5.8% for rush yds, -4.6% for pass yds against the engine mean.
+  - The line alone is nearly as good as the book median; the de-vig shift adds 0.01-0.05 yd.
+  - Blending the engine back in gains 0.00-0.01 yd. Held-out engine weight is 0-0.10 for the mean and 0-0.20 for the median, and 0 for passing in every season.
+  - Both are biased low against these actuals (engine mean -3.2 rec yds, -2.6 rush, -7.6 pass; book median -4.3, -2.8, -4.8). The actuals are conditional on the player playing a game with a posted line, so this level gap is partly selection and partly real.
+- **Anytime TD as a probability projection** (pooled; held-out engine weight 0.15 / 0.35 / 0.15):
+
+| | Engine | Book | LOSO blend |
+|---|---|---|---|
+| Log loss | .4117 | .4031 | **.4030** |
+| Brier | .1292 | **.1266** | .1267 |
+
+  The blend is no better than the book; this restates #84.
+- **Coverage** (how much of the board a market anchor reaches). Projected DK points, p_active-weighted, over every pre-game projected player in the 388 games:
+
+| Group | Share of projected DK points with any posted line | With a yardage line | With a TD line |
+|---|---|---|---|
+| RB/WR/TE (52,523 pts, 10,175 player-games) | **88.2%** | 78.9% | 88.2% |
+| QB (12,963 pts) | 84.2% (pass yds) | 84.2% | n/a* |
+| QB + RB/WR/TE | 87.4% | 79.9% | 70.8% |
+
+  \*QB TD lines were not kept in the TD set.
+
+  Share of RB/WR/TE player-games with a yardage line, by projected DK points: under 2 pts 5%; 2-5 pts 46%; 5-10 pts 84%; 10-15 pts 93%; over 15 pts 98%. The TD set holds only players who later took a snap, so TD coverage is a slight undercount. **The market can anchor about 87-88% of projected skill points, and nearly every fantasy-relevant player.** The unanchored 12% is mostly depth players under 5 projected points.
+- **Reading.** For the stats books post, the engine's player-level means carry no information beyond the line; the honest projection is the market's. The engine's job shifts to three things: (1) the joint structure (team totals, correlation between teammates, game script); (2) distribution shape and tails; (3) the roughly 12% of points the market does not price, where the engine stays the only source (#87 and #89 changes belong there).
+- **Design sketch: an "anchored" projection output** (not built; owner decision; a backtest gate comes before any live use):
+  1. **Inputs:** the latest de-vigged main lines per player and market (`price_odds.py` already builds them); the engine's joint simulation (`R.run_game`, N draws per game).
+  2. **Per player and stat with a line:** target median m* = book median, or a LOSO blend with w <= 0.1. Shift the player's simulated draws by the difference between m* and the engine's simulated median. Use a location shift for yardage (floored at 0) and a scale factor for counts, so the engine's shape, tails and within-game correlation are kept.
+  3. **Anytime TD:** reweight the player's TD draws (importance weights, or thinning and adding TDs) until P(TD >= 1) equals the blended probability.
+  4. **Team consistency:** after the shifts, rescale each team's receiving and rushing yards toward the market team total (spread and total), so the shares stay coherent. Teammates' correlation is kept because draws are shifted, not resampled.
+  5. **Players with no line:** keep the engine, then apply the team-level rescale from step 4 so the team adds up.
+  6. **Outputs:** every current table (means, quantiles, DK points, the TD board) plus an "anchored" flag per player. Frozen runs keep both the raw and the anchored columns, so grading can compare them forward.
+  7. **Acceptance test before live use:**
+     - Re-run the backtest with anchoring on the 2023-25 slates (closing lines are available now).
+     - Grade MAE and pinball loss on rec, rush and pass yds, and DK-point MAE, against prn3 under the #59 noise-aware rule.
+     - Grade lines as of T-2h, not the close, for the live-equivalent test. That needs a further historical pull at about 10-30 credits per game-snapshot; this test used none.
+- **Caveats.** Closing lines are the sharpest snapshot; the live version would anchor to T-2h or Wednesday lines, which are less accurate (the #85 early book was worse than the close on TD). Engine medians come from four stored quantiles, a coarse shape. Yardage actuals exclude pushes.
