@@ -81,9 +81,15 @@ if _REC > 0:
         _m_all = _sp.groupby("pfr_player_id").offense_pct.mean(); _m_l3 = _sp.groupby("pfr_player_id").tail(3).groupby("pfr_player_id").offense_pct.mean()
         _mv = (_m_l3 - _m_all).abs()
         _ok = _ok & (sc.pfr_id.map(_mv).fillna(0) >= _rmove)
-    sc.loc[_ok, "tsh_pg"] = (1 - _REC) * sc.loc[_ok, "tsh_pg"] + _REC * sc.loc[_ok, "tsh3"].fillna(0)
+    _lam = pd.Series(_REC, index=sc.index)
+    _rise = float(os.environ.get("APEX_RECENCY_RISE", 0) or 0)      # R-40 candidate (#87 lead 4): recency weight for players whose last-3 offense-snap share rose 10+ points over their season mean; 0 = off (baseline)
+    if _rise > 0:
+        _sp2 = sn[sn.offense_pct.notna()].sort_values("week")
+        _up = _sp2.groupby("pfr_player_id").tail(3).groupby("pfr_player_id").offense_pct.mean() - _sp2.groupby("pfr_player_id").offense_pct.mean()
+        _lam[sc.pfr_id.map(_up).fillna(0) >= 0.10] = _rise
+    sc.loc[_ok, "tsh_pg"] = (1 - _lam[_ok]) * sc.loc[_ok, "tsh_pg"] + _lam[_ok] * sc.loc[_ok, "tsh3"].fillna(0)
     if os.environ.get("APEX_RECENCY_TGT_ONLY", "0") != "1":      # variant: targets only, carries keep the season mean
-        sc.loc[_ok, "csh_pg"] = (1 - _REC) * sc.loc[_ok, "csh_pg"] + _REC * sc.loc[_ok, "csh3"].fillna(0)
+        sc.loc[_ok, "csh_pg"] = (1 - _lam[_ok]) * sc.loc[_ok, "csh_pg"] + _lam[_ok] * sc.loc[_ok, "csh3"].fillna(0)
     sc = sc.drop(columns=["tsh3", "csh3", "n3"])
 sc = sc[sc.Pos.isin(["QB", "RB", "FB", "WR", "TE", "OL", "P", "NT"])].copy()
 sc["GS"] = 0.0

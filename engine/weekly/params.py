@@ -23,6 +23,7 @@ TD_RZ_W_REC = float(os.environ.get("APEX_TD_RZ_W_REC", 0.40))      # R-37/R-38 c
 TD_RZ_W_RUSH = float(os.environ.get("APEX_TD_RZ_W_RUSH", 0.40))
 TD_RZ_MR = float(os.environ.get("APEX_TD_RZ_MR", 8.0))
 TD_GL5 = os.environ.get("APEX_TD_GL5", "0") == "1"
+ACH_MULT = float(os.environ.get("APEX_ACH_MULT", 1.0))      # R-39 candidate: scales last-season share prior weight for team changers
 PR_NEUTRAL_W = float(os.environ.get("APEX_PR_NEUTRAL_W", 0.3))      # weight on the neutral rate (1 = neutral only, 0 = raw)
 
 _G = pd.read_parquet(N + "games.parquet"); _G = _G[(_G.season == SEASON) & (_G.game_type == "REG")].copy()
@@ -367,7 +368,7 @@ def build_roster_v4(team):
                 role = 0.002 if kind == "tgt" else 0.01; k, a, ach = 3.0, 0.0, 0.0
             else:
                 k, a, ach = _fk(stat, r.pos); k = k * QB_CAR_KMULT if (kind == "car" and r.pos == "QB") else k; role = PP["roles"][kind][r.pos if r.pos in PP["roles"][kind] else "RB"].get(str(float(min(rk[i], 6))), 0.01); rawrk = float(d["trk" if kind == "tgt" else "crk"].iloc[i]); role = role * (6.0 / rawrk) ** 2 if rawrk > 6 else role
-            aa = 0.0 if np.isnan(last[i]) else (a if (np.isnan(r.same_team) or r.same_team == 1) else ach)
+            aa = 0.0 if np.isnan(last[i]) else (a if (np.isnan(r.same_team) or r.same_team == 1) else ach * ACH_MULT)      # ACH_MULT: R-39 candidate (#87 lead 3), 1.0 = baseline
             prior = aa * (0.0 if np.isnan(last[i]) else last[i]) + (1 - aa) * role
             n = float(r.G); out[i] = (n * obs[i] + k * prior) / (n + k)
         return out
