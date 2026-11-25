@@ -508,6 +508,10 @@ artifacts, as-of + input hashes + version on every run, no future information, p
   Prices move toward the engine in both directions, about 1 point more than the control, with intervals clear of zero on both seeds. The engine's average gap is 8.7 points, so the market closes roughly an eighth of it; the rest, per #84, is mostly engine error.
 - **Reading.** The engine carries real early information: the market moves its way, and a 50/50 blend with the Wednesday price is as good as the close. It is not yet enough to show profit on one season of about 190 bets. Caveats: one season only, and 2025 was the engine's best season in #84 (gap >= 5 at the close +13% that year), so these ROI numbers are likely the optimistic end; Thursday-fallback games are priced after Wednesday's practice report (the healthy filter covers them); best-of-books pricing flatters every rule.
 - **Recommendation (owner decision; nothing changed).** If TD plays continue, take them early (Wednesday), not at T-2h: w0.2 blend, raw gap 5-10 points, players not on the injury report, logged in the ledger with the close price so CLV is measured forward. CLV, not short-run ROI, is the promotion test: about +1 point per bet over the control is the bar from this backtest. The remaining credits (2,613) can fund Wednesday and close pulls for Weeks 12-15.
+<<<<<<< HEAD
+=======
+- **Config (for #86).** `config/weekly/td_book_devig.json`: per-book factors fitted on ALL 2023-25 closing prices (hits / implied, RB/WR/TE with a snap; not leave-one-out): FanDuel .901, PointsBet .892, DraftKings .857, BetOnline .850, Bovada .841, Barstool .833, BetMGM .832, Fanatics .832, Caesars (williamhill_us) .805, BetRivers .770, Unibet .708; pooled .830. Read by `price_odds.td_devig_k()`.
+>>>>>>> 20b4ced8e9429a64c8d3d5836aba52f2de19182b
 
 ## 86. TD play rule retired; forward test at w 0.2 (owner-approved 2026-11-25, from #84)
 - **Approved:** stop labelling anytime-TD plays from the 5-point blended-edge rule (2023-25 closing prices: 182 bets, -27.9% ROI, 90% interval -50% to -3%; seed B -31%).
