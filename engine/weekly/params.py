@@ -19,6 +19,10 @@ def shr(obs, n, prior, k):
 import os
 PR_NEUTRAL = os.environ.get("APEX_PR_NEUTRAL", "1") == "1"      # R-31 (DECISIONS #82, owner-approved 2026-11-24): neutral-situation pass rate in the team prior; APEX_PR_NEUTRAL=0 reproduces the old baseline
 PR_NEUTRAL_K = float(os.environ.get("APEX_PR_NEUTRAL_K", 90))
+TD_RZ_W_REC = float(os.environ.get("APEX_TD_RZ_W_REC", 0.40))      # R-37/R-38 candidates (DECISIONS #87 leads), defaults = baseline
+TD_RZ_W_RUSH = float(os.environ.get("APEX_TD_RZ_W_RUSH", 0.40))
+TD_RZ_MR = float(os.environ.get("APEX_TD_RZ_MR", 8.0))
+TD_GL5 = os.environ.get("APEX_TD_GL5", "0") == "1"
 PR_NEUTRAL_W = float(os.environ.get("APEX_PR_NEUTRAL_W", 0.3))      # weight on the neutral rate (1 = neutral only, 0 = raw)
 
 _G = pd.read_parquet(N + "games.parquet"); _G = _G[(_G.season == SEASON) & (_G.game_type == "REG")].copy()
@@ -420,8 +424,12 @@ def build_roster_v4(team):
     rz_t_sh = (d.rz_tgt + mr * d.tgt_sh) / (rzT + mr)
     rz_c_sh = (d.rz_car + mr * d.car_sh) / (rzC + mr)
     rz10_c_sh = (d.rz10_car + 8 * d.car_sh) / (rz10C + 8)
-    d["w_rec_td"] = (0.40 * rz_t_sh + 0.60 * d.tgt_sh) * tilt
-    d["w_rush_td"] = 0.40 * rz10_c_sh + 0.60 * d.car_sh
+    if TD_RZ_MR != 8.0:      # R-37 candidate (#87 miss diagnosis): lighter shrink of red-zone shares toward overall share
+        rz_t_sh = (d.rz_tgt + TD_RZ_MR * d.tgt_sh) / (rzT + TD_RZ_MR); rz10_c_sh = (d.rz10_car + TD_RZ_MR * d.car_sh) / (rz10C + TD_RZ_MR)
+    if TD_GL5:      # R-38 candidate (#87): rushing TD weight blends inside-5 with inside-10 carry share (goal-line back vs committee back)
+        rz5C = max(d.rz5_car.sum(), 0); rz10_c_sh = 0.5 * rz10_c_sh + 0.5 * (d.rz5_car + TD_RZ_MR * d.car_sh) / (rz5C + TD_RZ_MR)
+    d["w_rec_td"] = (TD_RZ_W_REC * rz_t_sh + (1 - TD_RZ_W_REC) * d.tgt_sh) * tilt      # 0.40 = baseline (hand-set)
+    d["w_rush_td"] = TD_RZ_W_RUSH * rz10_c_sh + (1 - TD_RZ_W_RUSH) * d.car_sh      # 0.40 = baseline (hand-set)
     d = _apply_td_mult(d)
     d["other_tgt_sh"] = other_sh; d["other_car_sh"] = other_car
     d["tilt"] = tilt
@@ -489,8 +497,12 @@ def build_roster_v3(team):
     rz_t_sh = (d.rz_tgt + mr * d.tgt_sh) / (rzT + mr)
     rz_c_sh = (d.rz_car + mr * d.car_sh) / (rzC + mr)
     rz10_c_sh = (d.rz10_car + 8 * d.car_sh) / (rz10C + 8)
-    d["w_rec_td"] = (0.40 * rz_t_sh + 0.60 * d.tgt_sh) * tilt
-    d["w_rush_td"] = 0.40 * rz10_c_sh + 0.60 * d.car_sh
+    if TD_RZ_MR != 8.0:      # R-37 candidate (#87 miss diagnosis): lighter shrink of red-zone shares toward overall share
+        rz_t_sh = (d.rz_tgt + TD_RZ_MR * d.tgt_sh) / (rzT + TD_RZ_MR); rz10_c_sh = (d.rz10_car + TD_RZ_MR * d.car_sh) / (rz10C + TD_RZ_MR)
+    if TD_GL5:      # R-38 candidate (#87): rushing TD weight blends inside-5 with inside-10 carry share (goal-line back vs committee back)
+        rz5C = max(d.rz5_car.sum(), 0); rz10_c_sh = 0.5 * rz10_c_sh + 0.5 * (d.rz5_car + TD_RZ_MR * d.car_sh) / (rz5C + TD_RZ_MR)
+    d["w_rec_td"] = (TD_RZ_W_REC * rz_t_sh + (1 - TD_RZ_W_REC) * d.tgt_sh) * tilt      # 0.40 = baseline (hand-set)
+    d["w_rush_td"] = TD_RZ_W_RUSH * rz10_c_sh + (1 - TD_RZ_W_RUSH) * d.car_sh      # 0.40 = baseline (hand-set)
     d = _apply_td_mult(d)
     d["other_tgt_sh"] = other_sh; d["other_car_sh"] = other_car
     d["tilt"] = tilt
