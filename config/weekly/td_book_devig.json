@@ -1,0 +1,30 @@
+{
+ "books": {
+  "barstool": 0.8333,
+  "betmgm": 0.8319,
+  "betonlineag": 0.8502,
+  "betrivers": 0.7704,
+  "bovada": 0.8409,
+  "draftkings": 0.8572,
+  "fanatics": 0.8318,
+  "fanduel": 0.9006,
+  "pointsbetus": 0.8924,
+  "unibet_us": 0.708,
+  "williamhill_us": 0.8052
+ },
+ "pooled": 0.8298,
+ "_n": {
+  "barstool": 824,
+  "betmgm": 6119,
+  "betonlineag": 5050,
+  "betrivers": 7818,
+  "bovada": 6622,
+  "draftkings": 7887,
+  "fanatics": 2532,
+  "fanduel": 7778,
+  "pointsbetus": 1442,
+  "unibet_us": 2656,
+  "williamhill_us": 7578
+ },
+ "_source": "DECISIONS #84, 2023-25 closing prices, hits/implied"
+}
