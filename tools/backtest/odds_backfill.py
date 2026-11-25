@@ -33,7 +33,12 @@ def get(path, key, **q):
         with urllib.request.urlopen(f"{BASE}{path}?{urllib.parse.urlencode(q)}", timeout=60) as r:
             return json.load(r), {k.lower(): v for k, v in r.headers.items()}
     except urllib.error.HTTPError as e:  # never let the URL (it carries the key) reach a traceback
-        raise SystemExit(f"HTTP {e.code} on {path}: {e.read()[:300]!r}") from None
+        raise ApiError(f"HTTP {e.code} on {path}: {e.read()[:300]!r}", e.code) from None
+
+
+class ApiError(SystemExit):
+    def __init__(self, msg, code):
+        super().__init__(msg); self.code = code
 
 
 def iso(t):
@@ -51,6 +56,7 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--seasons", type=int, nargs="+", default=[2023, 2024, 2025]); ap.add_argument("--weeks", default="4-12")
     ap.add_argument("--markets", default="player_anytime_td"); ap.add_argument("--minutes-before", type=int, default=5); ap.add_argument("--max-credits", type=int, default=18000)
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--early", action="store_true", help="early snapshot: Wednesday 17:00Z of the game week (before the first injury report), Thursday 17:00Z if Wednesday has no market and kickoff is later (DECISIONS #85; Tuesday lists only ~4 DraftKings players for Sunday games)")
     ap.add_argument("--out", default=str(OUTD), help="output folder (default var/odds_hist); event ids are reused from any json under var/odds_hist")
     a = ap.parse_args()
     key = os.environ.get("ODDS_API_KEY")
@@ -59,6 +65,10 @@ def main():
     w0, w1 = map(int, a.weeks.split("-")); G = games(a.seasons, range(w0, w1 + 1))
     if a.check:
         G = G.sort_values("ko").iloc[[0, -1]]
+    if a.early:   # Wednesday 17:00Z before the week's first game (ET date); Thursday 17:00Z as the fallback when it is still before kickoff
+        first = G.groupby(["season", "week"]).ko.transform("min")
+        wed = [dt.datetime.combine((k.date() - dt.timedelta(days=(k.weekday() - 2) % 7 or 7)), dt.time(17), tzinfo=dt.timezone.utc) for k in first]
+        G = G.assign(snaps=[[t] + ([t + dt.timedelta(days=1)] if t + dt.timedelta(days=1) < ko else []) for t, ko in zip(wed, G.ko)])
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True); used = 0
     known = {}  # game_id -> event id from earlier passes (saves the 1-credit events lookup)
     for jf in OUTD.rglob("*.json"):
@@ -82,6 +92,25 @@ def main():
         if a.check:
             mk, h = get(f"/events/{eid}/markets", key, date=iso(r.ko - dt.timedelta(minutes=a.minutes_before)), regions="us")
             print(r.game_id, json.dumps(mk)[:1500], "| cost", h.get("x-requests-last"), "remaining", h.get("x-requests-remaining")); continue
+        if a.early:
+            od, h, used_snap = {}, {}, None
+            for t in r.snaps:
+                try:
+                    o2, h2 = get(f"/events/{eid}/odds", key, date=iso(t), markets=a.markets, regions="us", oddsFormat="american")
+                except ApiError as e:
+                    if e.code in (404, 422): print(r.game_id, iso(t), "no event at this time"); continue
+                    raise
+                used += int(h2.get("x-requests-last", 0) or 0); h = h2
+                if any(b.get("markets") for b in (o2.get("data") or {}).get("bookmakers", [])):
+                    od, used_snap = o2, iso(t); break
+            if used_snap is None:
+                print(r.game_id, "no anytime market at Tue or Wed", "used", used); continue
+            f.write_text(json.dumps(dict(game_id=r.game_id, event_id=eid, markets=a.markets, kickoff_utc=iso(r.ko), requested=used_snap,
+                                         snapshot=od.get("timestamp"), data=od.get("data"))))
+            print(r.game_id, "snap", used_snap, "used", used, "remaining", h.get("x-requests-remaining"))
+            if used >= a.max_credits:
+                print("credit cap reached; rerun later to resume"); break
+            time.sleep(1.0); continue
         od, h = get(f"/events/{eid}/odds", key, date=iso(r.ko - dt.timedelta(minutes=a.minutes_before)), markets=a.markets, regions="us", oddsFormat="american")
         f.write_text(json.dumps(dict(game_id=r.game_id, event_id=eid, markets=a.markets, kickoff_utc=iso(r.ko), snapshot=od.get("timestamp"), data=od.get("data"))))
         used += int(h.get("x-requests-last", 0) or 0)
