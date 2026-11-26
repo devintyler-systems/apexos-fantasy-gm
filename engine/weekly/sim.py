@@ -27,6 +27,9 @@ ALPHA_T = 100.0  # Dirichlet concentration for target shares (calibrated vs 2025
 ALPHA_C = 60.0   # carries
 MAXC = 12   # per-catch draws kept
 MAXR = 26   # per-carry draws kept
+DVP_MODE = _os.environ.get("APEX_DVP_MODE", "own")      # R-29 candidate: own (baseline) | opp | off
+DVP_W = float(_os.environ.get("APEX_DVP_W", 0.35))      # R-29: DvP weight when DVP_MODE=opp (0.35 = the hand-set weight in params.py)
+QB_OWN_K = float(_os.environ.get("APEX_QB_OWN_K", 0) or 0)      # R-43 candidate (off = 0): the starting QB's own completion rate and yards per attempt, shrunk to his team's rate with K attempts, replace the team-wide rate (W12 PHI: Milton inherited Hurts' efficiency)
 RUSH_FORM = float(_os.environ.get("APEX_RUSH_FORM", 0.40))      # R-27 (DECISIONS #75, owner-approved 2026-11-24): sd of the lognormal player-game rushing form factor; APEX_RUSH_FORM=0 reproduces the old baseline
 
 def _norm(w):
@@ -83,6 +86,12 @@ def sim_game(away, home, neutral, rng, ns=NS):
         # environment-level expected rates
         s["ypa"] = P["ypa"] * O["d_ypa"] ** 0.9 * (1 - 0.015 * io["ol"]) * (1 + 0.025 * idf["cb"] + 0.012 * idf["s"] + 0.01 * idf["pr"])
         s["cmp"] = np.clip(P["cmp"] * O["d_cmp"] ** 0.8, .5, .78)
+        if QB_OWN_K > 0 and len(qbs) and float(qbs.loc[0].get("Att", 0) or 0) > 0:      # R-43: QB1's own efficiency relative to all of his team's passers (same source, so the ratio is unitless)
+            _tq = pas[pas.team == t]; _ta = float(_tq.Att.sum())
+            if _ta > 0:
+                _q = qbs.loc[0]; _ty, _tc = float(_tq.Yds.sum()) / _ta, float(_tq.Cmp.sum()) / _ta
+                s["ypa"] = s["ypa"] * ((float(_q.Yds) + QB_OWN_K * _ty) / (float(_q.Att) + QB_OWN_K)) / _ty
+                s["cmp"] = np.clip(s["cmp"] * ((float(_q.Cmp) + QB_OWN_K * _tc) / (float(_q.Att) + QB_OWN_K)) / _tc, .5, .78)
         s["int"] = P["int"] * O["d_int"] ** 0.6 * (1 - 0.04 * idf["cb"])
         s["sk"] = P["sk"] * O["d_sk"] ** 0.7 * (1 + 0.10 * io["ol"]) * (1 - 0.05 * idf["pr"])
         s["ypc"] = P["ypc"] * O["d_ypc"] ** 0.9 * (1 - 0.02 * io["ol"]) * (1 + 0.01 * idf["lb"])
@@ -141,6 +150,14 @@ def play_side(rng, t, sd, ns):
         return avail[pid]
     # ---------------- receiving ----------------
     K = len(rec)
+    if DVP_MODE != "own" and K:      # candidate R-29 (off = baseline "own"): build_roster tilts by the team's OWN defense DvP; "opp" uses the opponent's, "off" removes the tilt
+        _own = rec.tilt.values
+        if DVP_MODE == "opp":
+            _O = TEAM[sd["opp"]]
+            _new = np.array([(1 + DVP_W / 0.35 * (_O.get("dvp_" + p, 1.0) - 1)) ** 0.5 if p in ("WR", "TE", "RB") else 1.0 for p in rec.pos])
+        else:
+            _new = np.ones(K)
+        rec = rec.copy(); rec["w_rec_td"] = rec.w_rec_td.values / _own * _new; rec["tilt"] = _new
     base_sh = np.append(rec.tgt_sh.values, oth_t) * np.append(rec.tilt.values, 1.0)
     # reconcile catch rate and ypr to team means
     catch0 = np.append(rec.catch.values, 0.64)

@@ -3,7 +3,7 @@ description, price, point; timestamps US Pacific) to props_lines.csv, then price
 Usage: APEX_ODDS_XLSX=<file> APEX_ENV=<track> python price_odds.py   (OUT/APEX_OUT must hold the finished run)
 Outputs in OUT: props_lines.csv, props_lines_rejected.csv, edges_all_rows.csv, odds_game_lines.csv, odds_unmatched_names.csv
 Lines never enter the projection stages; this reads finished sims only. One-sided prices are de-vigged with a flat 10% haircut and labeled Estimated."""
-import os, datetime as dt
+import os, json, datetime as dt
 import numpy as np, pandas as pd
 from paths import OUT as O
 import run_all as R
@@ -22,6 +22,21 @@ MK = {"player_receptions": "rec", "player_pass_completions": "pass_cmp", "player
 ONE_SIDED = ("first_td", "anytime_td")
 SD = {"Over": "over", "Under": "under", "Yes": "yes"}
 NAME_ALIAS = {"zonovan knight": "bam knight", "drew ogletree": "andrew ogletree"}      # book name -> nflverse name (verified to exist in the Week 5 sim)
+_DV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "config", "weekly", "td_book_devig.json")
+TD_DEVIG = json.load(open(_DV)) if os.path.exists(_DV) else {}      # DECISIONS #84/#86: per-book one-sided TD de-vig factor k (hits / implied, 2023-25 closing prices); flat 0.90 only when absent
+
+
+def td_devig_k(book):
+    """(k, source) for a one-sided touchdown price: the book's fitted factor, else the pooled fitted factor, else the old flat 0.90."""
+    b = str(book).strip().lower().replace(" ", "").replace("caesars", "williamhill_us")
+    for key, v in TD_DEVIG.get("books", {}).items():
+        if key.replace("_", "") == b.replace("_", "") or key == b:
+            return float(v), f"fitted {key}"
+    if "pooled" in TD_DEVIG:
+        return float(TD_DEVIG["pooled"]), "fitted pooled"
+    return 0.90, "flat"
+
+
 STALE_H = 2        # lines move fast into kickoff; anything older than 2 hours is excluded, and odds_meta records minutes to the first kickoff
 imp = lambda a: np.where(np.asarray(a, float) < 0, -np.asarray(a, float) / (-np.asarray(a, float) + 100), 100 / (np.asarray(a, float) + 100))
 payout = lambda a: np.where(np.asarray(a, float) < 0, 100 / (-np.asarray(a, float)), np.asarray(a, float) / 100)
@@ -87,9 +102,10 @@ for (a, h), d in R_.items():
             tdc = pl["rush_td"] + pl["rec_td"]      # passing TDs do not count for anytime/first TD
             pm = float((tdc[m] / Ttot[m]).mean()) if mk == "first_td" else float((tdc[m] >= 1).mean())
             for r in grp.itertuples():
-                nv = float(imp(r.price)) * 0.90
+                k, how = td_devig_k(r.bookmaker)
+                nv = float(imp(r.price)) * k
                 out.append(dict(game=f"{a}@{h}", player=r.description, team=team, opp=opp, market=mk, side="yes", line=np.nan, book=r.bookmaker, odds=r.price, model_p=pm, novig_p=nv,
-                                novig_method="Estimated (10% flat haircut, one-sided)", p_active=pl["p_active"], as_of=r.as_of_utc))
+                                novig_method=f"Estimated (one-sided, {how} k {k:.3f})", p_active=pl["p_active"], as_of=r.as_of_utc, pos=pl.get("pos")))
             continue
         x = (pl["rush_yds"] + pl["rec_yds"])[m] if mk == "rush_rec_yds" else pl[mk][m]      # rush_rec_yds: combined rushing + receiving yards of the same simulated game
         for line, lg in grp.groupby("point"):

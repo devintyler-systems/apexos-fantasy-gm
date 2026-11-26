@@ -17,4 +17,8 @@ for _,g in SCHED.iterrows():
             rows.append(dict(player=p["player"],nkey=norm_name(p["player"]),team=t,pos=p["pos"],p_active=p["p_active"],pass_yds=p["pass_yds"][m].mean(),pass_cmp=p["pass_cmp"][m].mean(),pass_td=p["pass_td"][m].mean(),
                              rush_yds=p["rush_yds"][m].mean(),rush_att=p["rush_att"][m].mean(),rec=p["rec"][m].mean(),rec_yds=p["rec_yds"][m].mean(),any_td=float((tdc[m]>=1).mean()),exp_td=float(tdc[m].mean()),
                              **{f"{k}_q{q}":float(np.percentile(p[k][m],q)) for k in ("rec_yds","rec","rush_yds","pass_yds") for q in (10,25,75,90)}))
+            if os.environ.get("APEX_ANCHOR_XLSX"):      # DECISIONS #91: raw (pre-anchor) means and the anchored markets, only when anchoring is on
+                rw=p.get("raw",{}); g_=lambda k:(rw.get(k,p[k]))[m].mean()
+                rows[-1].update(anchored=",".join(sorted(p.get("anchored",()))),raw_rec_yds=g_("rec_yds"),raw_rush_yds=g_("rush_yds"),raw_pass_yds=g_("pass_yds"),
+                                raw_any_td=float(((rw.get("rush_td",p["rush_td"])+rw.get("rec_td",p["rec_td"]))[m]>=1).mean()))
 pd.DataFrame(rows).to_pickle(f"{OUT}bt_{tag}.pkl"); pd.DataFrame(teamrows).to_pickle(f"{OUT}btteam_{tag}.pkl"); print("done",tag,len(rows))

@@ -384,3 +384,404 @@ artifacts, as-of + input hashes + version on every run, no future information, p
 ### Adoption record for #76 (2026-11-24)
 - **Owner approved** adopting R-23 and running Week 12 with it. `params.py` now defaults `APEX_AVAIL_ROLE` to 1; `APEX_AVAIL_ROLE=0` reproduces the old table exactly. The committed `config/weekly/availability_by_status_pos_role.csv` (fit on 2023-26) is the table in use. Refit it with `python engine/weekly/fit_availability_role.py` on the scheduled refit day.
 - **New baseline for later candidates:** the backtests after this point should run with R-24, R-27 and R-23 as defaults; the #75 floors stand until re-measured, because R-23 moved no engine metric beyond noise.
+
+## 78. Backtest tooling rebuilt and a new three-seed baseline (2026-11-24, no model change)
+- `tools/backtest/run_tag.sh` (27 slates, 4 parallel, ~85 s a tag, clears stray `APEX_*` knobs, resumable) and `tools/backtest/evaluate.py` (floor, compare with a per-metric noise verdict, quantile pinball and coverage, team bias, TD calibration); `docs/weekly/BACKTEST_HOWTO.md`. Determinism: `2025_w6` run twice under two tags is byte-identical. No stored baseline pickle survived from earlier sessions, so the stored-baseline byte check was replaced by the determinism check plus a level check (rush P25-P75 coverage 49.4%, as in #75).
+- Baseline = current defaults (#66, #69, #70, #71, #73, #75, #76): tags `b12a/b12b/b12c` (seeds 20261004 / 777 / 999). Pooled levels (seed A): rec_yds MAE 20.174, rec 1.5226, rush_yds 24.173, rush_att 4.187, TD log loss 0.4515, team RMSE 9.023, pass_yds MAE 67.74; coverage rec_yds .515, rush_yds .494, pass_yds .461.
+- **Floors (max pairwise pooled delta):** rec_yds 0.0066, rec 0.0011, rush_yds 0.0079, rush_att 0.0050, td_ll 0.0006, team RMSE 0.0022, pass_yds MAE 0.0953, pinball rec_yds 0.0017, rush_yds 0.0111, pass_yds 0.0149. Tighter than the #75 floors (rec_yds 0.0108, rush_yds 0.092); these replace them for candidates from today.
+- Incident: an edit to `sim.py` during the first `b12a` run crashed three slates (NameError); all three seeds were rerun with `BT_FORCE=1`. Rule added to the how-to: never edit `engine/weekly/` while a tag runs.
+
+## 79. R-29: the DvP tilt uses the team's own defense; fixing it does not help, rejected (2026-11-24)
+- **Defect.** `params.build_roster_v4/v3(team)` multiply a team's WR/TE/RB target shares and receiving-TD weights by `TEAM[team]["dvp_"+pos] ** 0.5`, the DK points per game **that team's defense allows** to the position (weight 0.35, hand-set). The roster is built without the opponent; `run_all.py` labels the number "opp DvP".
+- **Switch** (`sim.py`, off = baseline byte-identical): `APEX_DVP_MODE=own|opp|off`, `APEX_DVP_W` (weight in opp mode).
+- **Results vs b12a / b12b** (negative = better; floors from #78):
+
+| Variant | rec_yds MAE A / B | rec MAE | rush_yds | td_ll | team RMSE | rec_yds pinball | Verdict |
+|---|---|---|---|---|---|---|---|
+| opp, w 0.35 | **+0.046 / +0.048** | +0.0034 / +0.0039 | -0.016 / +0.010 | +0.0009 / -0.0003 | -0.0056 / -0.0052 | +0.022 / +0.018 | worse (rec_yds 7x floor) |
+| opp, w 0.15 (seed A) | -0.007 | -0.0001 | -0.006 | +0.0005 | -0.0019 | +0.005 | null / pinball worse |
+| off | +0.011 / +0.012 | +0.0018 / +0.0011 | -0.015 / -0.011 | +0.0006 / -0.0001 | +0.0005 / +0.0014 | +0.013 / +0.004 | null on means, pinball worse |
+
+- **Reading.** Raw DK points allowed by position carry no usable matchup signal at either weight: they mix the opponent's volume (game script, pace) with efficiency. The own-defense tilt is not a matchup effect either, but removing it is a null on means and slightly worse on rec_yds pinball, so the default stays as is. The team-RMSE gain under opp (-0.005, 2.4x floor) does not survive on rec_yds. **Rejected; default unchanged; switch stays off.** Next: R-32 (opponent-adjusted from expected points, ffopportunity), which removes the volume confound, is the real matchup test. The mislabel in `run_all.py` stays a reporting note.
+
+## 80. R-30: anytime-TD calibration layer: rejected, the probabilities are calibrated out of sample (2026-11-24)
+- **Prompt.** b12a calibration by position: WR projected .173 vs .193 hit, TE .143 vs .156, RB .253 vs .256; bucket .2-.3 projected .246, hit .275.
+- **Test** (`tools/backtest/td_calibration.py`, post-sim, leave-one-season-out, 6,700 player-games a seed): logit shift per position, logit slope+shift per position, isotonic. Held-out TD log loss delta, pooled, seeds A / B: shift **-0.0004 / -0.0004**, slope +0.0004 / +0.0003, isotonic +0.0032 / +0.0021. Brier: shift -0.00014 both. Only 2024 improves (-0.0014); 2023 and 2025 get worse.
+- **Reading.** The WR/TE gap is one season's (2024) effect, not a stable bias; the shift is under the 0.0006 floor and isotonic over-fits. **Rejected.** Consequence for betting: the engine's anytime-TD probabilities need no recalibration before blending with a price, so the price feed (ROADMAP P-1) is the binding constraint on touchdown plays, not the model.
+
+## 81. Tooling fixes (2026-11-24, no model effect)
+- `odds_api_fetch.py` wrote Odds API timestamps with a fixed 7-hour Pacific offset while `price_odds.py` adds back `APEX_ODDS_TZ_OFFSET` (8 after the clock change): fresh API prices would have aged an extra hour and could fail the 2-hour rule. It now reads the same variable.
+- `parse_market_pdfs.py`: W12 file names (PASSING / RECEIVING / RUSHING YARDS, _SPREAD) and `--week`.
+- `injury_pdf_overlay.py` now writes the latest practice day; `status_overlay.py` uses it for players the NFL feed does not carry yet (before: practice status None, which sends a Questionable player to the no-practice cell of the availability table). Test added.
+
+## 82. R-31: team pass rate from neutral situations (built and tested 2026-11-24; passes the noise-aware rule at w 0.3; awaiting owner approval)
+- **Hypothesis.** `params.team_params` sets `pr` (the team's base pass rate) from its raw season dropback share, shrunk with k 90. The sim then moves it by game script (`pr_margin_slope` x margin). Raw `pr` already contains last weeks' script, so script is counted twice: a team that trailed is projected to keep throwing even as a favourite.
+- **Probe** (pbp 2023-25, weeks 4-12, 786 team-weeks, before any engine change): target = the week's dropback rate with the observed margin effect removed (y - 0.0025 x (-margin)). Neutral rate (win prob .2-.8, quarters 1-3, downs 1-2, shifted to the all-play level) MAE **0.0682** vs raw 0.0721, correlation .25 vs .17, better in all three seasons.
+- **Switch** (off = byte-identical, checked on `2025_w6`): `APEX_PR_NEUTRAL=1`, `APEX_PR_NEUTRAL_W` (weight on the neutral rate; the rest stays raw), `APEX_PR_NEUTRAL_K` (90). prep_nv.py reads four more pbp columns (wp, qtr, down, qb_dropback) through `MAXWEEK` only: no look-ahead.
+- **Results vs b12a / b12b** (negative = better; floors from #78: rec_yds 0.0066, rec 0.0011, rush_yds 0.0079, rush_att 0.0050, td_ll 0.0006, team 0.0022, pass_yds MAE 0.0953):
+
+| w | rec_yds A / B | rec | rush_yds | rush_att | td_ll | team RMSE | pass_yds MAE | pass pinball | Rule |
+|---|---|---|---|---|---|---|---|---|---|
+| 1.0 | -0.042 / -0.023 | -0.005 / -0.005 | **+0.105 / +0.162** | **+0.046 / +0.045** | -0.0014 / +0.0017 | -0.003 / -0.002 | **-1.117 / -1.057** | -0.199 / -0.163 | fail (rushing) |
+| 0.7 (A) | -0.025 | -0.004 | +0.103 | +0.025 | 0.0000 | -0.008 | -0.832 | -0.160 | fail (rushing) |
+| 0.5 | -0.027 / -0.061 | -0.005 / -0.005 | +0.007 / +0.027 (mean +0.0167 vs limit 0.0158) | +0.014 / +0.005 | +0.0002 / +0.0010 | -0.005 / -0.004 | -0.606 / -0.590 | -0.139 / -0.132 | fail by 0.0009 on rush_yds (seed C: rush -0.003) |
+| **0.3** | **-0.034 / -0.017** | **-0.003 / -0.004** | **-0.048 / -0.041** | -0.002 / -0.003 | +0.0005 / -0.0001 | -0.010 / -0.004 | **-0.316 / -0.380** | -0.062 / -0.102 | **pass** |
+
+- **Reading at w 0.3.** rec_yds improves beyond 2x the floor on both seeds (per seed -0.034 and -0.017 against 2x floor 0.013); rec, rush_yds and pass_yds also better beyond 2x; nothing worse beyond 2x. Per season: 2024 rec_yds is +0.019 on both seeds (worse, inside 3x the floor), 2025 rush_yds +0.05 on seed B; 2023 carries most of the gain. Pass-yards MAE -0.35 is the largest QB gain since #65 (-0.76).
+- **Caveat (selection).** w was chosen from four values on the same 27 slates. The direction is monotone (more weight, more passing gain, more rushing cost) and w 0.3 is the most conservative passing value; a forward check on 2026 weeks 4-11 is owed before more weight is considered.
+- **Status: not promoted.** Owner decision: default `APEX_PR_NEUTRAL=1`, `APEX_PR_NEUTRAL_W=0.3`. If approved, it applies to runs after the approval; frozen runs are unchanged; `APEX_PR_NEUTRAL=0` restores the baseline.
+
+## 83. R-32: positional matchup from expected points: no signal, closed at the probe stage (2026-11-24)
+- **Test** (`tools/backtest/r32_matchup_probe.py`, no engine change): for each defense and position (WR/TE/RB), receiving yards over expected allowed per target (ffopportunity `ep_weekly`, weeks before W only, shrunk k 60) minus the same defense's all-position rate (the team-level part the engine already has in `d_ypa`). Effect = that difference x projected receptions x 1.5, against the b12a receiving-yards residual, 4,935 player-games.
+- **Result:** correlation 0.0005 / 0.006 / -0.030 (2023 / 24 / 25), pooled -0.010; leave-one-season-out MAE 20.201 → 20.201, 20.229 → 20.231, 20.088 → 20.089 (no gain in any season). Position-level target volume allowed vs reception residual: correlation 0.050 / 0.008 / 0.018 (tiny, same sign).
+- **Reading.** Beyond the team-level pass defense the engine already models, how a defense fares against WRs vs TEs vs RBs does not carry over week to week. Together with #79 this closes the defense-vs-position family, including the operator's Sharp DvP, coverage-by-position and xFP pages, as projection inputs. Not built.
+
+### Promotion record for #82 (2026-11-24)
+- **Owner approved** R-31 at w 0.3. `params.py` defaults `APEX_PR_NEUTRAL=1`, `APEX_PR_NEUTRAL_W=0.3` (k 90). `APEX_PR_NEUTRAL=0` reproduces the #78 baseline: checked byte-identical on `2025_w6` (vs `b12a`); the new default is byte-identical to the tested `prn3A`. Applies from the W12 Wednesday freeze; frozen runs and the Tuesday dry run are unchanged.
+- **New baseline** = `prn3A / prn3B / prn3C` (seeds 20261004 / 777 / 999). **Floors re-measured:** rec_yds 0.0153, rec 0.0009, rush_yds 0.0158, rush_att 0.0029, td_ll 0.0022, team RMSE 0.0082, pass_yds MAE 0.150, pinball rec_yds 0.0103, rush_yds 0.0057, pass_yds 0.055 (`var/bt/floor_prn3A.json`). These are 2-3x the #78 floors on rec_yds, td_ll and team RMSE.
+- **Disclosure.** The promotion was judged, as the rule says, against the floor of the baseline it was tested on (#78). Against the new, wider floor the seed-B rec_yds gain (-0.017) would sit inside 2x (0.031); the seed-A gain (-0.034) and the pass-yards gain (-0.35, 2.3x the new floor) would still clear it. Track 2026 passing yards and receiving yards weekly against the pre-R-31 baseline (`APEX_PR_NEUTRAL=0` rerun) through Week 14.
+
+## 84. P-1b: historical odds backfill, the anytime-TD edge rule on real 2023-25 prices: the live rule loses money; the engine adds information at a weight near 0.2, not 0.5 (2026-11-25, no model change; owner decision on the rule)
+- **Data.** The Odds API historical endpoints (20K plan), snapshot 5 minutes before each kickoff, region us. Anytime TD: 393 games (2023-25 weeks 4-12, all of them), 4,325 credits. Yardage over/under (reception, rush, pass): 388 games, 11,640 credits; the last five 2025 week-12 games (ATL@NO, CAR@SF, CLE@LV, PHI@DAL, TB@LA) were left out to stay inside the 16,000-credit backfill budget. Check: 2 credits. **Total 15,967 used, 4,033 left** for live pulls (Weeks 12-15). Prices live in `var/odds_hist/` and `var/odds_hist/yds/` (gitignored, never committed).
+- **Books with `player_anytime_td`:** FanDuel, DraftKings, Caesars (williamhill_us), BetMGM, BetRivers, Bovada, BetOnline, Fanatics, Unibet, PointsBet, Barstool (books come and go between seasons). Only Barstool posts a No side.
+- **Tools.** `tools/backtest/odds_backfill.py` gained `--out`, event-id reuse across passes (saves the 1-credit lookup) and HTTP errors that never print the URL (it carries the key). New `tools/backtest/odds_price_eval.py` (`td`, `yds`).
+- **Method.** Baseline = current defaults, `prn3A` / `prn3B` (seeds 20261004 / 777, rebuilt today). Scope: RB/WR/TE with an offensive snap and a book price; 7,944 player-games (2,290 of 2,292 snap players in priced games are matched). Settlement = rush + rec + special-teams + fumble-recovery TD (book rules). **De-vig:** one-sided markets cannot be normalised within a game (the field does not sum to one), so the over-round is estimated per book out of sample: p = k_book x implied, k_book = hits / implied over the other two seasons (k 0.74-0.92; FanDuel 0.88-0.92, DraftKings 0.84-0.88, BetRivers 0.74-0.80; books with one season use the pooled factor). Barstool uses its two-way price (Yes+No implied 1.062, k 0.94). The flat 10% haircut of `price_odds.py` (k 0.90) is reported alongside: it is too generous for most books, so live "Estimated" book probabilities run high. Consensus = mean of de-vigged books. Bets: flat 1 unit at the best listed price, p_active >= 0.9; 90% intervals are a cluster bootstrap by game.
+- **Accuracy, consensus (seed A; seed B within 0.0004 on log loss):**
+
+| Season | n | hit | engine mean / book mean | Brier engine / book / 50-50 | Log loss engine / book / 50-50 | LOSO w | held-out LL at w vs book |
+|---|---|---|---|---|---|---|---|
+| 2023 | 2,711 | .165 | .156 / .187 | .1203 / .1179 / .1182 | .3885 / .3815 / .3809 | 0.17 | .3807 vs .3815 (better) |
+| 2024 | 2,631 | .187 | .161 / .182 | .1357 / .1317 / .1328 | .4317 / .4170 / .4200 | 0.33 | .4182 vs .4170 (worse) |
+| 2025 | 2,602 | .185 | .172 / .176 | .1320 / .1304 / .1305 | .4157 / .4115 / .4105 | 0.16 | .4106 vs .4115 (better) |
+| all | 7,944 | .179 | .163 / .182 | .1292 / .1266 / .1271 | .4117 / .4031 / .4036 | | |
+
+  The book beats the engine in every season on both scores. The 50/50 blend is no better than the book pooled (+0.0005 log loss) and worse in 2024. Held-out optimal weight 0.16-0.34 (seed B 0.16-0.34); with the flat-haircut book, 0.24-0.39. The engine under-forecasts this priced population by 1.6 points (.163 vs .179 hit), while #80 found it calibrated on its own scope (any_td >= 0.03, rush + rec TDs only); the wider settlement (special-teams and fumble-recovery TDs) explains only part of that. Not chased here.
+- **Simulated P&L of the live rule** (blended edge = final_p - book >= 5 points at w 0.5, i.e. engine 10+ points over the book):
+
+| Rule | Seed | 2023 | 2024 | 2025 | All: bets, units, ROI (90% interval) |
+|---|---|---|---|---|---|
+| **Live rule** (mult book) | A | 28 bets, -68% | 68, -21% | 86, -20% | **182, -50.7 u, -27.9% (-50.2, -3.3)** |
+| Live rule (mult book) | B | 28, -78% | 72, -13% | 85, -31% | 185, -57.3 u, -31.0% (-52.7, -6.8) |
+| Live rule (flat book) | A | 16, -61% | 34, -4% | 38, -42% | 88, -27.1 u, -30.7% (-65.7, +14.0) |
+| Raw gap >= 5 (mult) | A | 140, -33% | 229, +4% | 344, +13% | 713, +8.8 u, +1.2% (-12.6, +15.8) |
+| Control: engine 5+ under book | A | | | | 1,748, -14.3% (-21.5, -6.8) |
+| Control: every listed player | A/B | | | | 7,358, -7.5% (-12.9, -2.1) |
+
+- **Reading.** The engine carries real but small information beyond the closing price: where it is 5+ points over the book the bets roughly break even at best price (+1%), against -7.5% for every listed player and -14% where it is 5+ under. Where it disagrees by 10+ points (the live trigger), it is wrong more often than right: -28% to -31% ROI, interval below zero on both seeds. Large engine-book gaps behave like engine error (likely candidates: stale roles and late news that the 5-minute price has and the engine does not; not diagnosed here), so the rule bets exactly its worst cases. Caveats: prices are 5 minutes before kickoff (sharper than the T-2h prices the live card uses, so this is the hard test), best-of-11-books pricing flatters every rule, and 2023 is the weakest season throughout.
+- **Yardage markets (information only, #64).** Engine P(over) is interpolated from the pickle quantiles (the backtest stores P10/P25/P75/P90, not the draws), which costs the engine some log loss; read the levels with that in mind. Main line, seed A, pooled: reception yds n 4,819, Brier engine .2636 / book .2497 / 50-50 .2525, LOSO w 0.04-0.10; rush yds n 2,127, .2688 / .2468 / .2507, w 0.08-0.15; pass yds n 662, .2648 / .2497 / .2547, w 0.00 in every season. Blended edge >= 5 at best price: reception 1,714 bets +0.3% (-3.6, +4.2), rush 1,065 +1.0% (-3.8, +5.6), pass 203 -11.0% (-21.5, +0.1); seed B -0.4%, 0.0%, -7.2%. #64 stands: no non-TD prop is a play.
+- **Recommendation (owner decision; nothing changed in `value_board.py` or the runbook).** (1) Stop labelling anytime-TD plays from the 5-point blended-edge rule now; it is the one tested rule with a significantly negative result. (2) If TD plays continue, use w 0.2 (the held-out optimum, rounded down) and require the raw engine-book gap to sit between 5 and 10 points, flagged as a forward test in the ledger, not a promoted rule: the +1% result is inside noise. (3) Live "Estimated" book prices should use the per-book factors above, not the flat 0.90. (4) Use the remaining 4,033 credits for T-2h and close pulls in Weeks 12-15, so CLV can be measured forward.
+
+## 85. Early-line test (2025): the engine does not beat early anytime-TD prices on ROI, but prices move toward it by the close (2026-11-25, no model change)
+- **Question** (owner-approved via the parent session 2026-11-25): #84 measured the engine against the 5-minute close. Does it beat EARLY prices, before the week's news, and do those prices move toward it?
+- **Data.** The Odds API historical, `player_anytime_td`, region us, 2025 weeks 4-12. **Deviation from the brief:** a Tuesday 17:00Z snapshot lists only DraftKings with about 4 players for Sunday games (checked on 14 games), so the early snapshot is **Wednesday 17:00Z** of the game week (before the first injury report), Thursday 17:00Z when Wednesday had no market. Snapshots used: 3 Tuesday (full boards, kept), 99 Wednesday, 25 Thursday; 3 games had no early market (HOU@BAL w5, NO@CHI w7, HOU@TEN w11). 127 of 130 games, 2,129 RB/WR/TE player-games priced early. Credits for this test: **1,420** (210 of them on the Tuesday attempt, 14 thin Tuesday files kept aside in `var/odds_hist/early_2025_tue/`); **2,613 left**. Prices in `var/odds_hist/early_2025/` (gitignored).
+- **Tools.** `odds_backfill.py --early`; new `tools/backtest/odds_early_eval.py`. De-vig: per-book factor from the 2023-24 close (out of sample for 2025), the same factor early and close, so a price move is not a de-vig artifact. Early prices carry more over-round than the close (early consensus .198 vs close .186 on the same players); a rescaled early book (x 0.938) is reported as a sensitivity.
+- **Look-ahead control.** The backtest engine uses the week's final injury report; a Wednesday price does not. **Primary population:** players with no entry of any kind on that week's nflverse injury report and p_active >= 0.9: 1,773 player-games. Full population (2,129) labelled optimistic; it tells the same story.
+- **Accuracy, primary (seed A / B; hit rate .1906):**
+
+| | Engine | Early book | Close book | Early 50/50 | Early w0.2 | Close 50/50 |
+|---|---|---|---|---|---|---|
+| Log loss | .4253 / .4251 | .4216 | .4198 | **.4195 / .4193** | .4201 / .4200 | .4194 / .4192 |
+| Brier | .1360 / .1359 | .1346 | .1337 | .1344 / .1344 | .1343 / .1343 | .1342 / .1341 |
+
+  The engine alone still loses to the early book. Blended 50/50 with the early price, it beats the early book by 0.002 log loss on both seeds and reaches the level of the close book, i.e. the engine supplies about what the market learns between Wednesday and kickoff.
+- **ROI at the best early price, primary (1 unit, cluster bootstrap by game):**
+
+| Rule | Seed A: bets, units, ROI (90%) | Seed B |
+|---|---|---|
+| Raw gap >= 5 vs early | 190, +16.3 u, **+8.6% (-20.9, +42.0)** | 195, +31.8 u, **+16.3% (-15.9, +52.5)** |
+| w0.2 blend, gap 5-10 | 139, +18.5 u, +13.3% (-23.8, +54.5) | 143, +30.3 u, +21.2% (-19.4, +66.0) |
+| Live rule (gap >= 10) | 51, -4.2% (-46.3, +49.7) | 52, +2.8% (-38.5, +55.6) |
+| Rescaled early, gap >= 5 | 269, +2.2% (-20.3, +25.5) | 276, +10.4% (-13.4, +36.0) |
+| Control: every priced player | 1,773, -17.3% (-26.2, -8.0) | same |
+| Same gap >= 5 picks at the close price | 190, +6.8% (-24.0, +38.4) | 195, +19.4% (-16.4, +57.9) |
+
+  **The early-line edge does not clear zero on either seed.** Point estimates are positive (+9% / +16%), 25 points better than betting every listed player, but every interval spans zero.
+- **CLV (the key evidence), primary.** Change in de-vigged probability from early to close, relative to the game's average move (removes the drift from the higher early over-round), 90% interval:
+
+| Group | n (A) | Seed A | Seed B |
+|---|---|---|---|
+| Engine 5+ over early | 190 | **+1.49 pts (1.09, 1.91)** | +1.46 (1.10, 1.85) |
+| Engine 5-10 over early | 139 | +1.27 (0.93, 1.65) | +1.25 (0.91, 1.63) |
+| Control: engine within 2 pts | 508 | +0.47 (0.29, 0.66) | +0.44 (0.26, 0.62) |
+| Engine 5+ under early | 400 | **-1.46 (-1.77, -1.16)** | -1.44 (-1.75, -1.14) |
+
+  Prices move toward the engine in both directions, about 1 point more than the control, with intervals clear of zero on both seeds. The engine's average gap is 8.7 points, so the market closes roughly an eighth of it; the rest, per #84, is mostly engine error.
+- **Reading.** The engine carries real early information: the market moves its way, and a 50/50 blend with the Wednesday price is as good as the close. It is not yet enough to show profit on one season of about 190 bets. Caveats: one season only, and 2025 was the engine's best season in #84 (gap >= 5 at the close +13% that year), so these ROI numbers are likely the optimistic end; Thursday-fallback games are priced after Wednesday's practice report (the healthy filter covers them); best-of-books pricing flatters every rule.
+- **Recommendation (owner decision; nothing changed).** If TD plays continue, take them early (Wednesday), not at T-2h: w0.2 blend, raw gap 5-10 points, players not on the injury report, logged in the ledger with the close price so CLV is measured forward. CLV, not short-run ROI, is the promotion test: about +1 point per bet over the control is the bar from this backtest. The remaining credits (2,613) can fund Wednesday and close pulls for Weeks 12-15.
+- **Config (for #86).** `config/weekly/td_book_devig.json`: per-book factors fitted on ALL 2023-25 closing prices (hits / implied, RB/WR/TE with a snap; not leave-one-out): FanDuel .901, PointsBet .892, DraftKings .857, BetOnline .850, Bovada .841, Barstool .833, BetMGM .832, Fanatics .832, Caesars (williamhill_us) .805, BetRivers .770, Unibet .708; pooled .830. Read by `price_odds.td_devig_k()`.
+
+## 86. TD play rule retired; forward test at w 0.2 (owner-approved 2026-11-25, from #84)
+- **Approved:** stop labelling anytime-TD plays from the 5-point blended-edge rule (2023-25 closing prices: 182 bets, -27.9% ROI, 90% interval -50% to -3%; seed B -31%).
+- **value_board.py:** touchdown blend weight 0.5 → **0.2** (`APEX_BLEND_W_TD` overrides; held-out optimum 0.16-0.34). The board prints "NO PLAYS" and a FORWARD TEST table: anytime TD with a raw engine-book gap of 5-10 points (2023-25: +1.2%, interval -12.6% to +15.8%, inside noise). Every forward-test row is logged with the price taken and the close; none is a play. Non-touchdown markets stay information only (#64).
+- **price_odds.py:** one-sided TD prices use a per-book de-vig factor from `config/weekly/td_book_devig.json` (fitted on 2023-25 closing prices, #84), else a pooled factor, else the old flat 0.90; the method column names which. Until the json is committed the flat 0.90 applies (the backfill session supplies it).
+- **Reversal test:** the early-line test (2025 Tuesday prices, line movement toward the engine) and the Weeks 12-15 forward ledger. A play label comes back only with a positive held-out result on both seeds.
+- Tests updated (`tests/weekly/test_value_board.py`, forward-test boundary test added). Frozen runs unchanged.
+- **Addendum to #86 (2026-11-25):** the fitted per-book factors apply to anytime TD only; first-TD prices keep the flat 0.90 (their over-round is larger and was never fitted; first TD is not a play market). Merged `config/weekly/td_book_devig.json` (pooled .8298; FanDuel .9006 to Unibet .7080).
+
+## 87. Miss diagnosis on the #84 anytime-TD set: a feature-gated trust model is a null over the w0.2 blend; the engine's misses are at the extremes, with named mechanisms (2026-11-25, no model change)
+- **Question** (owner via the parent session): when is the engine's disagreement with the book information, and when is it error? Turn the answer into engine fixes.
+- **Tool.** `tools/backtest/td_miss_diagnosis.py` (post-sim, no API calls). Data: the #84 set (7,944 RB/WR/TE player-games, 2023-25, closing consensus de-vigged out of sample) and the #85 early set (2025, healthy). Model: logit p = i + a·Lb + b·Le + Σ c_k·f_k·(Le − Lb) + d_k·f_k, with Lb/Le the logits of book and engine. Features are standardised, L2 on c and d only, and lambda is picked by inner leave-one-season-out (300 in every fold). Every score is leave-one-season-out; seeds prn3A / prn3B. Coefficient intervals: 90% cluster bootstrap by game, 150 reps, full-sample fit.
+- **Features and look-ahead check** (13; p_active < 1 dropped because it is identical to on_report in these pickles):
+  - |gap| >= 10 points; engine below the book.
+  - Snap-share change: last 3 games minus season mean, weeks < W only.
+  - Missed 2+ team games before W. "Games played < 4" is the same as week 4-5 for everyone in a week 4-12 sample, so it was replaced.
+  - Rookie (season roster); new team (last team in S-1).
+  - On week W's injury report; a teammate at the same position Out. Both use the final report, published before kickoff.
+  - Projected QB1 is not the week-1 starter (engine projection vs week-1 stats).
+  - Team implied points from the nflverse closing total and spread (pre-kickoff).
+  - Inside-20 share minus overall share (pbp, weeks < W); position RB / TE.
+- **Held-out log loss, pooled (seed A / B):**
+
+| Book | Fixed w0.2 blend | 2-parameter stack | Feature model |
+|---|---|---|---|
+| .40309 | .40258 / .40254 | .40303 / .40293 | .40229 / .40224 |
+
+  By season, the model vs w0.2 is -0.0010 (2023), -0.0004 / -0.0002 (2024) and **+0.0005 / +0.0003 (2025)**. Brier: model .12629 / .12630 vs w0.2 .12657. The gain over w0.2 is 0.0003, about a seventh of the TD log-loss floor (0.0022, #82), and it reverses in 2025. **Verdict: null.** No feature-gated trust rule beats the fixed w0.2 blend beyond seed noise, so none is proposed as a bet filter.
+- **Interaction coefficients** (c > 0: the gap is information when the feature is up; c < 0: it is error; d = level shift; seed A, seed B within 0.005). Intervals clear of zero on both seeds:
+  - big gap: c **-0.044 (-0.074, -0.016)**.
+  - new team: c **-0.032 (-0.061, -0.002)**.
+  - rising snap share: c **+0.034 (+0.005, +0.059)** and d +0.041 (+0.009, +0.070).
+  - implied team total: d **+0.047 (+0.011, +0.076)**.
+  - missed games: d -0.036 (-0.067, -0.005).
+  - Every other c, including rookie, injury report, teammate Out, backup QB and inside-20 share, has an interval spanning zero.
+- **Where the misses are** (gap deciles, seed A):
+  - Engine 11.5 points below the book (bottom decile, n 795): hit .282, book .276, engine .162. In the top book tercile: hit .472, book .404, engine .277. Names: Kelce, Kittle, Lamb, Nacua, McLaurin, J. Taylor, Taysom Hill.
+  - Engine 8.4 points above the book (top decile, n 795): hit .260, book .239, engine .323. 44% are RBs averaging 10 projected carries: Justice Hill, Zack Moss, Ray Davis, Charbonnet, Jerome Ford, Rachaad White, Kamara.
+  - New-team players in the top decile: hit .207, book .232, engine .312. The book beats the engine outright.
+  - Backup-QB teams in the top decile: hit .160, book .196, engine .284 (n 125; c not significant).
+- **CLV check on the 2025 early set** (model fit on 2023-24 close, applied to Wednesday prices; healthy players). Caveat: the implied-total and teammate-Out features use the closing line and the final report, which a Wednesday bettor would not yet have.
+
+| Rule | Relative move, seed A | Seed B |
+|---|---|---|
+| Plain gap 5-10 rule (#85) | +1.27 (0.93, 1.66), n 139 | +1.25, n 143 |
+| Model top-N by model edge | +0.22 (-0.20, 0.62) | +0.20 |
+| Gap 5-10 and model edge > 0 | +1.49 (0.95, 2.07), n 65 | +1.42, n 71 |
+| Gap 5-10 and model edge <= 0 | +1.08 (0.62, 1.56), n 74 | +1.09, n 72 |
+
+  **The model-selected subset moves toward the engine less than the plain rule.** Its picks are driven by the level terms (implied total, role), not by the engine's information. Inside the plain rule the model's split is not separable (overlapping intervals), and ROI runs the opposite way (-12% vs +35%), which is noise.
+- **Engine mechanisms to fix** (candidates for the parent; no engine code changed here):
+  1. **Elite red-zone targets are under-priced** (bottom decile: engine .16 vs hit .28; top book tercile .28 vs .47). The per-player receiving/rushing TD share is shrunk too hard toward the position or team mean for established high-TD-rate players. Candidate switch: a lighter TD-share shrink (or a multi-season prior) for players with large career TD samples. Taysom Hill-type gadget QB-rushing roles are not modelled.
+  2. **Secondary and committee RBs are over-priced** (top decile, mostly RBs on about 10 carries). The rushing TD split follows carry share rather than goal-line share. Candidate: allocate rushing TDs by inside-5 / inside-10 carry share (prep_nv already builds Inside 5_Att / 10_Att), shrunk to carry share. The pooled inside-20 feature did not separate this; the goal-line cut is the specific test.
+  3. **New-team players' gaps are error** (c < 0). The engine carries prior-season role and TD rate across a team change. Candidate: down-weight S-1 share and TD-rate priors for team changers (shorter memory) until 3-4 games are on the new team.
+  4. **Rising snap share is information, and both engine and book under-react** (c > 0, d > 0). Candidate: more weight on the last 3 games in the role/share estimate (recency), tested on receiving yards and TD log loss with the #59 rule.
+  5. **Team implied total** (d > 0): both engine and book under-react to high totals in the TD split. Check that the engine's team TD expectation scales fully with the market total in the market track.
+  6. **Players back from missed games** (d < 0) score below both. Candidate: a role ramp (reduced share for the first game back).
+- **Status.** A null for the trust model, so the forward-test rule (#86: w0.2, gap 5-10) stands unchanged. Mechanisms 1-3 are the strongest, from deciles and from c intervals clear of zero on both seeds. Each needs its own week 4-12 backtest against prn3 under the promotion rule before any change.
+
+## 88. #87 leads, first pass: red-zone TD weighting candidates (2026-11-25, no promotion)
+- **Switches** (`params.py`, defaults = baseline, byte-identical on `2025_w6`): `APEX_TD_RZ_W_REC` (red-zone share weight in receiving TD weight, 0.40), `APEX_TD_RZ_W_RUSH` (inside-10 share weight in rushing TD weight, 0.40), `APEX_TD_RZ_MR` (shrink of red-zone shares toward overall share, 8), `APEX_TD_GL5` (rushing TD weight blends inside-5 with inside-10 carry share: goal-line back vs committee back, lead #2 of #87). All four constants were hand-set.
+- **Seed A vs prn3A, TD log loss (floor 0.0022):** rec weight 0.6 **+0.0063** (worse); rush weight 0.7 -0.0001; shrink 4 +0.0021; **GL5 -0.0021** (2023 -0.0037, 2024 -0.0021, 2025 -0.0004). GL5 seed B: -0.0015 (2023 -0.0023, 2024 -0.0022, 2025 +0.0003). Every other metric inside its floor on both seeds (rec_yds moves are RNG desync, +0.020 mean vs floor 0.0153).
+- **Reading.** Lead #1 (more red-zone weight for elite targets) fails at the engine level: more weight on red-zone targets makes TD log loss worse beyond the floor. GL5 is consistently better (5 of 6 season-seeds) but inside 1x the floor; a TD-only change cannot meet `promotion_rule_noise_aware` (it needs a rec_yds gain), the same gap #75 met for dispersion. The decisive test for GL5 is against prices: the backfill session re-scores the 7,944 priced player-games with GL5 (does the committee-RB over-pricing decile shrink, does held-out log loss vs the book improve).
+- **Status:** GL5 testing; the other three rejected at these values.
+
+### Addendum to #88: GL5 against prices (2026-11-25, backfill session; no promotion)
+- **Runs.** `tdGl5A` / `tdGl5B` = `APEX_TD_GL5=1` (seeds 20261004 / 777) against `prn3A` / `prn3B`, run on head 71ce646. Re-scored on the same 7,944 priced RB/WR/TE player-games as #84 (identical rows), plus the #85 2025 early set. Tools: `odds_price_eval.py`, `odds_early_eval.py`, new `tools/backtest/gl5_price_compare.py`. Engine probabilities are not fitted to outcomes, so these scores are out of sample by construction.
+- **Log loss on the priced set, GL5 minus baseline** (positive = GL5 worse):
+
+| | 2023 | 2024 | 2025 | All |
+|---|---|---|---|---|
+| Engine alone, seed A | +0.0006 | +0.0000 | +0.0008 | **+0.0005** |
+| Engine alone, seed B | +0.0004 | -0.0003 | +0.0003 | **+0.0001** |
+| w0.2 blend, seed A / B | +0.0001 / +0.0001 | 0.0000 / 0.0000 | +0.0001 / 0.0000 | +0.0001 / 0.0000 |
+
+  Brier moves by +0.0001 or less. Levels, seed A: engine .41215 vs .41168, w0.2 .40267 vs .40258, book .40309. On the population the books price, GL5 is no better and slightly worse on seed A. That is the opposite of its -0.0021 / -0.0015 on the full backtest population (#88): the gain there comes from players the books do not list, i.e. deep-roster backs with tiny probabilities.
+- **Top decile** (engine over book; baseline decile edges held fixed):
+  - Seed A: RB share .438 → .445; RB engine-minus-hit 7.4 → 8.9 points; committee RBs (6-14 projected carries) 13.7 → 13.4 points (n 157 → 164).
+  - Seed B: committee RBs 14.8 → 14.5 points.
+  - **The committee-RB over-pricing does not shrink.**
+  - Over ALL committee-RB player-games (n 750), the engine is calibrated: projected .334 vs hit .339 (book .344), both before and after GL5. The top-decile over-pricing is mostly selection on the gap (regression to the mean among the engine's most optimistic calls), not a systematic carry-share bias. This **weakens #87 lead #2**.
+- **2025 early set, healthy players, gap 5-10 rule.** Relative CLV: seed A +1.27 (0.93, 1.66) → +1.21 (0.88, 1.56); seed B +1.25 → +1.26. ROI: seed A +13.3% → -0.8%; seed B +21.2% → +13.4%. Early log loss of the 50/50 blend: .41974 → .41994 (A), .41952 → .41966 (B).
+- **Verdict: null-to-negative against prices; GL5 is not promoted.** It does not reduce the over-pricing it was built for and does not improve priced-set log loss on either seed. Its full-population gain is real but sits where no bet is possible. Recommend closing R-38. The remaining #87 leads (new-team prior memory, snap-share recency) target players the books do list; test them on this priced set first, using `gl5_price_compare.py BASE CAND`.
+
+## 89. #87 leads 3 and 4: team-changer memory rejected; rising-role recency R-40 is a near-pass (2026-11-25, no promotion)
+- **Switches** (off = byte-identical on `2025_w6`): `APEX_ACH_MULT` (scales the fitted last-season share-prior weight for players who changed teams; params.py) and `APEX_RECENCY_RISE` (recency weight for players whose last-3 offense-snap share rose 10+ points above their season mean, instead of the default 0.3; prep_nv.py, snap counts through `MAXWEEK` only).
+- **R-39 `APEX_ACH_MULT=0.5`** vs prn3A / prn3B (floors #82 record): rec_yds **+0.123 / +0.090**, rec +0.0050 / +0.0038, rush_yds +0.052 / +0.046: worse beyond 2x on both seeds. The fitted team-changer weight is right; the new-team over-pricing in #87 is not a prior-memory problem at the engine level. **Rejected.**
+- **R-40 `APEX_RECENCY_RISE`**, seeds A / B (and C):
+
+| value | rec_yds | rec | rush_yds | rush_att | td_ll | team RMSE | pass_yds |
+|---|---|---|---|---|---|---|---|
+| 0.6 | -0.017 / -0.042 (C -0.015) | **-0.0029 / -0.0024** (C -0.0014) | -0.027 / -0.082 (C -0.058) | **-0.012 / -0.016** (C -0.010) | -0.0006 / +0.0010 (C -0.0019) | -0.004 / +0.003 | -0.16 / -0.09 |
+| 0.8 | +0.004 / -0.057 | -0.0024 / -0.0059 | -0.025 / -0.038 | -0.011 / -0.016 | -0.0008 / 0.0000 | -0.001 / 0.000 | -0.06 / -0.01 |
+
+- **Rule check (0.6):** receptions and carries better beyond 2x the floor on both seeds; rush_yds better on all three seeds (mean -0.054, 3.4x the floor); nothing worse. rec_yds is better on all three seeds but beyond 2x (0.031) only on seed B, so `promotion_rule_noise_aware` (rec_yds beyond 2x on both seeds) is **not met**. 0.8 is not better. Per season (seed B) 2024 carries most of the receiving gain; rushing gains are in every season.
+- **Next:** price check by the backfill session (TD set, and the yardage set where the gain lives): if R-40 improves held-out log loss against the book on rush or reception props, it goes to the owner as an approval card with the rule shortfall stated. **Status: testing.**
+
+### Addendum to #89: R-40 against prices (2026-11-25, backfill session; no promotion recommended on price grounds)
+- **Runs.** `rise6A` / `rise6B` = `APEX_RECENCY_RISE=0.6` (seeds 20261004 / 777) against `prn3A` / `prn3B`, run on head 9381726. Re-scored on the priced sets: main-line rush yds (2,127) and reception yds (4,819) from #84, the 7,944 anytime-TD player-games, and the #85 2025 early set. Line and row sets are identical between base and candidate.
+- **Rising-role subset** = last-3 offense-snap share at least 10 points above the season mean, weeks < W (the R-40 trigger): 114 rush lines, 372 reception lines, 495 TD player-games.
+- **Tools.** New `tools/backtest/cand_price_compare.py BASE_A CAND_A BASE_B CAND_B`. `odds_price_eval.py yds` now saves `var/bt/odds_yds_{TAG}.pkl`. The blend weight is leave-one-season-out. Engine probabilities are not fitted to outcomes, so engine-alone scores are out of sample by construction.
+- **Results, log loss, candidate minus base, seed A / B** (negative = R-40 better). Pooled levels, seed A: rush engine .744 / LOSO blend .686 / book .686; reception .725 / .692 / .692; TD .4117 / .4029 / .4031.
+
+| Set | Engine alone | LOSO blend with book | w0.2 blend |
+|---|---|---|---|
+| Rush yds, all | -0.0001 / -0.0003 | -0.0001 / +0.0000 | +0.0000 / +0.0000 |
+| Rush yds, rising role | **-0.014 / -0.016** | 0.0000 / 0.0000 (held-out weight 0) | -0.0007 / -0.0009 |
+| Reception yds, all | -0.0003 / -0.0000 | +0.0001 / +0.0001 | +0.0001 / +0.0001 |
+| Reception yds, rising role | **-0.0038 / -0.0041** | +0.0016 / +0.0016 | +0.0015 / +0.0015 |
+| Anytime TD, all | -0.0001 / +0.0002 | 0.0000 / +0.0000 | 0.0000 / +0.0001 |
+| Anytime TD, rising role | -0.0008 / -0.0020 | +0.0007 / -0.0000 | +0.0002 / 0.0000 |
+
+  Brier moves the same way (rush rising role engine -0.005 / -0.006; every blended set within ±0.0008).
+- **2025 early set, healthy players, gap 5-10.** Relative CLV +1.27 → +1.38 (A), +1.25 → +1.18 (B). ROI +13.3% → +15.1% (A), +21.2% → +10.4% (B). Early 50/50 log loss .41974 → .41987, .41952 → .41985. The rising-role part of the rule is 5-7 bets: too few to read.
+- **Reading.** R-40 does what it claims inside the engine: on the players it changes, engine-alone log loss improves on both seeds, sharply for rushing (-0.015) and modestly for receiving and TD. Against prices it adds nothing. On rush props the engine carries no information beyond the book even after R-40 (held-out blend weight 0). On the rising-role reception subset, the blend is slightly worse than the book alone. Full-population priced scores move within ±0.0003 everywhere. Caveat: engine yardage P(over) is interpolated from the backtest quantiles (#84), which handicaps engine-alone yardage scores (worse than a coin flip at .72-.74); the before/after comparison is like for like.
+- **Verdict (prices): null.** R-40 is a projection-accuracy candidate, not a betting one. Its promotion stands or falls on the noise-aware rule in #89 (rec_yds not met); the price check neither adds support nor raises an objection. Recommend no change to the TD card or the non-TD information-only status (#64).
+
+### Promotion record for #89, R-40 (owner-approved 2026-11-25)
+- **Owner approved** R-40 at 0.6 after the price check (addendum to #89: engine gain on rising-role rush and reception props, null against the book) under the owner's directive that projection accuracy comes first. This overrides the `promotion_rule_noise_aware` shortfall stated in #89 (seed-A rec_yds -0.017 against 2x floor 0.031), as #71 did for `APEX_REST_AS_FP`.
+- `prep_nv.py` defaults `APEX_RECENCY_RISE` to 0.6; `APEX_RECENCY_RISE=0` reproduces the prn3 baseline (checked byte-identical on `2025_w6`); the new default is byte-identical to the tested `rise6A`. Applies from the W12 Wednesday freeze; frozen runs unchanged.
+- **New baseline** `rise6A / rise6B / rise6C`. Floors: rec_yds 0.0265, rec 0.0024, rush_yds 0.0392, rush_att 0.0043, td_ll 0.0007, team RMSE 0.0145, pass_yds MAE 0.0256, pinball rec_yds 0.0132, rush_yds 0.0139, pass_yds 0.0221 (`var/bt/floor_rise6A.json`).
+- **Owner directive (2026-11-25):** projection accuracy (player stats, game scores, outcomes) is the first goal, above betting. Candidates are ranked by accuracy gain; market information is an allowed projection input (test in #90).
+
+## 90. Market-anchored player projections: the book's implied median is the better point projection in every market; the held-out engine weight is 0-0.1 (2026-11-25, no model change; design sketch for an anchored output)
+- **Question** (owner directive 2026-11-25: projection accuracy is the #1 goal, above betting): as point projections against actual stats, how do the engine and the book's lines compare, and does a blend beat both?
+- **Tool.** `tools/backtest/anchor_eval.py TAG` (post-sim; no API calls).
+- **Data.** The #84 closing-price sets: main lines for reception yds (4,819), rush yds (2,127) and pass yds (662), plus 7,944 anytime-TD player-games. Seeds prn3A / prn3B; seed B within 0.01 yd of seed A everywhere.
+- **Point projections compared:**
+  - engine mean;
+  - engine median (midpoint of the pickle's P25/P75);
+  - the line itself;
+  - book-implied median: the engine's own distribution shape shifted until P(over the line) equals the de-vigged two-way book probability, i.e. median_book = line + median_eng - Q_eng(1 - p_book);
+  - blend w x engine + (1 - w) x book median, with w fit leave-one-season-out on MAE.
+  - Pushes were dropped upstream.
+- **Yardage, MAE in yards (RMSE), pooled 2023-25, seed A:**
+
+| Market | n | Engine mean | Engine median | Line | Book median | LOSO blend (engine mean) | Held-out engine weight |
+|---|---|---|---|---|---|---|---|
+| Reception yds | 4,819 | 20.22 (27.82) | 20.14 (28.33) | 19.44 (27.25) | **19.43 (27.23)** | 19.43 (27.22) | 0.05 / 0.00 / 0.05 |
+| Rush yds | 2,127 | 19.15 (27.03) | 19.06 (27.55) | 18.05 (25.76) | **18.03 (25.76)** | 18.04 (25.74) | 0.10 / 0.10 / 0.00 |
+| Pass yds | 662 | 59.02 (73.71) | 59.58 (74.39) | 56.33 (71.20) | **56.28 (71.05)** | 56.28 (71.05) | 0 / 0 / 0 |
+
+  - **The book's median is the better point projection in every market and every season:** -3.9% MAE for reception yds, -5.8% for rush yds, -4.6% for pass yds against the engine mean.
+  - The line alone is nearly as good as the book median; the de-vig shift adds 0.01-0.05 yd.
+  - Blending the engine back in gains 0.00-0.01 yd. Held-out engine weight is 0-0.10 for the mean and 0-0.20 for the median, and 0 for passing in every season.
+  - Both are biased low against these actuals (engine mean -3.2 rec yds, -2.6 rush, -7.6 pass; book median -4.3, -2.8, -4.8). The actuals are conditional on the player playing a game with a posted line, so this level gap is partly selection and partly real.
+- **Anytime TD as a probability projection** (pooled; held-out engine weight 0.15 / 0.35 / 0.15):
+
+| | Engine | Book | LOSO blend |
+|---|---|---|---|
+| Log loss | .4117 | .4031 | **.4030** |
+| Brier | .1292 | **.1266** | .1267 |
+
+  The blend is no better than the book; this restates #84.
+- **Coverage** (how much of the board a market anchor reaches). Projected DK points, p_active-weighted, over every pre-game projected player in the 388 games:
+
+| Group | Share of projected DK points with any posted line | With a yardage line | With a TD line |
+|---|---|---|---|
+| RB/WR/TE (52,523 pts, 10,175 player-games) | **88.2%** | 78.9% | 88.2% |
+| QB (12,963 pts) | 84.2% (pass yds) | 84.2% | n/a* |
+| QB + RB/WR/TE | 87.4% | 79.9% | 70.8% |
+
+  \*QB TD lines were not kept in the TD set.
+
+  Share of RB/WR/TE player-games with a yardage line, by projected DK points: under 2 pts 5%; 2-5 pts 46%; 5-10 pts 84%; 10-15 pts 93%; over 15 pts 98%. The TD set holds only players who later took a snap, so TD coverage is a slight undercount. **The market can anchor about 87-88% of projected skill points, and nearly every fantasy-relevant player.** The unanchored 12% is mostly depth players under 5 projected points.
+- **Reading.** For the stats books post, the engine's player-level means carry no information beyond the line; the honest projection is the market's. The engine's job shifts to three things: (1) the joint structure (team totals, correlation between teammates, game script); (2) distribution shape and tails; (3) the roughly 12% of points the market does not price, where the engine stays the only source (#87 and #89 changes belong there).
+- **Design sketch: an "anchored" projection output** (not built; owner decision; a backtest gate comes before any live use):
+  1. **Inputs:** the latest de-vigged main lines per player and market (`price_odds.py` already builds them); the engine's joint simulation (`R.run_game`, N draws per game).
+  2. **Per player and stat with a line:** target median m* = book median, or a LOSO blend with w <= 0.1. Shift the player's simulated draws by the difference between m* and the engine's simulated median. Use a location shift for yardage (floored at 0) and a scale factor for counts, so the engine's shape, tails and within-game correlation are kept.
+  3. **Anytime TD:** reweight the player's TD draws (importance weights, or thinning and adding TDs) until P(TD >= 1) equals the blended probability.
+  4. **Team consistency:** after the shifts, rescale each team's receiving and rushing yards toward the market team total (spread and total), so the shares stay coherent. Teammates' correlation is kept because draws are shifted, not resampled.
+  5. **Players with no line:** keep the engine, then apply the team-level rescale from step 4 so the team adds up.
+  6. **Outputs:** every current table (means, quantiles, DK points, the TD board) plus an "anchored" flag per player. Frozen runs keep both the raw and the anchored columns, so grading can compare them forward.
+  7. **Acceptance test before live use:**
+     - Re-run the backtest with anchoring on the 2023-25 slates (closing lines are available now).
+     - Grade MAE and pinball loss on rec, rush and pass yds, and DK-point MAE, against prn3 under the #59 noise-aware rule.
+     - Grade lines as of T-2h, not the close, for the live-equivalent test. That needs a further historical pull at about 10-30 credits per game-snapshot; this test used none.
+- **Caveats.** Closing lines are the sharpest snapshot; the live version would anchor to T-2h or Wednesday lines, which are less accurate (the #85 early book was worse than the close on TD). Engine medians come from four stored quantiles, a coarse shape. Yardage actuals exclude pushes.
+
+## 91. Market-anchored engine output (APEX_ANCHOR_XLSX): built, off by default; passes the noise-aware rule on every core metric with no regression; T-2h lines are as good as the close (2026-11-25, backfill session; switch shipped OFF, promotion is an owner call)
+- **What was built** (`engine/weekly/anchor.py`, called from `run_all.run_game` right after the joint simulation, only when `APEX_ANCHOR_XLSX` is set):
+  - **Input.** Either a price_odds-schema workbook (bookmaker, home_team, away_team, market, label, description, price, point; several files joined with the path separator) or a prepared lines CSV (season, week, away, home, nkey, market, line, p). Workbook parsing (`anchor.lines_from_rows`): main line = the point most books post, ties to the one nearest even; two-way de-vig per book, mean over books; anytime TD de-vigged per book with `config/weekly/td_book_devig.json` (#84 k factors).
+  - **Step 1, yardage** (rec, rush, pass yds). Active draws above 0 are shifted by s, floored at 0, with s solved by bisection so that P(X > line | active) = p_book. Draws of 0 yards stay 0, so the shape, the tails and the within-game correlation stay the engine's.
+  - **Step 2, anytime TD.** TD draws are thinned, or a TD is added to 0-TD draws, until P(TD >= 1 | active) = p_book. An added TD goes to receiving or rushing in proportion to the player's simulated split. The RNG is separate, seeded by crc32(season, week, away, home), so no other draw moves.
+  - **Step 3, lineless teammates.** Receivers without a line: receiving yards are rescaled so the team's receiving total follows the anchored QB's passing yards (when the QB is anchored), otherwise it is held. Rushers without a line: rushing yards are rescaled to hold the team's simulated rushing total. Factor clipped to [0.5, 1.5]. Everything not rescaled counts as fixed; the first build left an unanchored QB's rushing out of "fixed" and inflated the free rushers. That was caught and fixed before the graded runs, and `tests/weekly/test_anchor.py` holds the regression.
+  - **Step 4, fantasy points** are recomputed from the deltas. Raw arrays are kept in `pl["raw"]` and markets in `pl["anchored"]`; backtest pickles add `anchored`, `raw_rec_yds`, `raw_rush_yds`, `raw_pass_yds` and `raw_any_td`.
+  - **Not built:** a receptions or attempts scale (no such lines in the backfill), and rescaling team scores to the market total (team arrays are untouched, so team RMSE is identical by construction). `APEX_ANCHOR_W` (default 0) is the engine weight; #90's held-out optimum was 0-0.1.
+- **Switch off = byte-identical.** 2025 week 6 with no knob set: `cmp` of the player and team pickles against rise6A is identical. The off path never imports `anchor`.
+- **Closing-line backtest** (27 slates, weeks 4-12, 2023-25). Lines are `var/anchor/lines_close_2023_25.csv`, built by `tools/backtest/build_anchor_lines.py` from the #84 closing sets: 15,552 lines (TD 7,944, rec yds 4,819, rush yds 2,127, pass yds 662). TD p is the LOSO de-vigged consensus, so no season's outcomes set its own TD level; yardage p is two-way no-vig, with no outcome fitting. Candidate anchA / anchB vs the current defaults rise6A / rise6B, seeds 20261004 / 777. Noise floors were re-measured on rise6 with seeds 20261004 / 777 / 999 and equal the floors recorded with the R-40 promotion.
+
+| Metric | Floor | Delta seed A | Delta seed B | Verdict |
+|---|---|---|---|---|
+| rec_yds MAE | .0265 | **-0.323** | **-0.326** | BETTER (12x floor) |
+| rec MAE | .0024 | 0 | 0 | unchanged (no reception lines) |
+| rush_yds MAE | .0392 | **-0.531** | **-0.540** | BETTER |
+| rush_att MAE | .0043 | 0 | 0 | unchanged |
+| TD log loss | .0007 | **-0.0493** | **-0.0495** | BETTER (0.451 -> 0.402, -10.9%) |
+| team RMSE | .0145 | 0 | 0 | unchanged by construction |
+| pass_yds MAE | .0256 | **-2.59** | **-2.57** | BETTER |
+| pinball rec / rush / pass yds | .013 / .014 / .022 | -0.196 / -0.230 / -0.557 | -0.187 / -0.235 / -0.558 | BETTER |
+
+  - Per season: rec yds, TD log loss, pass yds and every pinball improve in all three seasons on both seeds. Rush yds MAE improves in 2023 (-0.83) and 2024 (-0.94) but is **worse in 2025 (+0.27 / +0.26)**, while 2025 rush pinball still improves (-0.16).
+  - Against prn3 (pre-R-40): rec yds -0.340 / -0.368, rush yds -0.558 / -0.621, TD log loss -0.050 / -0.049, pass yds -2.75 / -2.66. R-40 accounts for about 0.017 of the rec-yds gain; the anchor for the rest.
+- **DK-point MAE** (`tools/backtest/anchor_backtest.py`; no bonuses, INT or fumbles, which are the same on both sides). Player-games with a snap:
+
+| Group | n | rise6A | anchA | Delta A | Delta B | TD log loss delta (A) |
+|---|---|---|---|---|---|---|
+| All | 8,729 | 4.051 | 3.967 | **-0.084** | **-0.085** | -0.049 |
+| Own yardage line | 5,690 | 5.070 | 4.945 | -0.124 | -0.126 | -0.015 |
+| No own yardage line (TD-only or none; the rescale group) | 3,039 | 2.143 | 2.135 | -0.008 | -0.009 | -0.031 |
+| No own line at all | 72 | 7.04 | 6.99 | -0.046 | -0.049 | 0 |
+
+  - Every season improves (-0.083 to -0.087).
+  - Anytime-TD markets cover almost every skill player with a snap: only 72 player-games (0.8%) have no own line at all, but 35% (10% of projected DK points) have no yardage line.
+  - The team rescale is about neutral for those players: -0.008 DK pts. Their TD gain comes from their own TD line.
+- **Coverage** (quantile calibration, seed A; seed B the same within 0.002). The anchor moves medians, not widths:
+  - rec yds P25-P75 0.516 -> 0.523; below P10 0.190 -> 0.208; above P90 0.130 -> 0.108.
+  - rush yds P25-P75 0.498 -> 0.491; below P10 0.100 -> 0.148; above P90 0.103 -> 0.084.
+  - pass yds P25-P75 0.475 -> 0.486; below P10 0.128 -> 0.154; above P90 0.090 -> 0.062.
+  - The low tail is now too heavy in all three: the shift lifts positive draws, but a shortfall below the line is often a bust the engine's shape does not hold. This is a dispersion follow-up under the #75 rule, not a reason to hold the anchor; pinball improves in all three markets.
+- **Live equivalence** (920 credits; 1,677 left). Snapshot taken 2h04m before kickoff, all four markets, 23 games: 2025 week 6 (15) and week 7 (8). Cap 920 credits, then stopped. Files in `var/odds_hist/t2h/`, not committed.
+  - Built with `tools/backtest/build_anchor_lines_raw.py`, which runs the engine's own workbook parser (the live path, with no snap filtering).
+  - Closing lines for the same games went through the same parser (ancC). anchA uses the pickle-built LOSO lines.
+  - T-2h vs close: 1,238 lines match, 40 appear only at T-2h, 17 only at close. Yardage lines moved on 40-76% of player-markets, but by only 0.7-1.7 yds on average; p moved by 0.004-0.008.
+  - Sample results (494 player-games), delta vs rise6A:
+
+| | DK MAE | rec yds MAE | rush yds MAE | pass yds MAE | TD log loss | rec / rush / pass pinball |
+|---|---|---|---|---|---|---|
+| anchA (close, pickle-built lines) | -0.132 | -0.39 | +0.21 | -4.18 | -0.0401 | -0.15 / -0.38 / -0.44 |
+| ancC (close, live parser) | -0.130 | -0.36 | +0.20 | -4.24 | -0.0402 | -0.14 / -0.38 / -0.44 |
+| **ancT (T-2h, live parser)** | **-0.134** | **-0.54** | **-0.01** | -4.00 | -0.0397 | -0.18 / -0.38 / -0.51 |
+
+  - **The T-2h anchor is as good as the close.** A 23-game sample cannot separate them; the point is that the gain does not depend on closing information.
+  - ancC equals anchA. So neither the snap-filtered line set nor the out-of-sample TD k was inflating the full backtest, and the live parser reproduces it.
+  - **Not tested:** Wednesday lines. #85 found them thinner and less sharp on TD. A Wednesday freeze anchored to Wednesday lines needs its own check before it is trusted.
+- **Verdict.** It passes `promotion_rule_noise_aware` (#69): rec yds MAE beats 2x floor on both seeds (-0.32 vs 0.053), and no guarded metric is worse (rec, rush att and team RMSE unchanged; rush yds and TD log loss far better). The #59 QB-only rule does not apply, because this is not a QB-layer change. Its passing conditions are met anyway: pass yds MAE and pinball are lower pooled and in all three seasons.
+  - **The switch ships OFF.** Turning it on for a frozen run is an owner decision: it changes what the deliverables say.
+  - Recommended live form: Sunday reruns with `APEX_ANCHOR_XLSX` = the `price_odds` workbook pulled T-2h or later, and raw plus anchored columns kept in the frozen run.
+  - **Open items:**
+    1. 2025 rush yds MAE (+0.27).
+    2. The heavy low tail (dispersion follow-up).
+    3. Wednesday-line anchoring.
+    4. Pickle anchored columns into `runs/weekly` output (the frozen-run writer is not touched here).
+- **Tools.** `tools/backtest/build_anchor_lines.py`, `build_anchor_lines_raw.py`, `anchor_backtest.py`, `anchor_live_check.py`. Tags: anchA, anchB, ancC, ancT, offchk, rise6C (seed 31337, unused), rise6D (seed 999). Tests: `tests/weekly/test_anchor.py`.
+
+### Promotion record for #91, market anchoring (owner-approved 2026-11-25)
+- **Owner approved** the market-anchored output for live runs ("approve anchoring", 2026-11-25 ~19:00Z), on the #91 evidence (noise-aware rule met on every core metric; rec yds -0.32, rush yds -0.53, pass yds -2.6 MAE; TD log loss 0.451 → 0.402; DK-point MAE 4.05 → 3.97; T-2h lines as good as the close).
+- **Operating rule:** every live window freezes a raw run (no `APEX_ANCHOR_XLSX`) and, when a lines workbook exists, an anchored run with `APEX_ANCHOR_XLSX` set; the run notes state the lines snapshot time. Lines older than T-2h are labelled "early-line anchored" (Wednesday anchoring is untested, #91 open item 3); the T-2h re-anchor supersedes them. The engine default does not change: with no lines file the engine is byte-identical to the R-40 baseline.
+- **Open items carried:** 2025 rush yds MAE +0.27; rush lower tail too heavy after anchoring (14.8% below P10); anchored columns in the frozen-run writer.
+
+## 92. Kicker identity from the depth chart (2026-11-26, labelling fix, no projection change)
+- **Defect (GB@LA post mortem):** `params.kicker(team)` returned the first Pos "K" row in the scoring table; for LA that was punter Ethan Evans, so DraftKings' Brandon McManus did not map and the Showdown builder could not select him (he scored 17.0, 25.5 as captain, in both top operator-supplied entries).
+- **Fix:** when a team has several "K" rows, take the current depth chart's PK1 (live runs only; backtests keep the old behaviour). Kicker points are team-level FG/XP draws, so only the label changes. Checked: all 10 Wed-Fri teams map to the DK kicker (LA McManus); `2025_w6` backtest byte-identical; tests pass.
+- Post mortem: `docs/weekly/w12/POSTMORTEM_GB_LA_W12.md` (queues R-41 margin-dependent RB carry split, O-4 ownership model, O-5 Showdown K/DST model).
+
+## 93. Identity gates: no scoring player may be missing from a projection or a lineup pool (2026-11-26, owner directive)
+- **Why:** the W12 GB@LA kicker defect (#92) left the game's top DFS scorer out of our pool. Owner: "We CANNOT have issues like we had tonight with the Rams Kicker."
+- **Kicker label, extended:** `params.kicker()` now always follows the depth chart's PK1 in live runs, including a newly signed kicker with no stats row (W12: ATL Moody and BAL Patterson were also mislabelled). Team FG/XP draws unchanged; backtests byte-identical.
+- **Gate 1, starter audit** (`engine/weekly/starter_audit.py`, run by `cli run` after every live track; `APEX_SKIP_STARTER_AUDIT=1` to bypass, logged): every team's current QB1, RB1, WR1-3, TE1 and PK1 must be projected unless Out/Doubtful (NFL report or overlay), reserve on the roster, or in the manual-out. Exit 1 otherwise. W12 after the fix: 32 teams OK, both tracks.
+- **Gate 2, DFS pool audit** (`engine/weekly/dfs_pool_audit.py`, called by `dfs_showdown.py` and `dfs_classic.py` before any lineup is built; `APEX_ALLOW_POOL_GAP=1` to bypass, logged): every DK player who can score (DST; K with a DK average; depth-chart QB1; others with DK average >= 3; not OUT/IR) must be in the simulations; manual-out players are listed as explained. W12 files: GB@LA, CHI@DET, KC@BUF, DEN@PIT showdowns and the Thursday classic all pass; the first version flagged backup QBs and a 0.0-average second kicker (Tucker KC), which the eligibility rule now excludes.
+- Tests: `tests/weekly/test_dfs_pool_audit.py` (4). Lineups already given to the operator are unchanged by the re-runs.
+
+## 94. W12 PHI@DAL lineup review: three engine defects, two backtests, new tooling (2026-11-26)
+The owner's lineup review found three things the engine got wrong. Each was tested; none of the model fixes passes the promotion rule, so the defaults are unchanged and the defects are now flagged on every live run instead.
+- **Defect 1, stale role (Ertz).** Projected 3.3 targets / 3.4 DK points; last target Week 5, inactive Weeks 6-10, 6 snaps and 0 targets in Week 11. Cause: nflverse writes no stat row for a zero-touch game, so the recency "last 3 games" (#70) is the last 3 *stat rows* (Weeks 3-5 for Ertz), never his recent zero games.
+  - R-42 (`APEX_RECENCY_SNAPGAMES=1`): last 3 = last 3 games with offense snaps, missing stat row = share 0. Tags sg42A/sg42B vs rise6A/rise6B: rec yds MAE +0.050/+0.054 (floor 0.0265), pass yds MAE +0.136/+0.050 (WORSE). **Rejected.**
+  - R-42b (`APEX_RECENCY_SNAPGAMES=2`, `APEX_STALE_LAM`=0.6): the same, only for stale players (last stat row older than the team's 3rd-latest game, offense snaps since). Tags st42A/st42B: pooled all noise (rec yds +0.024/+0.028, at the floor). Stale subset (351 player-games, 3%): rec yds MAE 5.41 → 5.08 (-6%), bias +2.98 → +2.50. The pooled rule cannot see a 3% subset; **stays off, owner card** (subset promotion needs a promotion-rule decision).
+- **Defect 2, new-starter QB (Milton).** Projected 20.2 completions / 212 yds; his 2 starts: 14.5 completions, 0 TD. Cause: passing efficiency is team-level (`params.team_params` ypa/cmp), so a new starter inherits the injured starter's rates.
+  - R-43 (`APEX_QB_OWN_K`=K): QB1's own cmp% and ypa shrunk to his team's passers with K attempts. K=150 (qb43A/B): all noise, pass yds +0.025/+0.014; new-starter subset (QB1 <60% of team attempts, n=75) pass yds MAE 57.0 → 55.9 / 56.8 → 56.7. K=60 (qb43kA/B): pass yds WORSE (+0.109/+0.054), subset worse. Small-sample QB efficiency is noise beyond the team rate. **Rejected.** Off reproduces the baseline byte for byte (2025_w6 cmp).
+- **Defect 3, practice squad (Kendre Miller).** Correctly projected 0 (#61), but nothing told the operator why a DK 6.6-average player was missing.
+- **New tooling (no projection change):**
+  - `engine/weekly/role_audit.py`, run by `cli run` after the starter audit (warnings, written to `role_audit.csv`): STALE ROLE, NEW STARTER (QB1 < 60% of team attempts, with his own line), PRACTICE SQ (DK average >= 3, on the practice-squad manual-out list). First run, W12 slate: 3 stale roles (Ertz, Mallory, Legette), 10 new-starter QBs (incl. Milton, Rudolph PIT, Beck ARI, DeVito NE), 2 practice squad (Kendre Miller, Elijah Mitchell).
+  - `dfs_showdown.py --check "CPT,F1,...,F5"`: salary and cap left computed in code (the operator caught a hand-math error: $1,400 left, not $1,600), holdout mean / p90 / top-1%, per-slot numbers, and every single swap that fits the cap ranked by mean and by top-1%.
+  - `APEX_SD_OBJ=mean|top1` (default top1): rank lineups by mean for cash / small fields, by top-1% for large GPPs. Every lineup table now prints `cap_left`.
+- **Process rule:** no hand-edited lineup goes to the operator without a `--check` run.
+- **Addendum (2026-11-26 ~22:15Z, DEN@PIT re-review): roster moves the feeds had not caught.** PIT activated Pittman from IR, signed Hurleman (Week 11: 7 targets, 6-61-1) from the practice squad to the active roster, and sent Skowronek to IR (team reports, 11-26). The engine had Hurleman zeroed (practice squad, #61) and Pittman excluded (nflverse roster RES); the DK pool audit (#93) caught Pittman as a POOL GAP and stopped the build. Fix: an operator `Active` row in `APEX_STATUS_OVERLAY` now also overrides the roster RES/CUT rule (`params._apply_roster_out`); practice-squad promotions are removed from the manual-out list by hand until O-1 automates transactions. Result: Hurleman 6.5 DK points at $2,000, Pittman 5.0.

@@ -44,3 +44,17 @@ def test_active_row_clears_the_designation():
     ov = pd.DataFrame([dict(player="Tyreek Hill", team="NE", pos="WR", report_status="Active")])
     out = apply_status_overlay(_inj(), ov, {})
     assert "Tyreek Hill" not in set(out.full_name)      # the player leaves the injury table, so he is treated as healthy
+
+
+def test_added_player_takes_the_operator_practice_status_when_the_overlay_has_one():
+    ov = pd.DataFrame([dict(player="Josh Jacobs", team="GB", pos="RB", report_status="Questionable", practice_status="Limited Participation in Practice"),
+                       dict(player="Bo Melton", team="GB", pos="WR", report_status="Questionable", practice_status="")])
+    out = apply_status_overlay(_inj(), ov, {})
+    assert out[out.full_name == "Josh Jacobs"].practice_status.iloc[0] == "Limited Participation in Practice"
+    assert out[out.full_name == "Bo Melton"].practice_status.isna().iloc[0]      # blank stays unknown, never invented
+
+
+def test_added_player_keeps_the_gsis_id_from_the_overlay():
+    ov = pd.DataFrame([dict(player="Josh Jacobs", team="GB", pos="RB", report_status="Questionable", practice_status="", gsis_id="00-0035700")])
+    out = apply_status_overlay(_inj(), ov, {})
+    assert out[out.full_name == "Josh Jacobs"].gsis_id.iloc[0] == "00-0035700"

@@ -17,6 +17,15 @@ def shr(obs, n, prior, k):
     return (obs * n + prior * k) / (n + k)
 
 import os
+PR_NEUTRAL = os.environ.get("APEX_PR_NEUTRAL", "1") == "1"      # R-31 (DECISIONS #82, owner-approved 2026-11-24): neutral-situation pass rate in the team prior; APEX_PR_NEUTRAL=0 reproduces the old baseline
+PR_NEUTRAL_K = float(os.environ.get("APEX_PR_NEUTRAL_K", 90))
+TD_RZ_W_REC = float(os.environ.get("APEX_TD_RZ_W_REC", 0.40))      # R-37/R-38 candidates (DECISIONS #87 leads), defaults = baseline
+TD_RZ_W_RUSH = float(os.environ.get("APEX_TD_RZ_W_RUSH", 0.40))
+TD_RZ_MR = float(os.environ.get("APEX_TD_RZ_MR", 8.0))
+TD_GL5 = os.environ.get("APEX_TD_GL5", "0") == "1"
+ACH_MULT = float(os.environ.get("APEX_ACH_MULT", 1.0))      # R-39 candidate: scales last-season share prior weight for team changers
+PR_NEUTRAL_W = float(os.environ.get("APEX_PR_NEUTRAL_W", 0.3))      # weight on the neutral rate (1 = neutral only, 0 = raw)
+
 _G = pd.read_parquet(N + "games.parquet"); _G = _G[(_G.season == SEASON) & (_G.game_type == "REG")].copy()
 for _c in ("home_team", "away_team"): _G[_c] = _G[_c].map(tm)
 BACKTEST = os.environ.get("APEX_BACKTEST", "0") == "1"
@@ -114,6 +123,13 @@ def _apply_roster_out(o, week):
     r = r[r.position.isin(["QB", "RB", "FB", "WR", "TE"])].copy()
     r["nkey"] = r.full_name.map(norm_name); r["team"] = r.team.map(tm)
     live = set(zip(r[r.status.isin(["ACT", "DEV", "INA"])].nkey, r[r.status.isin(["ACT", "DEV", "INA"])].team))     # same player re-signed by the same team stays live
+    _ov = os.environ.get("APEX_STATUS_OVERLAY")
+    if _ov and os.path.exists(_ov):      # an operator 'Active' row (team activated him from IR / signed him today; the nflverse roster still says RES or DEV) makes him live (W12 PIT Pittman, #94)
+        try:
+            _a = pd.read_csv(_ov, keep_default_na=False); _a = _a[_a.report_status == "Active"]
+            live |= set(zip(_a.player.map(norm_name), _a.team.map(tm)))
+        except Exception:
+            pass
     r_all = r
     r = r[r.status.isin(_ROSTER_OUT) & ~pd.Series([(a, b) in live for a, b in zip(r.nkey, r.team)], index=r.index)]
     why = dict(zip(zip(r.nkey, r.team), r.status.map(_ROSTER_OUT)))
@@ -241,6 +257,9 @@ def team_params():
         p["plays_off"] = shr(o.plays / GP, GP, L["plays"], 4.0)
         p["plays_def"] = shr(d["Tot Yds & TO_Ply"] / GP, GP, L["plays"], 4.0)
         p["pr"] = shr(db / o.plays, o.plays, L["pr"], 90)
+        if PR_NEUTRAL and t in NEU_PR.index and NEU_PR.nn.sum() > 0:      # R-31 candidate (off = baseline): team pass rate from neutral situations, shifted to the all-play league level; game script then enters only through the in-sim margin slope
+            _ln = NEU_PR.ndb.sum() / NEU_PR.nn.sum(); _n = NEU_PR.loc[t]
+            p["pr"] = PR_NEUTRAL_W * (shr(_n.ndb / max(_n.nn, 1), _n.nn, _ln, PR_NEUTRAL_K) - _ln + L["pr"]) + (1 - PR_NEUTRAL_W) * p["pr"]
         p["sk"] = shr(o.sacks_taken / db, db, L["sk"], 70)
         p["ypa"] = shr(o.pass_yds / o.pass_att, o.pass_att, L["ypa"], 110)
         p["cmp"] = shr(o.pass_cmp / o.pass_att, o.pass_att, L["cmp"], 110)
@@ -356,7 +375,7 @@ def build_roster_v4(team):
                 role = 0.002 if kind == "tgt" else 0.01; k, a, ach = 3.0, 0.0, 0.0
             else:
                 k, a, ach = _fk(stat, r.pos); k = k * QB_CAR_KMULT if (kind == "car" and r.pos == "QB") else k; role = PP["roles"][kind][r.pos if r.pos in PP["roles"][kind] else "RB"].get(str(float(min(rk[i], 6))), 0.01); rawrk = float(d["trk" if kind == "tgt" else "crk"].iloc[i]); role = role * (6.0 / rawrk) ** 2 if rawrk > 6 else role
-            aa = 0.0 if np.isnan(last[i]) else (a if (np.isnan(r.same_team) or r.same_team == 1) else ach)
+            aa = 0.0 if np.isnan(last[i]) else (a if (np.isnan(r.same_team) or r.same_team == 1) else ach * ACH_MULT)      # ACH_MULT: R-39 candidate (#87 lead 3), 1.0 = baseline
             prior = aa * (0.0 if np.isnan(last[i]) else last[i]) + (1 - aa) * role
             n = float(r.G); out[i] = (n * obs[i] + k * prior) / (n + k)
         return out
@@ -413,8 +432,12 @@ def build_roster_v4(team):
     rz_t_sh = (d.rz_tgt + mr * d.tgt_sh) / (rzT + mr)
     rz_c_sh = (d.rz_car + mr * d.car_sh) / (rzC + mr)
     rz10_c_sh = (d.rz10_car + 8 * d.car_sh) / (rz10C + 8)
-    d["w_rec_td"] = (0.40 * rz_t_sh + 0.60 * d.tgt_sh) * tilt
-    d["w_rush_td"] = 0.40 * rz10_c_sh + 0.60 * d.car_sh
+    if TD_RZ_MR != 8.0:      # R-37 candidate (#87 miss diagnosis): lighter shrink of red-zone shares toward overall share
+        rz_t_sh = (d.rz_tgt + TD_RZ_MR * d.tgt_sh) / (rzT + TD_RZ_MR); rz10_c_sh = (d.rz10_car + TD_RZ_MR * d.car_sh) / (rz10C + TD_RZ_MR)
+    if TD_GL5:      # R-38 candidate (#87): rushing TD weight blends inside-5 with inside-10 carry share (goal-line back vs committee back)
+        rz5C = max(d.rz5_car.sum(), 0); rz10_c_sh = 0.5 * rz10_c_sh + 0.5 * (d.rz5_car + TD_RZ_MR * d.car_sh) / (rz5C + TD_RZ_MR)
+    d["w_rec_td"] = (TD_RZ_W_REC * rz_t_sh + (1 - TD_RZ_W_REC) * d.tgt_sh) * tilt      # 0.40 = baseline (hand-set)
+    d["w_rush_td"] = TD_RZ_W_RUSH * rz10_c_sh + (1 - TD_RZ_W_RUSH) * d.car_sh      # 0.40 = baseline (hand-set)
     d = _apply_td_mult(d)
     d["other_tgt_sh"] = other_sh; d["other_car_sh"] = other_car
     d["tilt"] = tilt
@@ -482,8 +505,12 @@ def build_roster_v3(team):
     rz_t_sh = (d.rz_tgt + mr * d.tgt_sh) / (rzT + mr)
     rz_c_sh = (d.rz_car + mr * d.car_sh) / (rzC + mr)
     rz10_c_sh = (d.rz10_car + 8 * d.car_sh) / (rz10C + 8)
-    d["w_rec_td"] = (0.40 * rz_t_sh + 0.60 * d.tgt_sh) * tilt
-    d["w_rush_td"] = 0.40 * rz10_c_sh + 0.60 * d.car_sh
+    if TD_RZ_MR != 8.0:      # R-37 candidate (#87 miss diagnosis): lighter shrink of red-zone shares toward overall share
+        rz_t_sh = (d.rz_tgt + TD_RZ_MR * d.tgt_sh) / (rzT + TD_RZ_MR); rz10_c_sh = (d.rz10_car + TD_RZ_MR * d.car_sh) / (rz10C + TD_RZ_MR)
+    if TD_GL5:      # R-38 candidate (#87): rushing TD weight blends inside-5 with inside-10 carry share (goal-line back vs committee back)
+        rz5C = max(d.rz5_car.sum(), 0); rz10_c_sh = 0.5 * rz10_c_sh + 0.5 * (d.rz5_car + TD_RZ_MR * d.car_sh) / (rz5C + TD_RZ_MR)
+    d["w_rec_td"] = (TD_RZ_W_REC * rz_t_sh + (1 - TD_RZ_W_REC) * d.tgt_sh) * tilt      # 0.40 = baseline (hand-set)
+    d["w_rush_td"] = TD_RZ_W_RUSH * rz10_c_sh + (1 - TD_RZ_W_RUSH) * d.car_sh      # 0.40 = baseline (hand-set)
     d = _apply_td_mult(d)
     d["other_tgt_sh"] = other_sh; d["other_car_sh"] = other_car
     d["tilt"] = tilt
@@ -520,8 +547,20 @@ def qb_list(team):
     q["p_active"] = q.p_active.fillna(1.0)
     return q.reset_index(drop=True)
 
+try:      # current depth chart place-kicker (PK rank 1) per team, live runs only; backtests fall back to the first K row
+    _pk = _DC[(_DC.pos_abb == "PK") & (_DC.pos_rank == 1)]
+    _DC_PK = {tm.get(t, t) if hasattr(tm, "get") else t: norm_name(n) for t, n in zip(_pk.team, _pk.player_name)} if not BACKTEST else {}
+    _DC_PK_NAME = {tm.get(t, t) if hasattr(tm, "get") else t: n for t, n in zip(_pk.team, _pk.player_name)} if not BACKTEST else {}
+except Exception:
+    _DC_PK, _DC_PK_NAME = {}, {}
+
 def kicker(team):
     k = sco[(sco.team == team) & (sco.Pos == "K")]
+    pk1 = _DC_PK.get(team) if _DC_PK else None
+    if pk1 and len(k):      # the depth chart's PK1 is the kicker: punters can carry Pos K (W12 LA Evans), and a newly signed kicker has no stats row yet (W12 ATL Moody, BAL Patterson)
+        hit = k[k.player.map(norm_name) == pk1]
+        if len(hit): return hit.iloc[0]
+        row = k.iloc[0].copy(); row["player"] = _DC_PK_NAME.get(team, row["player"]); return row      # team-level FG/XP draws are unchanged; only the label follows the depth chart
     return k.iloc[0] if len(k) else None
 
 # ---------------- game environment ----------------

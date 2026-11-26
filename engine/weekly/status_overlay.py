@@ -27,6 +27,8 @@ def apply_status_overlay(i, m, team_map):
     i.loc[hit, "report_status"] = [key[(a, b)] for a, b in zip(i.nkey[hit], i.team[hit])]
     seen = set(zip(i.nkey, i.team)); add = m[[(a, b) not in seen for a, b in zip(m.nkey, m.team)]]
     if len(add):
-        i = pd.concat([i, pd.DataFrame(dict(full_name=add.player.values, position=add.pos.values, team=add.team.values, report_status=add.report_status.values, practice_status=None,
-                                            report_primary_injury=None, practice_primary_injury=None, game_type="REG", week=int(i.week.max()), nkey=add.nkey.values))], ignore_index=True)
+        i = pd.concat([i, pd.DataFrame(dict(full_name=add.player.values, position=add.pos.values, team=add.team.values, report_status=add.report_status.values,
+                                            practice_status=(add.practice_status.replace("", None).values if "practice_status" in add.columns else None),      # latest practice day from the operator report when it carries one
+                                            report_primary_injury=None, practice_primary_injury=None, game_type="REG", week=int(i.week.max()), nkey=add.nkey.values,
+                                            **({"gsis_id": add.gsis_id.replace("", None).values} if "gsis_id" in add.columns else {})))], ignore_index=True)      # gsis_id lets the R-23 starter flag see the row
     return i.drop(columns=["nkey"])

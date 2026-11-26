@@ -97,6 +97,9 @@ def run_game(away, home, neutral, ns=NS):
     players = {}
     for t in (away, home):
         players[t] = play_side(rng, t, sides[t], ns)
+    if __import__("os").environ.get("APEX_ANCHOR_XLSX"):      # DECISIONS #91: market-anchored player draws (off by default; separate RNG, so off = byte-identical)
+        import anchor
+        anchor.apply(players, away, home)
     played = (away, home) in PLAYED
     game_note = "PLAYED (final score in nflverse)" if played else ("INTL neutral site" if neutral else "")
     # ----- env row -----

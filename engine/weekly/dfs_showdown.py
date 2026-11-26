@@ -25,8 +25,9 @@ tier = lambda pa: np.select([pa == 0, pa <= 6, pa <= 13, pa <= 20, pa <= 27, pa 
 
 # book anchoring: scale a player's simulated yardage/receptions so the active-draw median equals the books' main line (clamped 0.5-2.0). TDs are NOT anchored.
 scales = {}
-if True:
-    E = pd.read_csv(os.environ.get("APEX_EDGES", "../../var/out_market/edges_all_rows.csv"))
+_EP = os.environ.get("APEX_EDGES", "../../var/out_market/edges_all_rows.csv")
+if os.path.exists(_EP):      # the --anchor scales need a priced edges file; without one (e.g. anchoring done in run_game via APEX_ANCHOR_XLSX, #91) skip instead of crashing
+    E = pd.read_csv(_EP)
     E = E[E.is_main_line & (E.side == "over") & E.market.isin(["pass_yds", "rush_yds", "rec_yds", "rec"])]
     g = E.groupby(["player", "market"]).agg(line=("line", "first"), feeds=("book", "nunique")).reset_index()
     for r in g[g.feeds >= 3].itertuples(): scales[(norm_name(r.player), r.market)] = r.line
@@ -59,6 +60,8 @@ def build(anchor):
 arrs, meta = build(ANCHOR)
 arrs_raw, _ = build(False); arrs_anc, meta_anc = build(True)
 # eligibility: DK status OUT/IR and model p_active 0 excluded
+import dfs_pool_audit
+dfs_pool_audit.enforce(sal, set(arrs), f"showdown {AWAY}@{HOME}")      # DECISIONS #93: abort before building if a scoring-eligible DK player is missing
 ok = []
 for k in arrs:
     st = str(fl.loc[k, "Status"]) if not isinstance(fl.loc[k], pd.DataFrame) else str(fl.loc[k].iloc[0]["Status"])
@@ -74,6 +77,32 @@ for k in pool:
     assets.append((k, "FLEX")); X.append(arrs[k]); cost.append(fs)
 X = np.vstack(X); cost = np.array(cost); team = np.array([a[0][1] == AWAY for a in assets]); pid = np.array([pool.index(a[0]) for a in assets]); iscpt = np.array([a[1] == "CPT" for a in assets])
 n = len(pool); cpt_idx = np.where(iscpt)[0]; flex_idx = np.where(~iscpt)[0]
+if "--check" in sys.argv:      # evaluate the operator's lineup: salary and cap left computed here (never by hand), holdout mean / p90 / top-1%, per-slot numbers, and every single swap that fits the cap and scores higher
+    names = [x.strip() for x in sys.argv[sys.argv.index("--check") + 1].split(",")]
+    def _find(nm, role):
+        hit = [i for i, a in enumerate(assets) if a[1] == role and a[0][0] == norm_name(nm)]
+        if not hit: raise SystemExit(f"--check: {nm} ({role}) is not in the scoring pool (Out/IR, inactive in the sims, or mean < 1 DK point)")
+        return hit[0]
+    lu = [_find(names[0], "CPT")] + [_find(x, "FLEX") for x in names[1:]]
+    if len(lu) != 6 or len({pid[i] for i in lu}) != 6: raise SystemExit("--check needs 6 different players: CPT first, then 5 FLEX")
+    def _stats(ix):
+        h = X[ix][:, Ho].sum(0); hk = int(0.99 * len(h)); return float(h.mean()), float(np.percentile(h, 90)), float(np.partition(h, hk)[hk:].mean())
+    sal_ = int(cost[lu].sum()); m0, p90, t1 = _stats(lu)
+    print(f"\nCHECK salary {sal_} cap left {CAP - sal_} {'OVER CAP' if sal_ > CAP else ''} | mean {m0:.1f} p90 {p90:.1f} top1% {t1:.1f}")
+    for i in lu: print(f"  {assets[i][1]:4s} {assets[i][0][0]:22s} {assets[i][0][1]} ${cost[i]:>6}  mean {X[i][Ho].mean():5.1f}  P(>=10) {(X[i][Ho] >= 10).mean():.2f}")
+    sw = []
+    for slot, i in enumerate(lu):
+        for j in (cpt_idx if slot == 0 else flex_idx):
+            if pid[j] in {pid[x] for x in lu}: continue
+            new_ = lu.copy(); new_[slot] = j
+            if cost[new_].sum() > CAP: continue
+            tm_ = team[new_]
+            if tm_.all() or (~tm_).all(): continue
+            m1, _, t2 = _stats(new_); sw.append((assets[i][0][0], assets[j][0][0], int(CAP - cost[new_].sum()), m1 - m0, t2 - t1))
+    W_ = pd.DataFrame(sw, columns=["out", "in", "cap_left", "d_mean", "d_top1"])
+    print("best single swaps that fit the cap (by mean):"); print(W_.sort_values("d_mean", ascending=False).head(8).round(1).to_string(index=False))
+    print("best single swaps (by top-1%):"); print(W_.sort_values("d_top1", ascending=False).head(8).round(1).to_string(index=False))
+    sys.exit(0)
 lineups = []
 for c in cpt_idx:
     rest = [f for f in flex_idx if pid[f] != pid[c]]
@@ -91,17 +120,38 @@ for i in range(0, len(cand), 400):
     ix = cand[i:i + 400]; sc = XS[L[ix]].sum(1)         # (chunk, nsims)
     part = np.partition(sc, kS, axis=1)[:, kS:]
     res.append(np.column_stack([ix, sc.mean(1), part.mean(1)]))
-res = np.vstack(res); order = np.argsort(-res[:, 2])
+res = np.vstack(res); OBJ = os.environ.get("APEX_SD_OBJ", "top1")      # top1 (large-field GPP, default) | mean (cash / small field): what the ranking maximises
+order = np.argsort(-res[:, 1]) if OBJ == "mean" else np.argsort(-res[:, 2])
 rows = []
 for j in order[:25]:
     li = int(res[j, 0]); h = XH[L[li]].sum(0); hk = int(0.99 * len(h))
     cap_ = L[li, 0]; flex = L[li, 1:]
-    rows.append(dict(rank=len(rows) + 1, captain=f"{assets[cap_][0][0]}", flex=" | ".join(assets[f][0][0] for f in flex), salary=int(cost[L[li]].sum()), search_mean=res[j, 1], search_top1pct=res[j, 2],
+    rows.append(dict(rank=len(rows) + 1, captain=f"{assets[cap_][0][0]}", flex=" | ".join(assets[f][0][0] for f in flex), salary=int(cost[L[li]].sum()), cap_left=CAP - int(cost[L[li]].sum()), search_mean=res[j, 1], search_top1pct=res[j, 2],
                      hold_mean=float(h.mean()), hold_p90=float(np.percentile(h, 90)), hold_p99=float(np.percentile(h, 99)), hold_top1pct_mean=float(np.partition(h, hk)[hk:].mean()), hold_p_ge_150=float((h >= 150).mean()), hold_p_ge_200=float((h >= 200).mean())))
 R_ = pd.DataFrame(rows); tag = "anchored" if ANCHOR else "raw"
 R_.to_csv(OUT + f"showdown_{AWAY}_{HOME}_{tag}.csv", index=False)
 pd.set_option("display.width", 250); pd.set_option("display.max_colwidth", 80)
-print(R_.head(8)[["rank", "captain", "flex", "salary", "search_mean", "hold_mean", "hold_p90", "hold_p99", "hold_top1pct_mean", "hold_p_ge_150", "hold_p_ge_200"]].round(1).to_string(index=False))
+print(R_.head(8)[["rank", "captain", "flex", "salary", "cap_left", "search_mean", "hold_mean", "hold_p90", "hold_p99", "hold_top1pct_mean", "hold_p_ge_150", "hold_p_ge_200"]].round(1).to_string(index=False))
+if "--portfolio" in sys.argv:      # N-lineup GPP set: greedy by holdout top-1% mean with exposure caps and an overlap limit (exploratory, ungraded)
+    import math
+    N = int(sys.argv[sys.argv.index("--portfolio") + 1]); MAXEXP = float(os.environ.get("APEX_SD_MAXEXP", 0.6)); MAXCPT = float(os.environ.get("APEX_SD_MAXCPT", 0.35))
+    ids = {("CPT", k): int(cp.loc[k, "ID"]) for k in cp.index} | {("FLEX", k): int(fl.loc[k, "ID"]) for k in fl.index}
+    used, cpt_used, picked = {}, {}, []
+    for j in order[:20000]:
+        li = int(res[j, 0]); idx = L[li]; pids = [pid[a] for a in idx]; c = pid[idx[0]]
+        if any(used.get(q, 0) + 1 > math.ceil(MAXEXP * N) for q in pids) or cpt_used.get(c, 0) + 1 > math.ceil(MAXCPT * N): continue
+        if any(len(set(pids) & set(pp)) > 4 for pp in [[pid[a] for a in L[x]] for x in picked]): continue
+        picked.append(li); cpt_used[c] = cpt_used.get(c, 0) + 1
+        for q in pids: used[q] = used.get(q, 0) + 1
+        if len(picked) == N: break
+    P = []
+    for li in picked:
+        h = XH[L[li]].sum(0); hk = int(0.99 * len(h)); a0 = assets[L[li, 0]]
+        P.append(dict(CPT=f"{a0[0][0]} ({ids[('CPT', a0[0])]})", **{f"FLEX{i}": f"{assets[f][0][0]} ({ids[('FLEX', assets[f][0])]})" for i, f in enumerate(L[li, 1:], 1)},
+                      salary=int(cost[L[li]].sum()), cap_left=CAP - int(cost[L[li]].sum()), hold_mean=round(float(h.mean()), 1), hold_p99=round(float(np.percentile(h, 99)), 1), hold_top1pct=round(float(np.partition(h, hk)[hk:].mean()), 1)))
+    P = pd.DataFrame(P); P.to_csv(OUT + f"showdown_{AWAY}_{HOME}_{tag}_portfolio{N}.csv", index=False)
+    print(f"\nPORTFOLIO {len(P)} lineups (max exposure {MAXEXP:.0%}, max captain {MAXCPT:.0%}, overlap <= 4 of 6)"); print(P.to_string(index=False))
+    ex = pd.Series({pool[q][0]: v / len(P) for q, v in used.items()}).sort_values(ascending=False); print("exposure:", ex.round(2).to_dict())
 sc_applied = {a: m["scale"] for a, m in meta.items() if m["scale"]}
 if ANCHOR: print("anchoring scales applied:", {f"{k[0]}": {m_: round(v, 2) for m_, v in s.items()} for k, s in sc_applied.items()})
 

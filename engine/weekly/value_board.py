@@ -15,7 +15,8 @@ import pandas as pd
 
 
 TD_MARKETS = ("anytime_td", "first_td", "pass_td")
-W_TD = 0.5
+W_TD = float(os.environ.get("APEX_BLEND_W_TD", 0.2))      # DECISIONS #84/#86 (owner-approved 2026-11-25): held-out optimum 0.16-0.34 on 2023-25 closing prices; was 0.5
+FT_GAP = (0.05, 0.10)      # forward test: raw engine-book gap 5-10 points on anytime TD; logged, never labelled a play
 W_NONTD = float(os.environ.get("APEX_BLEND_W_NONTD", 0.0))
 
 
@@ -33,6 +34,10 @@ def build(path):
     g = g.merge(bk, on=key)
     g["w"] = g.market.map(blend_weight); g["final_p"] = g.book_p + g.w * (g.model_p - g.book_p); g["gap"] = g.model_p - g.book_p
     g["ev"] = g.final_p * pay(g.best_odds) - (1 - g.final_p)
+    g["fwd_test"] = (g.market == "anytime_td") & g.gap.between(*FT_GAP)
+    if "pos" in e.columns:      # the 2023-25 evidence (#84/#85) covers RB/WR/TE only: QBs and others never enter the forward test
+        _pos = e.groupby(key).pos.first().reindex(pd.MultiIndex.from_frame(g[key])).values
+        g["fwd_test"] = g.fwd_test & pd.Series(_pos, index=g.index).isin(["RB", "WR", "TE"])
     return g[g.pa >= 0.9]
 
 
@@ -46,7 +51,9 @@ def fmt(df, n):
 
 if __name__ == "__main__":
     g = build(sys.argv[1]); td = g[g.market.isin(TD_MARKETS)]; tw = td[(td.main == True) & (td.market == "pass_td")]
-    print("TOUCHDOWN MARKETS (blend w=0.5; the only markets labelled for plays)\n" + fmt(td[td.market == "anytime_td"].sort_values("final_p", ascending=False), 14))
+    print(f"NO PLAYS. The 5-point TD rule lost -28% on 2023-25 closing prices (DECISIONS #84, retired #86). TOUCHDOWN MARKETS, blend w={W_TD:g}, information only\n" + fmt(td[td.market == "anytime_td"].sort_values("final_p", ascending=False), 14))
+    ft = td[td.fwd_test].sort_values("gap", ascending=False)
+    print(f"\nFORWARD TEST, NOT PLAYS (anytime TD, raw engine-book gap 5-10 points; log every row to the ledger with the price, then the close): {len(ft)} rows\n" + fmt(ft, 20))
     print("\nPASS TD, MAIN LINE\n" + fmt(tw.sort_values("final_p", ascending=False), 10))
     info = g[~g.market.isin(TD_MARKETS) & (g.main == True) & (g.side == "over")].copy(); info["ag"] = info.gap.abs()
     print("\nINFORMATION ONLY, NOT PLAYS (non-touchdown main lines, engine versus book over probability, sorted by size of disagreement; DECISIONS #64)\n" + fmt(info.sort_values("ag", ascending=False), 20))
