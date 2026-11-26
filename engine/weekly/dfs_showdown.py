@@ -25,8 +25,9 @@ tier = lambda pa: np.select([pa == 0, pa <= 6, pa <= 13, pa <= 20, pa <= 27, pa 
 
 # book anchoring: scale a player's simulated yardage/receptions so the active-draw median equals the books' main line (clamped 0.5-2.0). TDs are NOT anchored.
 scales = {}
-if True:
-    E = pd.read_csv(os.environ.get("APEX_EDGES", "../../var/out_market/edges_all_rows.csv"))
+_EP = os.environ.get("APEX_EDGES", "../../var/out_market/edges_all_rows.csv")
+if os.path.exists(_EP):      # the --anchor scales need a priced edges file; without one (e.g. anchoring done in run_game via APEX_ANCHOR_XLSX, #91) skip instead of crashing
+    E = pd.read_csv(_EP)
     E = E[E.is_main_line & (E.side == "over") & E.market.isin(["pass_yds", "rush_yds", "rec_yds", "rec"])]
     g = E.groupby(["player", "market"]).agg(line=("line", "first"), feeds=("book", "nunique")).reset_index()
     for r in g[g.feeds >= 3].itertuples(): scales[(norm_name(r.player), r.market)] = r.line
