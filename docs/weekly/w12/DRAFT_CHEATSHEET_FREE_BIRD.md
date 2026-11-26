@@ -97,3 +97,12 @@
 - **Leverage:** with about 30,000 entrants, the most popular build will be Gibbs + Lamb + a top QB. A Johnson (KC) or Loveland pick is where the anchored sheet differs from consensus-style rankings.
 
 *Same inputs as the anchored W12 market freeze. Not betting advice. Anchored and raw tables: `var/ro/draft_free_bird_anch.csv` and `var/ro/draft_free_bird_raw.csv` (not committed).*
+
+## Update 2026-11-26 16:01Z (lines 2 hours before kickoff, official Thursday injury report)
+
+Re-anchored to the 16:01Z lines. The nflverse Thursday report is now in, and it confirms the Wednesday designations: Walker (KC), Ferguson and Mingo (DAL), and R. Johnson (CHI) are Out; Kincaid and N. Gray are Questionable. Run: `runs/weekly/2026_w12_market_20261126T160705Z`.
+
+- **Rankings above stand.** The top-12 set is unchanged, and every move is 1.9 points or less.
+- **Emmett Johnson (KC): 16.2 -> 17.7**, ranked 6th overall (was 9th). Walker's Out designation confirms the market read.
+- **Dalton Kincaid (BUF): 7.2 -> 5.3.** He is Questionable (p_active 0.74) and drops below Goedert. TE order is now Loveland / LaPorta / Kelce, then a gap.
+- **Small risers:** Gibbs 22.2, C. Williams 20.3, Prescott 19.6 (now QB2), Milton 17.3, Cook 15.1.
