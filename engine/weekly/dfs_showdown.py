@@ -60,6 +60,8 @@ def build(anchor):
 arrs, meta = build(ANCHOR)
 arrs_raw, _ = build(False); arrs_anc, meta_anc = build(True)
 # eligibility: DK status OUT/IR and model p_active 0 excluded
+import dfs_pool_audit
+dfs_pool_audit.enforce(sal, set(arrs), f"showdown {AWAY}@{HOME}")      # DECISIONS #93: abort before building if a scoring-eligible DK player is missing
 ok = []
 for k in arrs:
     st = str(fl.loc[k, "Status"]) if not isinstance(fl.loc[k], pd.DataFrame) else str(fl.loc[k].iloc[0]["Status"])

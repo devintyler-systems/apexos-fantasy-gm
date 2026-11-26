@@ -67,6 +67,8 @@ def cmd_run(a):
                 print(f"weather skipped: {ex}")
         for s in PIPELINE:
             _sh(s, e)
+        if int(e.get("APEX_TARGET_WEEK", 0) or 0) and e.get("APEX_SKIP_STARTER_AUDIT") != "1":
+            _sh("starter_audit.py", e)      # DECISIONS #93: hard gate, every depth-chart starter (QB1, RB1, WR1-3, TE1, PK1) projected or explained
         if a.dfs:
             if not e.get("APEX_DK_SALARIES"):
                 raise SystemExit("--dfs needs APEX_DK_SALARIES=<path to DKSalaries_classic.csv>")
