@@ -77,6 +77,32 @@ for k in pool:
     assets.append((k, "FLEX")); X.append(arrs[k]); cost.append(fs)
 X = np.vstack(X); cost = np.array(cost); team = np.array([a[0][1] == AWAY for a in assets]); pid = np.array([pool.index(a[0]) for a in assets]); iscpt = np.array([a[1] == "CPT" for a in assets])
 n = len(pool); cpt_idx = np.where(iscpt)[0]; flex_idx = np.where(~iscpt)[0]
+if "--check" in sys.argv:      # evaluate the operator's lineup: salary and cap left computed here (never by hand), holdout mean / p90 / top-1%, per-slot numbers, and every single swap that fits the cap and scores higher
+    names = [x.strip() for x in sys.argv[sys.argv.index("--check") + 1].split(",")]
+    def _find(nm, role):
+        hit = [i for i, a in enumerate(assets) if a[1] == role and a[0][0] == norm_name(nm)]
+        if not hit: raise SystemExit(f"--check: {nm} ({role}) is not in the scoring pool (Out/IR, inactive in the sims, or mean < 1 DK point)")
+        return hit[0]
+    lu = [_find(names[0], "CPT")] + [_find(x, "FLEX") for x in names[1:]]
+    if len(lu) != 6 or len({pid[i] for i in lu}) != 6: raise SystemExit("--check needs 6 different players: CPT first, then 5 FLEX")
+    def _stats(ix):
+        h = X[ix][:, Ho].sum(0); hk = int(0.99 * len(h)); return float(h.mean()), float(np.percentile(h, 90)), float(np.partition(h, hk)[hk:].mean())
+    sal_ = int(cost[lu].sum()); m0, p90, t1 = _stats(lu)
+    print(f"\nCHECK salary {sal_} cap left {CAP - sal_} {'OVER CAP' if sal_ > CAP else ''} | mean {m0:.1f} p90 {p90:.1f} top1% {t1:.1f}")
+    for i in lu: print(f"  {assets[i][1]:4s} {assets[i][0][0]:22s} {assets[i][0][1]} ${cost[i]:>6}  mean {X[i][Ho].mean():5.1f}  P(>=10) {(X[i][Ho] >= 10).mean():.2f}")
+    sw = []
+    for slot, i in enumerate(lu):
+        for j in (cpt_idx if slot == 0 else flex_idx):
+            if pid[j] in {pid[x] for x in lu}: continue
+            new_ = lu.copy(); new_[slot] = j
+            if cost[new_].sum() > CAP: continue
+            tm_ = team[new_]
+            if tm_.all() or (~tm_).all(): continue
+            m1, _, t2 = _stats(new_); sw.append((assets[i][0][0], assets[j][0][0], int(CAP - cost[new_].sum()), m1 - m0, t2 - t1))
+    W_ = pd.DataFrame(sw, columns=["out", "in", "cap_left", "d_mean", "d_top1"])
+    print("best single swaps that fit the cap (by mean):"); print(W_.sort_values("d_mean", ascending=False).head(8).round(1).to_string(index=False))
+    print("best single swaps (by top-1%):"); print(W_.sort_values("d_top1", ascending=False).head(8).round(1).to_string(index=False))
+    sys.exit(0)
 lineups = []
 for c in cpt_idx:
     rest = [f for f in flex_idx if pid[f] != pid[c]]
@@ -94,17 +120,18 @@ for i in range(0, len(cand), 400):
     ix = cand[i:i + 400]; sc = XS[L[ix]].sum(1)         # (chunk, nsims)
     part = np.partition(sc, kS, axis=1)[:, kS:]
     res.append(np.column_stack([ix, sc.mean(1), part.mean(1)]))
-res = np.vstack(res); order = np.argsort(-res[:, 2])
+res = np.vstack(res); OBJ = os.environ.get("APEX_SD_OBJ", "top1")      # top1 (large-field GPP, default) | mean (cash / small field): what the ranking maximises
+order = np.argsort(-res[:, 1]) if OBJ == "mean" else np.argsort(-res[:, 2])
 rows = []
 for j in order[:25]:
     li = int(res[j, 0]); h = XH[L[li]].sum(0); hk = int(0.99 * len(h))
     cap_ = L[li, 0]; flex = L[li, 1:]
-    rows.append(dict(rank=len(rows) + 1, captain=f"{assets[cap_][0][0]}", flex=" | ".join(assets[f][0][0] for f in flex), salary=int(cost[L[li]].sum()), search_mean=res[j, 1], search_top1pct=res[j, 2],
+    rows.append(dict(rank=len(rows) + 1, captain=f"{assets[cap_][0][0]}", flex=" | ".join(assets[f][0][0] for f in flex), salary=int(cost[L[li]].sum()), cap_left=CAP - int(cost[L[li]].sum()), search_mean=res[j, 1], search_top1pct=res[j, 2],
                      hold_mean=float(h.mean()), hold_p90=float(np.percentile(h, 90)), hold_p99=float(np.percentile(h, 99)), hold_top1pct_mean=float(np.partition(h, hk)[hk:].mean()), hold_p_ge_150=float((h >= 150).mean()), hold_p_ge_200=float((h >= 200).mean())))
 R_ = pd.DataFrame(rows); tag = "anchored" if ANCHOR else "raw"
 R_.to_csv(OUT + f"showdown_{AWAY}_{HOME}_{tag}.csv", index=False)
 pd.set_option("display.width", 250); pd.set_option("display.max_colwidth", 80)
-print(R_.head(8)[["rank", "captain", "flex", "salary", "search_mean", "hold_mean", "hold_p90", "hold_p99", "hold_top1pct_mean", "hold_p_ge_150", "hold_p_ge_200"]].round(1).to_string(index=False))
+print(R_.head(8)[["rank", "captain", "flex", "salary", "cap_left", "search_mean", "hold_mean", "hold_p90", "hold_p99", "hold_top1pct_mean", "hold_p_ge_150", "hold_p_ge_200"]].round(1).to_string(index=False))
 if "--portfolio" in sys.argv:      # N-lineup GPP set: greedy by holdout top-1% mean with exposure caps and an overlap limit (exploratory, ungraded)
     import math
     N = int(sys.argv[sys.argv.index("--portfolio") + 1]); MAXEXP = float(os.environ.get("APEX_SD_MAXEXP", 0.6)); MAXCPT = float(os.environ.get("APEX_SD_MAXCPT", 0.35))
@@ -121,7 +148,7 @@ if "--portfolio" in sys.argv:      # N-lineup GPP set: greedy by holdout top-1% 
     for li in picked:
         h = XH[L[li]].sum(0); hk = int(0.99 * len(h)); a0 = assets[L[li, 0]]
         P.append(dict(CPT=f"{a0[0][0]} ({ids[('CPT', a0[0])]})", **{f"FLEX{i}": f"{assets[f][0][0]} ({ids[('FLEX', assets[f][0])]})" for i, f in enumerate(L[li, 1:], 1)},
-                      salary=int(cost[L[li]].sum()), hold_mean=round(float(h.mean()), 1), hold_p99=round(float(np.percentile(h, 99)), 1), hold_top1pct=round(float(np.partition(h, hk)[hk:].mean()), 1)))
+                      salary=int(cost[L[li]].sum()), cap_left=CAP - int(cost[L[li]].sum()), hold_mean=round(float(h.mean()), 1), hold_p99=round(float(np.percentile(h, 99)), 1), hold_top1pct=round(float(np.partition(h, hk)[hk:].mean()), 1)))
     P = pd.DataFrame(P); P.to_csv(OUT + f"showdown_{AWAY}_{HOME}_{tag}_portfolio{N}.csv", index=False)
     print(f"\nPORTFOLIO {len(P)} lineups (max exposure {MAXEXP:.0%}, max captain {MAXCPT:.0%}, overlap <= 4 of 6)"); print(P.to_string(index=False))
     ex = pd.Series({pool[q][0]: v / len(P) for q, v in used.items()}).sort_values(ascending=False); print("exposure:", ex.round(2).to_dict())
