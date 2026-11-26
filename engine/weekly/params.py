@@ -543,15 +543,17 @@ def qb_list(team):
 try:      # current depth chart place-kicker (PK rank 1) per team, live runs only; backtests fall back to the first K row
     _pk = _DC[(_DC.pos_abb == "PK") & (_DC.pos_rank == 1)]
     _DC_PK = {tm.get(t, t) if hasattr(tm, "get") else t: norm_name(n) for t, n in zip(_pk.team, _pk.player_name)} if not BACKTEST else {}
+    _DC_PK_NAME = {tm.get(t, t) if hasattr(tm, "get") else t: n for t, n in zip(_pk.team, _pk.player_name)} if not BACKTEST else {}
 except Exception:
-    _DC_PK = {}
+    _DC_PK, _DC_PK_NAME = {}, {}
 
 def kicker(team):
     k = sco[(sco.team == team) & (sco.Pos == "K")]
-    if len(k) > 1 and _DC_PK:      # several "K" rows (punters can carry Pos K): take the current depth chart's PK1 (W12: LA labelled punter Ethan Evans, so DK's McManus never mapped)
-        pk1 = _DC_PK.get(team)
-        hit = k[k.player.map(norm_name) == pk1] if pk1 else k.iloc[0:0]
+    pk1 = _DC_PK.get(team) if _DC_PK else None
+    if pk1 and len(k):      # the depth chart's PK1 is the kicker: punters can carry Pos K (W12 LA Evans), and a newly signed kicker has no stats row yet (W12 ATL Moody, BAL Patterson)
+        hit = k[k.player.map(norm_name) == pk1]
         if len(hit): return hit.iloc[0]
+        row = k.iloc[0].copy(); row["player"] = _DC_PK_NAME.get(team, row["player"]); return row      # team-level FG/XP draws are unchanged; only the label follows the depth chart
     return k.iloc[0] if len(k) else None
 
 # ---------------- game environment ----------------
