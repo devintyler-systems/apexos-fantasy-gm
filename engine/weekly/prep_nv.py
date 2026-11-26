@@ -73,7 +73,21 @@ if _PARTIAL > 0 and os.environ.get("APEX_DROP_PARTIAL_TGT_ONLY", "0") == "1":   
 # 2026 W5 postmortem experiment: last-3-game target share cut share MAE 3% overall and 7% for players whose snap share moved 10+ points.
 _REC = float(os.environ.get("APEX_RECENCY", 0.3))      # DECISIONS #70 (owner-approved 2026-11-20); APEX_RECENCY=0 reproduces the old baseline
 if _REC > 0:
-    _l3 = _st2.sort_values("week").groupby("pfr_id").tail(3).groupby("pfr_id").agg(tsh3=("tsh", "mean"), csh3=("csh", "mean"), n3=("week", "size")).reset_index()
+    _src3 = _st2[["pfr_id", "week", "tsh", "csh"]]
+    _SG = os.environ.get("APEX_RECENCY_SNAPGAMES", "0")
+    _stale_ids = set()
+    if _SG == "2":      # R-42b: only STALE players (last stat row older than the team's 3rd-latest game, offense snaps since) use snap-game last-3, with recency weight APEX_STALE_LAM
+        _lastrow = _st2.groupby("pfr_id").week.max()
+        _t3 = TG.sort_values("week").groupby("team").week.apply(lambda w: sorted(w.unique())[-3] if w.nunique() >= 3 else 0)
+        _sgw = sn[sn.offense_snaps.fillna(0) > 0].groupby("pfr_player_id").week.max()
+        _pt = _st2.groupby("pfr_id").team.last()
+        _stale_ids = {i for i, w in _lastrow.items() if w < _t3.get(_pt.get(i), 0) and _sgw.get(i, 0) > w}
+    if _SG in ("1", "2"):      # R-42 candidate (off = 0): last 3 = the player's last 3 games WITH OFFENSE SNAPS, a snap game without a stat row counts as share 0.
+        # Off, "last 3" is the last 3 stat rows, so zero-target games vanish and a player whose role disappeared keeps his old share (W12 PHI@DAL: Ertz).
+        _sg = sn[sn.offense_snaps.fillna(0) > 0][["pfr_player_id", "week"]].rename(columns={"pfr_player_id": "pfr_id"}).drop_duplicates()
+        if _SG == "2": _sg = _sg[_sg.pfr_id.isin(_stale_ids)]
+        _src3 = _src3.merge(_sg, on=["pfr_id", "week"], how="outer").fillna({"tsh": 0.0, "csh": 0.0})
+    _l3 = _src3.sort_values("week").groupby("pfr_id").tail(3).groupby("pfr_id").agg(tsh3=("tsh", "mean"), csh3=("csh", "mean"), n3=("week", "size")).reset_index()
     sc = sc.merge(_l3, on="pfr_id", how="left"); _ok = sc.n3.fillna(0) >= 3
     _rmove = float(os.environ.get("APEX_RECENCY_SNAPMOVE", 0) or 0)      # variant: only players whose last-3 offense-snap share moved >= this vs their season mean
     if _rmove > 0:
@@ -87,6 +101,7 @@ if _REC > 0:
         _sp2 = sn[sn.offense_pct.notna()].sort_values("week")
         _up = _sp2.groupby("pfr_player_id").tail(3).groupby("pfr_player_id").offense_pct.mean() - _sp2.groupby("pfr_player_id").offense_pct.mean()
         _lam[sc.pfr_id.map(_up).fillna(0) >= 0.10] = _rise
+    if _stale_ids: _lam[sc.pfr_id.isin(_stale_ids)] = float(os.environ.get("APEX_STALE_LAM", 0.6))
     sc.loc[_ok, "tsh_pg"] = (1 - _lam[_ok]) * sc.loc[_ok, "tsh_pg"] + _lam[_ok] * sc.loc[_ok, "tsh3"].fillna(0)
     if os.environ.get("APEX_RECENCY_TGT_ONLY", "0") != "1":      # variant: targets only, carries keep the season mean
         sc.loc[_ok, "csh_pg"] = (1 - _lam[_ok]) * sc.loc[_ok, "csh_pg"] + _lam[_ok] * sc.loc[_ok, "csh3"].fillna(0)

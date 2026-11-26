@@ -123,6 +123,13 @@ def _apply_roster_out(o, week):
     r = r[r.position.isin(["QB", "RB", "FB", "WR", "TE"])].copy()
     r["nkey"] = r.full_name.map(norm_name); r["team"] = r.team.map(tm)
     live = set(zip(r[r.status.isin(["ACT", "DEV", "INA"])].nkey, r[r.status.isin(["ACT", "DEV", "INA"])].team))     # same player re-signed by the same team stays live
+    _ov = os.environ.get("APEX_STATUS_OVERLAY")
+    if _ov and os.path.exists(_ov):      # an operator 'Active' row (team activated him from IR / signed him today; the nflverse roster still says RES or DEV) makes him live (W12 PIT Pittman, #94)
+        try:
+            _a = pd.read_csv(_ov, keep_default_na=False); _a = _a[_a.report_status == "Active"]
+            live |= set(zip(_a.player.map(norm_name), _a.team.map(tm)))
+        except Exception:
+            pass
     r_all = r
     r = r[r.status.isin(_ROSTER_OUT) & ~pd.Series([(a, b) in live for a, b in zip(r.nkey, r.team)], index=r.index)]
     why = dict(zip(zip(r.nkey, r.team), r.status.map(_ROSTER_OUT)))
