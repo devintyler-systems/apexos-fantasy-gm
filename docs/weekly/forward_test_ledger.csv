@@ -10,7 +10,7 @@ week,game,player,team,snapshot_utc,book,price,book_p,engine_p,gap,close_price,cl
 12,NO@CIN,Mitchell Tinsley,CIN,2026-11-25 16:54:42,Fanatics,1500,0.0606,0.1248,0.0642,,,,
 12,BAL@HOU,Jacoby Brissett,BAL,2026-11-25 17:05:51,DraftKings,1200,0.0747,0.1378,0.0631,,,,out of scope: QB (#84/#85 cover RB/WR/TE)
 12,GB@LA,Ronnie Rivers,LA,2026-11-25 17:06:45,FanDuel,2200,0.0442,0.1044,0.0602,2200,0.0396,,
-12,PHI@DAL,Zach Ertz,PHI,2026-11-25 17:06:44,DraftKings,1600,0.0541,0.1138,0.0597,,,,
+12,PHI@DAL,Zach Ertz,PHI,2026-11-25 17:06:44,DraftKings,1600,0.0541,0.1138,0.0597,1700,0.0526,,
 12,LV@CLE,Quinshon Judkins,CLE,2026-11-25 17:06:47,FanDuel,115,0.4048,0.4632,0.0584,,,,
 12,WAS@ARI,Stefon Diggs,WAS,2026-11-25 17:06:19,Fanatics,220,0.3028,0.3595,0.0567,,,,
 12,TEN@JAX,Brian Thomas Jr,JAX,2026-11-25 17:06:19,Fanatics,380,0.183,0.2396,0.0566,,,,
