@@ -540,8 +540,18 @@ def qb_list(team):
     q["p_active"] = q.p_active.fillna(1.0)
     return q.reset_index(drop=True)
 
+try:      # current depth chart place-kicker (PK rank 1) per team, live runs only; backtests fall back to the first K row
+    _pk = _DC[(_DC.pos_abb == "PK") & (_DC.pos_rank == 1)]
+    _DC_PK = {tm.get(t, t) if hasattr(tm, "get") else t: norm_name(n) for t, n in zip(_pk.team, _pk.player_name)} if not BACKTEST else {}
+except Exception:
+    _DC_PK = {}
+
 def kicker(team):
     k = sco[(sco.team == team) & (sco.Pos == "K")]
+    if len(k) > 1 and _DC_PK:      # several "K" rows (punters can carry Pos K): take the current depth chart's PK1 (W12: LA labelled punter Ethan Evans, so DK's McManus never mapped)
+        pk1 = _DC_PK.get(team)
+        hit = k[k.player.map(norm_name) == pk1] if pk1 else k.iloc[0:0]
+        if len(hit): return hit.iloc[0]
     return k.iloc[0] if len(k) else None
 
 # ---------------- game environment ----------------
