@@ -41,6 +41,29 @@ def _get(url, dest):
     return 200
 
 
+GAMES_CSV = "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv"
+GAMES_DTYPES = {"season": "int32", "week": "int32", "away_rest": "int32", "home_rest": "int32", "div_game": "int32", "old_game_id": "str", "espn": "str"}      # match the parquet schema
+
+
+def games_csv_to_parquet(csv_path, dest):
+    """Pure: the nfldata games.csv converted to the games.parquet schema (same 46 columns; a few integer columns cast as the parquet stores them)."""
+    import pandas as pd
+    g = pd.read_csv(csv_path, dtype={"old_game_id": str, "espn": str})
+    for c, t in GAMES_DTYPES.items():
+        if c in g:
+            g[c] = g[c].astype(t)
+    tmp = dest + ".part"; g.to_parquet(tmp, index=False); os.replace(tmp, dest)
+    return len(g)
+
+
+def _games_from_csv(dest):
+    tmp = dest + ".csv.part"
+    code = _get(GAMES_CSV, tmp)
+    if code == 200:
+        games_csv_to_parquet(tmp, dest); os.remove(tmp)
+    return code
+
+
 def fetch(season, history=(2023, 2024, 2025), with_pbp=True, with_ffo=False, force_current=True):
     """Fetch the nflverse tables the engine reads. Returns {file: status}."""
     seasons = sorted(set(history) | {season})
@@ -58,6 +81,10 @@ def fetch(season, history=(2023, 2024, 2025), with_pbp=True, with_ffo=False, for
             status[fn] = "cached"
             continue
         code = _get(f"{BASE}/{tag}/{fn}", dest)
+        if code != 200 and fn == "games.parquet":      # the schedules release asset 404'd on 2026-11-25; nflverse's nfldata repo serves the same table as CSV
+            code = _games_from_csv(dest)
+            status[fn] = "ok (nfldata games.csv fallback)" if code == 200 else f"HTTP {code}"
+            continue
         status[fn] = "ok" if code == 200 else f"HTTP {code}"
     if with_ffo:
         for s in seasons:

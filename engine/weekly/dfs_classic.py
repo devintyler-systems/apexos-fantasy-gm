@@ -17,7 +17,9 @@ for r in sal.itertuples():
     a=sims[key]; m=meta[key]
     rows.append(dict(key=key,player=r.Name,pos=r.Position,team=r.team,game=m["game"],salary=int(r.Salary),dk_status=r.Status if isinstance(r.Status,str) else "",avg_dk=r.AvgPointsPerGame,p_active=m["p_active"],
                      mean=float(a.mean()),sd=float(a.std()),p25=float(np.percentile(a,25)),p50=float(np.percentile(a,50)),p75=float(np.percentile(a,75)),p90=float(np.percentile(a,90)),p95=float(np.percentile(a,95))))
-P=pd.DataFrame(rows); P["opp"]=[g.split("@")[1] if g.split("@")[0]==t else g.split("@")[0] for g,t in zip(P.game,P.team)]
+P=pd.DataFrame(rows)
+import dfs_pool_audit; dfs_pool_audit.enforce(sal.assign(TeamAbbrev=sal.team), {(norm_name(n),t) for n,t in zip(P.player,P.team)}, "classic")      # DECISIONS #93
+P["opp"]=[g.split("@")[1] if g.split("@")[0]==t else g.split("@")[0] for g,t in zip(P.game,P.team)]
 P["value_per_1k"]=P["mean"]/P.salary*1000
 pool=P[(~P.dk_status.isin(["OUT","IR"]))&(P.p_active>=0.5)&(P.salary>=2000)&(P["mean"]>=0.5)].reset_index(drop=True)
 REPORT=[]

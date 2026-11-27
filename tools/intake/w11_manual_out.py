@@ -40,6 +40,12 @@ for r in P.itertuples():      # every projected row: an earlier manual-out may a
     if (r.nkey, r.team) not in live and r.pos in ("QB", "RB", "WR", "TE"):
         rows.append(dict(player=r.player, team=r.team, source=f"nflverse roster w{wk}", as_of_utc=now,
                          note="no week roster row for this team (moved/released)"))
+import os
+if os.path.exists(out):      # keep rule-(b) rows from the previous pass whose player still has no roster row for that team: once zeroed he drops out of proj_all, and the next pass would otherwise re-admit him (W12 Marquise Brown oscillation, 2026-11-25)
+    prev = pd.read_csv(out, keep_default_na=False)
+    prev = prev[prev.note.str.startswith("no week roster row")]
+    prev = prev[[(norm_name(a), b) not in live for a, b in zip(prev.player, prev.team)]] if len(prev) else prev
+    rows += prev.to_dict("records")
 o = pd.DataFrame(rows).drop_duplicates(["player", "team"])
 proj_hit = o.merge(P[P.p_active > 0][["player", "team", "tgt_mean", "rush_att_mean"]], on=["player", "team"], how="inner")
 o.to_csv(out, index=False)

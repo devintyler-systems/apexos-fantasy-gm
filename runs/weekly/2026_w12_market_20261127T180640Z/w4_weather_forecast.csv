@@ -1,0 +1,17 @@
+game,roof,note,wind_mph,gust_mph,temp_f,precip_pct,total_adj_pts
+GB@LA,dome,indoor,,,,,
+CHI@DET,dome,indoor,,,,,
+PHI@DAL,closed,indoor,,,,,
+KC@BUF,outdoors,kickoff outside the 7-day forecast: no adjustment,,,,,
+DEN@PIT,outdoors,"NWS hourly, mid-game hour",16.0,,36.0,79.0,-1.56
+NO@CIN,outdoors,"NWS hourly, mid-game hour",14.0,,50.0,100.0,-0.76
+BAL@HOU,,indoor,,,,,
+NYG@IND,,indoor,,,,,
+TEN@JAX,outdoors,"NWS hourly, mid-game hour",9.0,,66.0,0.0,-0.0
+NYJ@MIA,outdoors,"NWS hourly, mid-game hour",3.0,,78.0,10.0,-0.0
+ATL@MIN,dome,indoor,,,,,
+NE@LAC,dome,indoor,,,,,
+WAS@ARI,,indoor,,,,,
+SEA@SF,outdoors,"NWS hourly, mid-game hour",15.0,,64.0,83.0,-0.95
+LV@CLE,outdoors,"NWS hourly, mid-game hour",10.0,,46.0,100.0,-0.0
+CAR@TB,outdoors,"NWS hourly, mid-game hour",3.0,,67.0,37.0,-0.0

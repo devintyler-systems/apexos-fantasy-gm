@@ -8,6 +8,7 @@ import pandas as pd
 
 POS = {"QB","RB","FB","WR","TE","T","G","C","OL","OT","OG","DL","DE","DT","NT","LB","ILB","OLB","MLB","CB","S","SS","FS","DB","K","P","LS","EDGE","C/G","G/T"}
 NICK = {"Cardinals","Falcons","Ravens","Bills","Panthers","Bears","Bengals","Browns","Cowboys","Broncos","Lions","Packers","Texans","Colts","Jaguars","Chiefs","Raiders","Chargers","Rams","Dolphins","Vikings","Patriots","Saints","Giants","Jets","Eagles","Steelers","49ers","Seahawks","Buccaneers","Titans","Commanders"}
+PRACT = {"DNP": "Did Not Participate In Practice", "LP": "Limited Participation in Practice", "FP": "Full Participation in Practice"}
 STAT = re.compile(r"\b(OUT|DOUBTFUL|QUESTIONABLE|No designation)\b")
 
 
@@ -23,6 +24,7 @@ def main():
     toks = " ".join(raw.split())
     R = pd.read_parquet(f"var/nflverse/roster_{a.season}.parquet"); R = R[R.week == R.week.max()]
     R["nkey"] = R.full_name.map(norm); byname = R.groupby("nkey").team.agg(lambda x: sorted(set(x)))
+    gsis = {(k, t): g for k, t, g in zip(R.nkey, R.team, R.gsis_id)}      # lets the R-23 starter flag (avail_role) see overlay rows
     rows, unmatched, pos_ = [], [], 0
     for m in STAT.finditer(toks):
         seg = toks[pos_:m.start()].strip(); pos_ = m.end()
@@ -51,7 +53,8 @@ def main():
         teams = byname.get(norm(nm))
         if not teams or len(teams) != 1:
             unmatched.append((nm, words[idx], status, teams)); continue
-        rows.append(dict(player=nm, team=teams[0], pos=words[idx], report_status=status.title(), source=a.source, as_of_utc=a.as_of))
+        pr = [w for w in words[idx + 1:] if w in PRACT]      # practice-day columns after the injury text; the last one is the latest day
+        rows.append(dict(player=nm, team=teams[0], pos=words[idx], report_status=status.title(), practice_status=PRACT[pr[-1]] if pr else "", gsis_id=gsis.get((norm(nm), teams[0]), ""), source=a.source, as_of_utc=a.as_of))
     o = pd.DataFrame(rows).drop_duplicates(["player", "team"])
     o.to_csv(a.out, index=False)
     print(f"{len(o)} designations ({o.report_status.value_counts().to_dict()}) across {o.team.nunique()} teams; unmatched/ambiguous: {len(unmatched)}")
