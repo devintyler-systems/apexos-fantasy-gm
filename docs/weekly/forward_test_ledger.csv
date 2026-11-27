@@ -1,11 +1,11 @@
 week,game,player,team,snapshot_utc,book,price,book_p,engine_p,gap,close_price,close_book_p,result,scope
 12,CAR@TB,Bucky Irving,TB,2026-11-25 17:06:48,FanDuel,-120,0.4743,0.5722,0.0979,,,,
 12,SEA@SF,AJ Barner,SEA,2026-11-25 17:06:42,DraftKings,320,0.2129,0.2942,0.0812,,,,
-12,DEN@PIT,Bo Nix,DEN,2026-11-25 17:06:42,DraftKings,550,0.1349,0.2152,0.0803,,,,out of scope: QB (#84/#85 cover RB/WR/TE)
+12,DEN@PIT,Bo Nix,DEN,2026-11-25 17:06:42,DraftKings,550,0.1349,0.2152,0.0803,475,0.1495,,out of scope: QB (#84/#85 cover RB/WR/TE)
 12,GB@LA,Matthew Golden,GB,2026-11-25 17:05:57,BetRivers,185,0.3137,0.392,0.0783,188,0.3100,,
 12,WAS@ARI,Trey McBride,ARI,2026-11-25 17:06:19,Fanatics,175,0.3316,0.4097,0.0781,,,,
 12,KC@BUF,Xavier Worthy,KC,2026-11-25 17:06:40,DraftKings,500,0.1493,0.2224,0.073,550,0.1354,,
-12,DEN@PIT,Germie Bernard,PIT,2026-11-25 17:04:15,BetMGM,600,0.1386,0.2102,0.0715,,,,
+12,DEN@PIT,Germie Bernard,PIT,2026-11-25 17:04:15,BetMGM,600,0.1386,0.2102,0.0715,700,0.1209,,
 12,TEN@JAX,Jakobi Meyers,JAX,2026-11-25 17:06:51,FanDuel,170,0.3291,0.394,0.0649,,,,
 12,NO@CIN,Mitchell Tinsley,CIN,2026-11-25 16:54:42,Fanatics,1500,0.0606,0.1248,0.0642,,,,
 12,BAL@HOU,Jacoby Brissett,BAL,2026-11-25 17:05:51,DraftKings,1200,0.0747,0.1378,0.0631,,,,out of scope: QB (#84/#85 cover RB/WR/TE)
